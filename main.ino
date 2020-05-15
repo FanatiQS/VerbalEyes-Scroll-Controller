@@ -299,7 +299,7 @@ struct config conf_projKey = {
 
 
 // A list of all conf items
-struct config confList[6] = {
+struct config confList[] = {
 	conf_ssid,
 	conf_ssidKey,
 	conf_host,
@@ -308,6 +308,9 @@ struct config confList[6] = {
 	conf_projKey
 };
 
+// Number of conf items
+#define confListLength sizeof confList / sizeof confList[0]
+
 
 
 // Context structure for parsing incomming data when updating configuration values
@@ -315,7 +318,7 @@ struct config_ctx {
 	int addr;
 	int len;
 	int index;
-	bool states[6];
+	bool states[confListLength];
 };
 
 // Default values for configuration context
@@ -326,7 +329,7 @@ void confMatchKey(struct config_ctx *ctx, const char c) {
 	// Completes key matching/validation
 	if (c == '=') {
 		// Looks for valid conf items with terminated strings to find matching key
-		for (int i = 6 - 1; i >= 0; i--) {
+		for (int i = confListLength - 1; i >= 0; i--) {
 			if (ctx->states[i] == 0 && confList[i].name[ctx->index] == '\0') {
 				Serial.print(" ] is now: ");
 				ctx->addr = confList[i].addr;
@@ -346,7 +349,7 @@ void confMatchKey(struct config_ctx *ctx, const char c) {
 	// Checks validation for incomming character against all conf items
 	else {
 		// Invalidates conf items that did not match incomming character
-		for (int i = 6 - 1; i >= 0; i--) {
+		for (int i = confListLength - 1; i >= 0; i--) {
 			if (ctx->states[i] == 0 && confList[i].name[ctx->index] != c) {
 				ctx->states[i] = 1;
 			}
