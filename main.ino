@@ -18,7 +18,6 @@
 
 /* TODO:
  * LED to indicate what is going on using the built in led during initilization and during setting conf data
- * add timeout to the waiting for socket serial data response to close the socket and enable the system to retry with a new connection.
 
  * Is it required to "subscribe" to a document after we have been authenticated? We want to subscribe to default document anyway.
    This would only be needed if the server doesn't have the default document open and can not understand it should open it. "{\"_core\": {\"sub\": \"\"}}"
