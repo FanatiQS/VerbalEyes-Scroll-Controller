@@ -45,6 +45,24 @@
  *		All spaces after the key will be trimmed unless there is a matching key, therefor a key can end with one or multiple spaces
  *		A key can contain spaces anywhere except at the start, but the end is safe
  *		The value only ever gets one space trimmed at the start
+ * Old code:
+ // Validates space character input for candidates
+ if (c == ' ') {
+	 for (int i = KEYSLAST; i >= 0; i--) {
+		 if (valid[i] != 1) continue;
+		 if (keys[i][index] == '\0') valid[i] = -1;
+		 else if (keys[i][index] != c) valid[i] = 0;
+	 }
+	 spaces++;
+ }
+ // Validates other character matches for candidates
+ else {
+	 //!! print
+	 while (spaces > 1) {
+		 Serial.print(' ');
+		 spaces--;
+	 }
+ }
 
  * Add support for partial data on socket. When reading socket data, currently the processing stops after the sockets data buffer is empty.
    Should add some kind of check that if it would fail the checks later, it will wait 500ms or so to then give it another shot.
