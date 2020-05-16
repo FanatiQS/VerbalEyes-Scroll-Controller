@@ -322,7 +322,7 @@ struct config_ctx {
 };
 
 // Default values for configuration context
-const config_ctx init_ctx = {-1};
+const struct config_ctx init_ctx = {-1};
 
 // Matches and validates incoming keys
 void confMatchKey(struct config_ctx *ctx, const char c) {
