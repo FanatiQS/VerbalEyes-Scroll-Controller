@@ -150,6 +150,17 @@ void loop() {
  * millis() // for timeouts
  * micros() // for setting random seed
  * yield() // for doing network stuff during loops
+
+ * Libraries and types already defined in Arduino
+ #include <stdlib.h> // rand, srand
+ #include <string.h> // strlen
+ #include <stdio.h> // sprintf
+ #include <ctype.h> // tolower
+ #include <stdint.h> // uint8_t
+ typedef unsigned char bool;
+
+ //!! There is an issue with constructing confList since it can not reference the previously created items address and length. It works in C++ but not in C. I would like to find a solution
+
  */
 
 // Connects to a WiFi network
