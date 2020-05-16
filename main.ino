@@ -299,13 +299,13 @@ struct config conf_projKey = {
 
 
 // A list of all conf items
-struct config confList[] = {
-	conf_ssid,
-	conf_ssidKey,
-	conf_host,
-	conf_port,
-	conf_proj,
-	conf_projKey
+struct config *confList[] = {
+	&conf_ssid,
+	&conf_ssidKey,
+	&conf_host,
+	&conf_port,
+	&conf_proj,
+	&conf_projKey
 };
 
 // Number of conf items
@@ -330,10 +330,10 @@ void confMatchKey(struct config_ctx *ctx, const char c) {
 	if (c == '=') {
 		// Looks for valid conf items with terminated strings to find matching key
 		for (int i = confListLength - 1; i >= 0; i--) {
-			if (ctx->states[i] == 0 && confList[i].name[ctx->index] == '\0') {
+			if (ctx->states[i] == 0 && confList[i]->name[ctx->index] == '\0') {
 				Serial.print(" ] is now: ");
-				ctx->addr = confList[i].addr;
-				ctx->len = confList[i].len;
+				ctx->addr = confList[i]->addr;
+				ctx->len = confList[i]->len;
 				ctx->index = 0;
 				return;
 			}
@@ -350,7 +350,7 @@ void confMatchKey(struct config_ctx *ctx, const char c) {
 	else {
 		// Invalidates conf items that did not match incomming character
 		for (int i = confListLength - 1; i >= 0; i--) {
-			if (ctx->states[i] == 0 && confList[i].name[ctx->index] != c) {
+			if (ctx->states[i] == 0 && confList[i]->name[ctx->index] != c) {
 				ctx->states[i] = 1;
 			}
 		}
