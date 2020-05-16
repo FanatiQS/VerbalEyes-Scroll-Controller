@@ -238,6 +238,11 @@ void confWrite(const int addr, const char c) {
 	EEPROM.write(addr, c);
 }
 
+// Commits changes made to EEPROM
+void confCommit() {
+	EEPROM.commit();
+}
+
 
 
 
@@ -398,7 +403,7 @@ void confParse(struct config_ctx *ctx, bool *touched, const char c) {
 			// Commits changes to config data and reconnect everything if context has been touched
 			if (*touched == 1) {
 				*touched = 0;
-				EEPROM.commit();
+				confCommit();
 				Serial.print("Done. Restarting...\n\n");
 				connect();
 			}
