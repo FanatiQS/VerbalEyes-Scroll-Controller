@@ -116,16 +116,23 @@
 #include <libb64/cencode.h> // base64
 
 
+
+// Pin and board specific definitions
 #define POT_MAX 1024
 #define SAMPLERATE 3
 #define LED_PIN LED_BUILTIN
 #define SPEEDPIN A0
+#define JUMPTOTOPPIN 15
+
+
+
 //!!
 void setup() {
 	EEPROM.begin(512);
 	Serial.begin(9600);
 	Serial.print("\n\n\n");
 	pinMode(LED_BUILTIN, OUTPUT);
+	pinMode(JUMPTOTOPPIN, INPUT);
 
 	connect(1);
 }
@@ -136,6 +143,7 @@ void loop() {
 	if (!socketStatus()) connect(0);
 	if (serialHasData()) confSerialLoop();
 	updateSpeed();
+	jumpToTop();
 }
 
 
@@ -272,6 +280,10 @@ int readSpeed() {
 	return analogRead(SPEEDPIN);
 }
 
+// Reads digital signal for a pin
+int readButton(const int pin) {
+	return digitalRead(pin);
+}
 
 
 
@@ -1010,4 +1022,27 @@ void updateSpeed() {
 	Serial.print(speed_str);
 	Serial.print('\n');
 }
+
+// Tells server to reset position to 0 when button is pressed
+void jumpToTop() {
+	static unsigned long intervalLock;
+	static bool state;
+
+	// Only handles data at a maximum frequency rate
+	const unsigned long current = millis();
+ 	if (intervalLock > current) return;
+
+	// Only sends data on button down event
+	const bool value = readButton(JUMPTOTOPPIN);
+	if (value == state) return;
+	state = value;
+	intervalLock = current + cal_interval;
+	if (value == 0) return;
+
+	// Sends message to server
+	char msg[8 + 34] = "{\"_core\": {\"doc\": {\"offset\": 0}}}";
+	writeWebSocketFrame(msg);
+
+	//!! prints
+	Serial.print("Scroll position has been set to: 0\n");
 }
