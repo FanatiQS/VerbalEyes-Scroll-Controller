@@ -486,7 +486,7 @@ void confSerialLoop() {
 }
 
 // Gets string value from EEPROM address range
-void confGet(struct config conf, char value[]) {
+void confGetString(struct config conf, char value[]) {
 	for (int i = 0; i < conf.len; i++) {
 		value[i] = confRead(conf.addr + i);
 		if (value[i] == '\0') return;
@@ -582,9 +582,9 @@ void writeWebSocketFrame(char str[]) {
 void connectNetwork() {
 	// Gets ssid and ssidKey from EEPROM
 	char ssid[conf_ssid.len + 1];
-	confGet(conf_ssid, ssid);
+	confGetString(conf_ssid, ssid);
 	char ssidKey[conf_ssidKey.len + 1];
-	confGet(conf_ssidKey, ssidKey);
+	confGetString(conf_ssidKey, ssidKey);
 
 	//!! prints
 	Serial.print("Connecting to SSID: ");
@@ -616,7 +616,7 @@ void connectNetwork() {
 void connectSocket() {
 	// Gets host from EEPROM
 	char host[conf_host.len + 1];
-	confGet(conf_host, host);
+	confGetString(conf_host, host);
 
 	//!! prints
 	Serial.print("Connecting to Host: ");
@@ -750,9 +750,9 @@ void connectSocket() {
 
 	// Gets project and project_key from EEPROM
 	char proj[conf_proj.len + 1];
-	confGet(conf_proj, proj);
+	confGetString(conf_proj, proj);
 	char projKey[conf_projKey.len + 1];
-	confGet(conf_projKey, projKey);
+	confGetString(conf_projKey, projKey);
 
 	//!! prints
 	Serial.print("Connecting to project: ");
