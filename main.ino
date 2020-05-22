@@ -279,35 +279,35 @@ struct config conf_ssid = {
 
 // Creates config item for SSID key
 struct config conf_ssidKey = {
-	conf_ssid.addr + conf_ssid.len,
+	32,
 	63,
 	"ssidKey"
 };
 
 // Creates config item for websocket server
 struct config conf_host = {
-	conf_ssidKey.addr + conf_ssidKey.len,
+	95,
 	64,
 	"host"
 };
 
 // Creates config item for websocket servers port
 struct config conf_port = {
-	conf_host.addr + conf_host.len,
+	159,
 	5,
 	"port"
 };
 
 // Creates config item for verbaleyes project name
 struct config conf_proj = {
-	conf_port.addr + conf_port.len,
+	164,
 	32,
 	"proj"
 };
 
 // Creates config item for verbaleyes project password
 struct config conf_projKey = {
-	conf_proj.addr + conf_proj.len,
+	196,
 	64,
 	"projKey"
 };
