@@ -127,12 +127,13 @@ void setup() {
 	Serial.print("\n\n\n");
 	pinMode(LED_BUILTIN, OUTPUT);
 
-	connect();
+	connect(1);
 }
 
 
 //!!
 void loop() {
+	if (!socketStatus()) connect(0);
 	if (serialHasData()) confSerialLoop();
 	updateSpeed();
 }
@@ -498,7 +499,7 @@ void confParse(struct config_ctx *ctx, bool *touched, const char c) {
 				*touched = 0;
 				confCommit();
 				Serial.print("Done. Restarting...\n\n");
-				connect();
+				connect(1);
 			}
 			//!! prints
 			else {
@@ -931,9 +932,9 @@ void connectSocket() {
 }
 
 // Connects to network and socket
-void connect() {
+void connect(const bool checkNetwork) {
 	// Connects to the network and socket server using conf item values
-	connectNetwork();
+	if (checkNetwork && !networkStatus()) connectNetwork();
 	connectSocket();
 
 	// Retries to connect to socket server until succcess if it failed
