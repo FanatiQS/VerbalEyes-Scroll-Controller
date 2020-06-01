@@ -39,6 +39,18 @@ void loop() {
 
 
 
+// Gets elapsed time in milliseconds
+unsigned long getTime() {
+	return millis();
+}
+
+// Gets a random seed to use
+unsigned long randomSeed() {
+	return micros();
+}
+
+
+
 // Connects to a WiFi network
 void networkConnect(const char ssid[], const char key[]) {
 	WiFi.mode(WIFI_STA);
@@ -429,10 +441,10 @@ void confSerialLoop() {
 			if (touched == 0) return;
 
 			// Awaits more data over serial for maximum 500ms before forcing parser to close
-			const unsigned long timeout = millis() + 500;
+			const unsigned long timeout = getTime() + 500;
 			while (!serialHasData()) {
 				yield();
-				if (timeout < millis()) {
+				if (timeout < getTime()) {
 					if (ctx.addr != -1 || ctx.index != 0) confParse(&ctx, &touched, '\n');
 					confParse(&ctx, &touched, '\n');
 					return;
@@ -482,7 +494,7 @@ void progressbar() {
 	yield();
 
 	// Shows progress indicator every 200 milliseconds
-	const unsigned long current = millis();
+	const unsigned long current = getTime();
 	if (timeout < current) {
 		timeout = current + 200;
 		Serial.print(".");
@@ -503,9 +515,9 @@ const char tab[] = "    ";
 
 // Wait for response data from host
 bool socketWaitForResponse() {
-	const unsigned long timeout = millis() + 10000;
+	const unsigned long timeout = getTime() + 10000;
 	while (!socketHasData()) {
-		if (timeout < millis()) return 0;
+		if (timeout < getTime()) return 0;
 		progressbar();
 	}
 	return 1;
@@ -623,8 +635,7 @@ void connectSocket() {
 	}
 
 	// Sets random seed
-	//!! should be moved to its own function since its using micros()
-	srand(micros());
+	srand(randomSeed());
 
 	// Generates websocket key
 	const char table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -814,15 +825,15 @@ void connect(const bool checkNetwork) {
 	// Retries to connect to socket server until succcess if it failed
 	while (!socketStatus()) {
 		Serial.print("Retrying to connect to the host in 3 seconds\n");
-		const unsigned long timeout = millis() + 3000;
-		while (timeout > millis()) {
+		const unsigned long timeout = getTime() + 3000;
+		while (timeout > getTime()) {
 			yield();
 			if (serialHasData()) confSerialLoop();
 		}
 		connectSocket();
 	}
 
-	// Gets speed and calibration values from config
+	// Sets speed and calibration values from config
 	speed_max = confGetInt(conf_speedMax);
 	speed_min = confGetInt(conf_speedMin);
 	speed_deadzone = confGetInt(conf_speedDeadzone);
@@ -840,7 +851,7 @@ void updateSpeed() {
 	static float speed;
 
 	// Only handles data at a maximum frequency rate
-	const unsigned long current = millis();
+	const unsigned long current = getTime();
  	if (intervalLock > current) return;
 
 	// Maps analog input value to conf range
@@ -891,7 +902,7 @@ void jumpToTop() {
 	static bool state;
 
 	// Only handles data at a maximum frequency rate
-	const unsigned long current = millis();
+	const unsigned long current = getTime();
  	if (intervalLock > current) return;
 
 	// Only sends data on button down event
