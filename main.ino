@@ -19,17 +19,20 @@
 void setup() {
 	EEPROM.begin(512);
 	Serial.begin(9600);
-	Serial.print("\n\n\n");
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(JUMPTOTOPPIN, INPUT);
 
-	connect(1);
+	Serial.print("\n\n\n");
+	initialize();
 }
 
 
 //!!
 void loop() {
-	if (!socketStatus()) connect(0);
+	if (!socketStatus()) {
+		if (!networkStatus()) connectNetwork();
+		connectSocket();
+	}
 	if (serialHasData()) confSerialLoop();
 	updateSpeed();
 	jumpToTop();
@@ -385,7 +388,7 @@ void confParse(struct config_ctx *ctx, bool *touched, const char c) {
 				*touched = 0;
 				confCommit();
 				Serial.print("Done. Restarting...\n\n");
-				connect(1);
+				initialize();
 			}
 			//!! prints
 			else {
@@ -816,10 +819,10 @@ void connectSocket() {
 	Serial.print("Authenticated\n\n");
 }
 
-// Connects to network and socket
-void connect(const bool checkNetwork) {
+// Connects to network and socket server and gets calibration
+void initialize() {
 	// Connects to the network and socket server using conf item values
-	if (checkNetwork && !networkStatus()) connectNetwork();
+	connectNetwork();
 	connectSocket();
 
 	// Retries to connect to socket server until succcess if it failed
