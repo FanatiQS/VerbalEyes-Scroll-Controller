@@ -1,5 +1,7 @@
 
 ## TODO:
+* System to configure device from something other than usb? ESP can have both access point and connect to existing network. It could setup an access point and serve a configuration webpage that uses simple POST request with same structure as serial data. The issue is security. USB configuration is good since it requires physical access. One idea to help a little bit with security is to only enable the access point network for the first 10 seconds, if no one has connected to it, disable it again. There is still an issue with security for the fist 10 seconds though. There could be a password required, but that requires setting a password for the device and might be overlooked by most. It could also not set up the access point if the password is not set up. Initially, the network config does not work, but if the user wants it, they could enable it by configuring a password over usb.
+
 * LED to indicate what is going on using the built in led during initilization and during setting conf data
 
 * Is it required to "subscribe" to a document after we have been authenticated? We want to subscribe to default document anyway. This would only be needed if the server doesn't have the default document open and can not understand it should open it. Sample code: `{\"_core\": {\"sub\": \"\"}}`. Right now it is not used, but it was used in old code and is here just in case I would realize it is actually needed.
