@@ -11,7 +11,7 @@
 #define SAMPLERATE 3
 #define LED_PIN LED_BUILTIN
 #define SPEEDPIN A0
-#define JUMPTOTOPPIN 15
+#define JUMPTOTOPPIN 0
 
 
 
@@ -20,7 +20,7 @@ void setup() {
 	EEPROM.begin(512);
 	Serial.begin(9600);
 	pinMode(LED_BUILTIN, OUTPUT);
-	pinMode(JUMPTOTOPPIN, INPUT);
+	pinMode(JUMPTOTOPPIN, INPUT_PULLUP);
 
 	Serial.print("\n\n\n");
 	initialize();
@@ -909,7 +909,7 @@ void jumpToTop() {
  	if (intervalLock > current) return;
 
 	// Only sends data on button down event
-	const bool value = readButton(JUMPTOTOPPIN);
+	const bool value = !readButton(JUMPTOTOPPIN);
 	if (value == state) return;
 	state = value;
 	intervalLock = current + cal_interval;
