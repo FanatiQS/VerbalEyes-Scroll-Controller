@@ -753,8 +753,8 @@ void connectSocket() {
 	Serial.print(proj);
 
 	// Sends VerbalEyes project authentication request
-	char auth[8 + 33 + conf_proj.len + conf_projKey.len];
-	sprintf(auth, "{\"_core\": {\"id\": \"%s\", \"pwd\": \"%s\"}}", proj, projKey);
+	char auth[8 + 43 + conf_proj.len + conf_projKey.len];
+	sprintf(auth, "{\"_core\": {\"auth\": {\"id\": \"%s\", \"key\": \"%s\"}}}", proj, projKey);
 	writeWebSocketFrame(auth);
 
 	// Await authentication response from server
