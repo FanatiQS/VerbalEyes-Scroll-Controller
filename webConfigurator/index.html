@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>Configure scroll controller</title>
+		<script src="serial.js"></script>
+		<style>
+			html,body {
+				height: 100%;
+				width: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			body {
+				position: absolute;
+			}
+			[data-key]:before {
+				content: attr(data-key);
+				display: inline-block;
+				width: 50px;
+				margin-left: 32px;
+				margin-right: 16px;
+			}
+			[data-key] input[type=checkbox] {
+				background: red;
+				position: absolute;
+				left: 0;
+				width: 24px;
+			}
+			#tty {
+				overflow-y: scroll;
+				white-space: pre-wrap;
+				background: #eee;
+				min-height: 100px;
+			}
+			#manualSubmitResult {
+				line-height: 2;
+				height: 2em;
+				background: #eee;
+				padding: 0 16px;
+			}
+		</style>
+	</head>
+	<body>
+		<div>
+			<p data-key="ssid">
+				<input type="checkbox">
+				<input type="text">
+			</p>
+			<p data-key="ssidKey">
+				<input type="checkbox">
+				<input type="text">
+			</p>
+			<p data-key="server">
+				<input type="checkbox">
+				<input type="text">
+			</p>
+			<p data-key="port">
+				<input type="checkbox">
+				<input type="text">
+			</p>
+			<p data-key="proj">
+				<input type="checkbox">
+				<input type="text">
+			</p>
+			<p data-key="projKey">
+				<input type="checkbox">
+				<input type="text">
+			</p>
+		</div>
+		<button id="connect">Connect</button>
+		<button id="disconnect" disabled>Disconnect</button>
+		<button id="submit" disabled>Submit</button>
+		<br>
+		<button id="manualSubmit">Manual Submit</button>
+		<button id="manualConsole">Manual Console</button>
+		<select id="manualSubmitSelect">
+			<option value="">-- Select Operating System --</option>
+			<option value="macos">MacOS</option>
+			<option value="linux">Linux</option>
+			<option value="windows">Windows</option>
+		</select>
+		<pre id="manualSubmitResult"></pre>
+		<button id="load">Load Settings</button>
+		<button id="save">Save Settings</button>
+		<br>
+		<button id="cleartty">Clear Console</button>
+		<pre id="tty"></pre>
+
+		<script>
+			const tty = document.querySelector('#tty');
+
+			// Connects to serial device
+			document.querySelector('#connect').onclick = async function () {
+				// Cleans up any existing serial port connection
+				document.querySelector('#disconnect').click();
+
+				// Connects to serial port using WebSerial
+				const serial = await getSerialDevice();
+
+				// Stringifies and sends settings to serial port when submit button is pressed
+				const submitBtn = document.querySelector('#submit');
+				submitBtn.onclick = function () {
+					serial.write(configStringify());
+				};
+				submitBtn.disabled = false;
+
+				// Closes serial port when disconneect button is pressed
+				document.querySelector('#disconnect').onclick = function () {
+					submitBtn.disabled = true;
+					this.disabled = true;
+					serial.close();
+				};
+
+				// Prints text from serial port to DOM as it comes in
+				for await (const data of serial) {
+					tty.textContent += data;
+				};
+			};
+			if (!('serial' in navigator)) {
+				document.querySelector('#connect').disabled = true;
+				console.error("WebSerial is not available in this browser");
+			}
+
+			// Load local file to config
+			const loadHandler = document.createElement('input');
+			loadHandler.setAttribute('type', 'file');
+			loadHandler.onchange = function () {
+				reader.readAsText(this.files[0]);
+			};
+			const reader = new FileReader();
+			reader.onload = function (event) {
+				configParse(event.target.result);
+			};
+			document.querySelector('#load').onclick = function () {
+				loadHandler.click();
+			};
+
+			// Save config to local file
+			const saveHandler = document.createElement('a');
+			saveHandler.setAttribute('download', 'settings.txt');
+			document.querySelector('#save').onclick = function (event) {
+				if (!confirm("Do you want to download your current settings?")) return;
+				saveHandler.setAttribute('href', `data:text/plain,${encodeURIComponent(configStringify())}`);
+				saveHandler.click();
+			};
+
+			// Clears tty from old logs
+			document.querySelector('#cleartty').onclick = function () {
+				tty.textContent = '';
+			};
+
+			// Stringifies all enabled config options to a string
+			function configStringify() {
+				return Array.prototype.reduce.call(document.querySelectorAll('[data-key]'), (acc, p) => {
+					if (!p.firstElementChild.checked) return acc;
+					return acc + `${p.getAttribute('data-key')}=${p.lastElementChild.value}\n`;
+				}, '');
+			}
+
+			// Parses a configuration string and creates HTML elements representing it
+			function configParse(string) {
+				let restSelector = '[data-key]';
+				string.split('\n').forEach((cmd) => {
+					if (!cmd) return;
+					const index = cmd.indexOf('=');
+					const key = cmd.slice(0, index);
+					if (!key) throw new Error("Invalid key");
+					const p = document.querySelector(`[data-key=${key}]`);
+					restSelector += `:not([data-key=${key}])`;
+					p.firstElementChild.checked = true;
+					if (!p) throw new Error("Invalid key: " + key);
+					p.lastElementChild.value = cmd.slice(index + 1);
+				});
+				document.querySelectorAll(restSelector).forEach((p) => {
+					p.firstElementChild.checked = false;
+					p.lastElementChild.value = '';
+				});
+			}
+
+			// Prints write command for selected operatingsystem
+			const manualResult = document.querySelector('#manualSubmitResult');
+			const operatingsystemWrites = [
+				['echo "', '" > /dev/cu.usbserial-*'],
+				['echo "', '" > /dev/ttyUSB*'],
+				[]
+			];
+			document.querySelector('#manualSubmit').onclick = function () {
+				const [prefix, suffix] = getOSProperty(operatingsystemWrites);
+				const str = configStringify();
+				if (!str) {
+					throw manualResult.textContent = "No settings to send";
+				}
+				manualResult.textContent = prefix + str + suffix;
+			};
+
+			// Prints read command for selected operatingsystem
+			const operatingsystemReads = [
+				'cat > /dev/cu.usbserial-*',
+				'cat  > /dev/ttyUSB*',
+				''
+			];
+			document.querySelector('#manualConsole').onclick = function () {
+				manualResult.textContent = getOSProperty(operatingsystemReads);
+			};
+
+			// Gets data from array matching index of select
+			const select = document.querySelector('#manualSubmitSelect');
+			function getOSProperty(arr) {
+				if (!select.selectedIndex) {
+					throw manualResult.textContent = "You need to select an operating system";
+				}
+				if (select.selectedIndex === 3) {
+					throw manualResult.textContent = "Windows is not yet supported. If you know how to do it manually, please make a pull request or tell me how so it can be added."
+				}
+				return arr[select.selectedIndex - 1];
+			}
+		</script>
+	</body>
+</html>
