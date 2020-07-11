@@ -8,13 +8,16 @@ This is code for the ESP-8266 that will update the scroll speed of the telepromp
 * Windows: ?
 
 ### Writing:
-* OSX/Linux: `echo ` message ` > ` path from previous step
+* OSX: `echo ` message ` > /dev/cu.usbserial-*`
+* Linux: `echo ` message ` > /dev/ttyUSB*`
 * Windows: ?
 #### Notes:
 * Message should end with a LF
 * If the message contains spaces, they have to be escaped or the string has to be in quotes
+
 ### Reading:
-* OSX/Linux: `cat ` path
+* OSX: `cat > /dev/cu.usbserial-*`
+* Linux: `cat /dev/ttyUSB*`
+* Windows: ?
 #### Notes:
 * If it does not continue to read, try to run `stty -echo -F ` + path (had this issue in raspbian)
-* Windows: ?
