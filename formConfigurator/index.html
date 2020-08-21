@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			body {
+				text-align: center;
+			}
+			form {
+				display: inline-block;
+				max-width: 300px;
+				width: 100%;
+			}
+			form * {
+				display: block;
+			}
+			form input, form button {
+				margin-bottom: 2em;
+				width: 100%;
+				box-sizing: border-box;
+			}
+		</style>
+	</head>
+	<body>
+
+	<h1>Configure your scroll-thingimajigg</h1>
+
+	<form method="post" enctype="text/plain">
+		<label for="ssid">Wi-fi:</label>
+		<input id="ssid" name="ssid">
+
+		<label for="ssidKey">Wi-fi passowrd:</label>
+		<input id="ssidKey" name="ssidKey">
+
+		<label for="host">Host:</label>
+		<input id="host" name="host">
+
+		<label for="port">Port:</label>
+		<input id="port" name="port">
+
+		<label for="proj">Project:</label>
+		<input id="proj" name="proj">
+
+		<label for="projKey">Project passowrd:</label>
+		<input id="projKey" name="projKey">
+
+		<br>
+
+		<label for="speedMax">Left scroll speed:</label>
+		<input id="speedMax" name="speedMax">
+
+		<label for="speedMin">Right scroll speed:</label>
+		<input id="speedMin" name="speedMin">
+
+		<label for="speedDeadzone">Deadzone size:</label>
+		<input id="speedDeadzone" name="speedDeadzone">
+
+		<br>
+
+		<label for="calLow">Calibrate left:</label>
+		<input id="calLow" name="calLow">
+
+		<label for="calHigh">Calibrate right:</label>
+		<input id="calHigh" name="calHigh">
+
+		<label for="calIgnorejitter">Calibrate jitter ignore size:</label>
+		<input id="calIgnorejitter" name="calIgnorejitter">
+
+		<label for="calInterval">Calibrate refresh interval:</label>
+		<input id="calInterval" name="calInterval">
+
+		<button>"Submit"</button>
+	</form>
+
+	</body>
+</html>
