@@ -1,5 +1,3 @@
-idea about multi wifi
-
 # Scroll thingimajigg configuration
 
 ## What we have
@@ -9,6 +7,7 @@ Currently we have a parser that accepts `key=value\n` text. Spaces before or aft
 * It is very important to be able to lock down access to configuring the device over HTTP.
 * The best way is probably to have some kind of signin, like there is for routers, teradek vidu and so on.
 * Since data would then be transmitted back to the server through an HTTP POST request, it would need a cookie or something like that to store the session login.
+* Another way to authenticate is to use query parameters instead of a cookie. The pros about this is that it is possible to configure via cURL or anything similar and the only thing that needs to be done is to serve the html file with a changable `action` on the form element.
 
 ## Sending HTTP POST data
 * A way of sending form data to the server is to use the form attribute `enctype` set to `text/plain`. This would separate every form element with `\r\n` and not encode any special characters.
@@ -20,6 +19,12 @@ Currently we have a parser that accepts `key=value\n` text. Spaces before or aft
 * There needs to be a way to configure the device when the wifi is inaccessible but still available.
 * A way of handling this kind of situation is to both connect to an existing wifi and create a hotspot. The hotspot would the only be for configuring and the other network for everything else.
 * An idea is to have a timer for the hotspot so it is only available for the first 30 seconds unless someone connects to it. This timer would of course be configurable.
+
+## Importing HTML
+* Should use raw string literals for to import html files.
+* Just put `const char* html = R"%%(` as the first line and `)%%"` as the last. Where `%%` is configurable to be anything not available in the html file.
+* Might also be better to store the data in a different way with `PROGMEM`, but I have not yet read up on it.
+* The string does also need to end with a null byte, so adding that is also needed.
 
 ## TODO
 * Add documentation for how configuration works. If someone would want to configure manually, there should be information to read about how to do so. Include examples and tables for types and max lengths of all properties. I don't like reading instructions in plain text, so try to put as much information as possible in tables or examples for to make it easy to skim.
