@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include <bearssl/bearssl_hash.h> // sha1
 #include <libb64/cencode.h> // base64
 
