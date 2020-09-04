@@ -1,5 +1,8 @@
-#include <Arduino.h>
-//#include <stdbool.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <ctype.h>
 
 #include <bearssl/bearssl_hash.h> // sha1
 #include <libb64/cencode.h> // base64
