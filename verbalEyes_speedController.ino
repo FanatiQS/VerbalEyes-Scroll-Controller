@@ -13,7 +13,7 @@
 
 
 
-void initialize();
+extern "C" void initialize();
 
 //!!
 void setup() {
