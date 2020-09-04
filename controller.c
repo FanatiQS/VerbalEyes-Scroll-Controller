@@ -45,7 +45,7 @@ void confMatchKey(struct config_ctx *ctx, const char c) {
 		// Looks for valid conf items with terminated strings to find matching key
 		for (int i = confListLength - 1; i >= 0; i--) {
 			if (ctx->states[i] == 0 && confList[i]->name[ctx->index] == '\0') {
-				Serial.print(" ] is now: ");
+				serialWriteString(" ] is now: ");
 				ctx->addr = confList[i]->addr;
 				ctx->len = confList[i]->len;
 				ctx->index = 0;
@@ -54,7 +54,7 @@ void confMatchKey(struct config_ctx *ctx, const char c) {
 		}
 
 		//!! prints
-		Serial.print(" ] No matching key");
+		serialWriteString(" ] No matching key");
 
 		// Prevents handling value by making sure it is in value handle state but with a length that is shorter than the index
 		ctx->addr = 0;
@@ -70,7 +70,7 @@ void confMatchKey(struct config_ctx *ctx, const char c) {
 		}
 
 		//!! prints
-		Serial.print(c);
+		serialWriteChar(c);
 
 		// Prepair for next handling next character
 		ctx->index++;
@@ -81,12 +81,12 @@ void confMatchKey(struct config_ctx *ctx, const char c) {
 void confUpdateValue(struct config_ctx *ctx, const char c) {
 	// Stores the character in EEPROM if max value length is not reached
 	if (ctx->index < ctx->len) {
-		Serial.print(c);
+		serialWriteChar(c);
 		confWrite(ctx->addr + ctx->index, c);
 	}
 	// Max value length has been reached
 	else if (ctx->index == ctx->len) {
-		Serial.print("\nMaximum input length reached");
+		serialWriteString("\nMaximum input length reached");
 	}
 	// Only handle max value length warning once
 	else {
@@ -106,7 +106,7 @@ void confParse(struct config_ctx *ctx, bool *touched, const char c) {
 		}
 		// Message did not contain a delimiter character
 		else if (ctx->index != 0) {
-			Serial.print(" ] Aborted");
+			serialWriteString(" ] Aborted");
 		}
 		// Incoming message was empty
 		else {
@@ -114,12 +114,12 @@ void confParse(struct config_ctx *ctx, bool *touched, const char c) {
 			if (*touched == 1) {
 				*touched = 0;
 				confCommit();
-				Serial.print("Done. Restarting...\n\n");
+				serialWriteString("Done. Restarting...\n\n");
 				initialize();
 			}
 			//!! prints
 			else {
-				Serial.print("Received no input data to store\n");
+				serialWriteString("Received no input data to store\n");
 			}
 
 			// No need to reset the context since it has not been altered
@@ -127,7 +127,7 @@ void confParse(struct config_ctx *ctx, bool *touched, const char c) {
 		}
 
 		//!! prints
-		Serial.print('\n');
+		serialWriteChar('\n');
 
 		// Resets context
 		*ctx = init_ctx;
@@ -137,7 +137,7 @@ void confParse(struct config_ctx *ctx, bool *touched, const char c) {
 		// Marks context as touched to precent untoched contexts from printing "Done"
 		if (ctx->index == 0) {
 			*touched = 1;
-			Serial.print("[ ");
+			serialWriteString("[ ");
 		}
 
 		// Checks key validation and sets up for value handling on key match
@@ -156,7 +156,7 @@ void confSerialLoop() {
 	bool touched = 0;
 
 	//!! prints
-	Serial.print('\n');
+	serialWriteChar('\n');
 
 	// Parse all incomming characters
 	while (1) {
@@ -227,14 +227,14 @@ void progressbar() {
 	const unsigned long current = getTime();
 	if (timeout < current) {
 		timeout = current + 200;
-		Serial.print(".");
+		serialWriteChar('.');
 	}
 
 	// Handles incoming serial data during progression
 	if (serialHasData()) {
-		Serial.print('\n');
+		serialWriteChar('\n');
 		confSerialLoop();
-		Serial.print("continuing...");
+		serialWriteString("continuing...");
 	}
 }
 
@@ -309,9 +309,9 @@ void connectNetwork() {
 	confGetString(conf_ssidKey, ssidKey);
 
 	//!! prints
-	Serial.print("Connecting to SSID: ");
-	Serial.print(ssid);
-	Serial.print("..");
+	serialWriteString("Connecting to SSID: ");
+	serialWriteString(ssid);
+	serialWriteString("...");
 
 	// Connects to the wifi network
 	networkConnect(ssid, ssidKey);
@@ -326,12 +326,12 @@ void connectNetwork() {
 //		analogWrite(LED_BUILTIN, abs(brightness));
 //		delay(10);
 	}
-	Serial.print('\n');
+	serialWriteChar('\n');
 
 	//!! prints
-	Serial.print("IP address: ");
-	Serial.print(WiFi.localIP());
-	Serial.print('\n');
+	serialWriteString("IP address: ");
+	//!! Serial.print(WiFi.localIP());
+	serialWriteChar('\n');
 }
 
 // Connects to the host, establishes a WebSocket connection and sends a VerbalEyes authentication request
@@ -341,18 +341,19 @@ void connectSocket() {
 	confGetString(conf_host, host);
 
 	//!! prints
-	Serial.print("Connecting to Host: ");
-	Serial.print(host);
-	Serial.print(':');
+	serialWriteString("Connecting to Host: ");
+	serialWriteString(host);
+	serialWriteChar(':');
+	serialWriteString("...");
 
 	// Gets port from EEPROM
 	unsigned short port = 0;
 	for (short i = 0; i < conf_port.len; i++) {
 		const char c = confRead(conf_port.addr + i);
-		Serial.print(c);
+		serialWriteChar(c);
 		if (c == '\0') break;
 		if (port > 6553 || port == 6553 && (c > '5' || c < '0')) {
-			Serial.print("\nPort is outside range\n");
+			serialWriteString("\nPort is outside range\n");
 			return;
 		}
 		port = port * 10 + c - '0';
@@ -360,7 +361,7 @@ void connectSocket() {
 
 	// Connects to host and retries if connection fails
 	if (!socketConnect(host, port)) {
-		Serial.print("\nConnection failed\n");
+		serialWriteString("\nConnection failed\n");
 		return;
 	}
 
@@ -397,15 +398,15 @@ void connectSocket() {
 
 	// Awaits HTTP response
 	if (!socketWaitForResponse()) {
-		Serial.print("\nTimed out waiting for HTTP response\n");
+		serialWriteString("\nTimed out waiting for HTTP response\n");
 		socketClose();
 		return;
 	}
-	Serial.print('\n');
+	serialWriteChar('\n');
 
 	//!! prints
-	Serial.print("Received HTTP response:\n");
-	Serial.print(tab);
+	serialWriteString("Received HTTP response:\n");
+	serialWriteString(tab);
 
 	// Matches the incoming HTTP response against required and illigal substrings
 	bool EOL = 0;
@@ -416,11 +417,11 @@ void connectSocket() {
 		if (c == '\n') EOL = 1;
 		else if (c != '\r') {
 			if (EOL == 1) {
-				Serial.print('\n');
-				Serial.print(tab);
+				serialWriteChar('\n');
+				serialWriteString(tab);
 				EOL = 0;
 			}
-			Serial.print(c);
+			serialWriteChar(c);
 		}
 		socketMatchData(&matches[0], tolower(c), "http/1.1 101");
 		socketMatchData(&matches[1], tolower(c), "connection: upgrade\r\n");
@@ -429,45 +430,45 @@ void connectSocket() {
 		socketMatchData(&matches[4], c, "Sec-WebSocket-Extensions: ");
 		socketMatchData(&matches[5], c, "Sec-WebSocket-Protocol: ");
 	}
-	Serial.print('\n');
+	serialWriteChar('\n');
 
 	// Requires HTTP response code 101
 	if (!matches[0]) {
-		Serial.print("Received unexpected HTTP response code\n");
+		serialWriteString("Received unexpected HTTP response code\n");
 		socketClose();
 		return;
 	}
 
 	// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
 	if (!matches[1] || !matches[2]) {
-		Serial.print("HTTP response is not an upgrade to the WebSockets protocol\n");
+		serialWriteString("HTTP response is not an upgrade to the WebSockets protocol\n");
 		socketClose();
 		return;
 	}
 
 	// Requires WebSocket accept header with correct value
 	if (!matches[3]) {
-		Serial.print("Missing or incorrect WebSocket accept header\n");
+		serialWriteString("Missing or incorrect WebSocket accept header\n");
 		socketClose();
 		return;
 	}
 
 	// Checks for non-requested WebSocket extension header
 	if (matches[4]) {
-		Serial.print("Unexpected WebSocket Extension header\n");
+		serialWriteString("Unexpected WebSocket Extension header\n");
 		socketClose();
 		return;
 	}
 
 	// Checks for non-requested WebSocket protocol header
 	if (matches[5]) {
-		Serial.print("Unexpected WebSocket Protocol header\n");
+		serialWriteString("Unexpected WebSocket Protocol header\n");
 		socketClose();
 		return;
 	}
 
 	//!! prints
-	Serial.print("WebSocket connection established\n");
+	serialWriteString("WebSocket connection established\n");
 
 	// Gets project and project_key from EEPROM
 	char proj[conf_proj.len + 1];
@@ -476,8 +477,8 @@ void connectSocket() {
 	confGetString(conf_projKey, projKey);
 
 	//!! prints
-	Serial.print("Connecting to project: ");
-	Serial.print(proj);
+	serialWriteString("Connecting to project: ");
+	serialWriteString(proj);
 
 	// Sends VerbalEyes project authentication request
 	char auth[8 + 43 + conf_proj.len + conf_projKey.len];
@@ -486,15 +487,15 @@ void connectSocket() {
 
 	// Await authentication response from server
 	if (!socketWaitForResponse()) {
-		Serial.print("\nTimed out waiting for authentication response\n");
+		serialWriteString("\nTimed out waiting for authentication response\n");
 		socketClose();
 		return;
 	}
-	Serial.print('\n');
+	serialWriteChar('\n');
 
 	// Checks that this is an unfragmented WebSocket frame in text format
 	if (socketRead() != 0x81) {
-		Serial.print("Received response data is either not a WebSocket frame or uses an unsupported WebSocket feature\n");
+		serialWriteString("Received response data is either not a WebSocket frame or uses an unsupported WebSocket feature\n");
 		socketClose();
 		return;
 	}
@@ -504,7 +505,7 @@ void connectSocket() {
 
 	// Server is not allowed to mask messages sent to the client according to the spec
 	if (byte2 >= 0x80) {
-		Serial.print("Reveiced a masked frame which is not allowed\n");
+		serialWriteString("Reveiced a masked frame which is not allowed\n");
 		socketClose();
 		return;
 	}
@@ -516,34 +517,34 @@ void connectSocket() {
 		payloadLen = socketRead();
 	}
 	else if (payloadLen == 127) {
-		Serial.print("The received response data payload was too long\n");
+		serialWriteString("The received response data payload was too long\n");
 		socketClose();
 		return;
 	}
 
 	//!! prints
-	Serial.print("Received authentication response:\n");
-	Serial.print(tab);
+	serialWriteString("Received authentication response:\n");
+	serialWriteString(tab);
 
 	// Matches the incoming WebSocket string against required substring
 	int authed = 0;
 	for (int i = 0; i < payloadLen; i++) {
 		yield();
 		const char c = socketRead();
-		Serial.print(c);
+		serialWriteChar(c);
 		socketMatchData(&authed, c, "\"authed\":");
 	}
-	Serial.print('\n');
+	serialWriteChar('\n');
 
 	// Validates the authentication
 	if (!authed) {
-		Serial.print("Authentication Failed\n");
+		serialWriteString("Authentication Failed\n");
 		socketClose();
 		return;
 	}
 
 	//!! prints
-	Serial.print("Authenticated\n\n");
+	serialWriteString("Authenticated\n\n");
 }
 
 // Connects to network and socket server and gets calibration
@@ -554,7 +555,7 @@ void initialize() {
 
 	// Retries to connect to socket server until succcess if it failed
 	while (!socketStatus()) {
-		Serial.print("Retrying to connect to the host in 3 seconds\n");
+		serialWriteString("Retrying to connect to the host in 3 seconds\n");
 		const unsigned long timeout = getTime() + 3000;
 		while (timeout > getTime()) {
 			yield();
@@ -621,9 +622,9 @@ void updateSpeed() {
 	writeWebSocketFrame(msg);
 
 	//!! prints
-	Serial.print("Speed has been updated to: ");
-	Serial.print(speed_str);
-	Serial.print('\n');
+	serialWriteString("Speed has been updated to: ");
+	serialWriteString(speed_str);
+	serialWriteChar('\n');
 }
 
 // Tells server to reset position to 0 when button is pressed
@@ -647,5 +648,5 @@ void jumpToTop() {
 	writeWebSocketFrame(msg);
 
 	//!! prints
-	Serial.print("Scroll position has been set to: 0\n");
+	serialWriteString("Scroll position has been set to: 0\n");
 }
