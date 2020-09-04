@@ -1,4 +1,5 @@
-#include <stdbool.h>
+#include <Arduino.h>
+//#include <stdbool.h>
 
 #include <bearssl/bearssl_hash.h> // sha1
 #include <libb64/cencode.h> // base64
@@ -31,9 +32,10 @@ int cal_interval = 200;
 
 // Context structure for parsing incomming data when updating configuration values
 struct config_ctx {
-	int addr;
-	int len;
-	int index;
+	short addr;
+	short len;
+	short index;
+	short intBuffer;
 	bool states[confListLength];
 };
 
@@ -81,18 +83,43 @@ void confMatchKey(struct config_ctx *ctx, const char c) {
 
 // Adds value to EEPROM until max length is reached
 void confUpdateValue(struct config_ctx *ctx, const char c) {
-	// Stores the character in EEPROM if max value length is not reached
-	if (ctx->index < ctx->len) {
+	// Buffers character if it is of type int and max value length is not reached
+	if (!ctx->len && ctx->index <= 6) {
+		// Only accepts a valid numerical representation
+		if (c >= '0' && c <= '9') {
+			// Pushes character onto int buffer if it is unsigned and within range
+			if (ctx->intBuffer >= 0) {
+				ctx->intBuffer = ctx->intBuffer * 10 + c - '0';
+			}
+			// Pushes character onto int buffer if it is unsigned
+			else {
+				ctx->intBuffer = ctx->intBuffer * 10 + '0' - c;
+			}
+
+			//!! prints
+			serialWriteChar(c);
+		}
+		// Initialises int buffer to be signed
+		else if (c == '-' && ctx->index == 0) {
+			ctx->intBuffer = -32768;
+			serialWriteChar('-');
+		}
+		// Displays invalid character warning message once
+		else {
+			ctx->index = 7;
+			serialWriteString("\nCharacter was not a number");
+			return;
+		}
+	}
+	// Stores the character in EEPROM if it is a string and max value length is not reached
+	else if (ctx->index < ctx->len) {
 		serialWriteChar(c);
 		confWrite(ctx->addr + ctx->index, c);
 	}
-	// Max value length has been reached
-	else if (ctx->index == ctx->len) {
-		serialWriteString("\nMaximum input length reached");
-	}
-	// Only handle max value length warning once
+	// Displays max value length warning message once
 	else {
-		return;
+		if (ctx->index != ctx->len) return;
+		serialWriteString("\nMaximum input length reached");
 	}
 	ctx->index++;
 }
@@ -102,9 +129,20 @@ void initialize();
 void confParse(struct config_ctx *ctx, bool *touched, const char c) {
 	// Wraps up parsing of line
 	if (c == '\n') {
-		// Terminates string in EEPROM if max length was not reached
+		// Finalises writing of data
 		if (ctx->addr != -1) {
-			if (ctx->index < ctx->len) confWrite(ctx->addr + ctx->index, '\0');
+			// Stores buffered int in 2 bytes
+			if (!ctx->len) {
+				if (ctx->intBuffer > 65535 || ctx->intBuffer < -32767) {
+					serialWriteString("\nNumber is outside range");
+				}
+				else {
+					confWrite(ctx->addr, ctx->intBuffer >> 8);
+					confWrite(ctx->addr + 1, ctx->intBuffer & 0xff);
+				}
+			}
+			// Terminates string if max length was not reached
+			else if (ctx->index < ctx->len) confWrite(ctx->addr + ctx->index, '\0');
 		}
 		// Message did not contain a delimiter character
 		else if (ctx->index != 0) {
@@ -112,7 +150,7 @@ void confParse(struct config_ctx *ctx, bool *touched, const char c) {
 		}
 		// Incoming message was empty
 		else {
-			// Commits changes to config data and reconnect everything if context has been touched
+			// Commits changes to EEPROM and reconnect everything if context has been touched
 			if (*touched == 1) {
 				*touched = 0;
 				confCommit();
@@ -195,27 +233,9 @@ void confGetString(struct config conf, char value[]) {
 	value[conf.len] = '\0';
 }
 
-// Gets int value from EEPROM address range
+// Gets 2 byte int value from EEPROM address
 int confGetInt(struct config conf) {
-	// Gets first character to be able to handle negative numbers
-	signed long value = confRead(conf.addr);
-	int sign;
-	if (value == '-') {
-		sign = -1;
-		value = 0;
-	}
-	else {
-		sign = 1;
-		value -= '0';
-	}
-
-	// Adds rest of the numbers until null character or max length is reached
-	for (short i = 1; i < conf.len; i++) {
-		const char c = confRead(conf.addr + i);
-		if (c == '\0') break;
-		value = value * 10 + c - '0';
-	}
-	return value * sign;
+	return (confRead(conf.addr) << 8) + confRead(conf.addr + 1);
 }
 
 
@@ -238,6 +258,13 @@ void progressbar() {
 		confSerialLoop();
 		serialWriteString("continuing...");
 	}
+}
+
+// Writes an int as a string to the serial interface
+void serialWriteInt(const int port) {
+	char str[6];
+	sprintf(str, "%i", port);
+	serialWriteString(str);
 }
 
 
@@ -302,9 +329,9 @@ void writeWebSocketFrame(char str[]) {
 
 
 
-// Connects to the wifi network stored in the configuration
+// Connects to the wifi network stored in EEPROM
 void connectNetwork() {
-	// Gets ssid and ssidKey from configuration
+	// Gets ssid and ssidKey from EEPROM
 	char ssid[conf_ssid.len + 1];
 	confGetString(conf_ssid, ssid);
 	char ssidKey[conf_ssidKey.len + 1];
@@ -342,24 +369,14 @@ void connectSocket() {
 	char host[conf_host.len + 1];
 	confGetString(conf_host, host);
 
+	// Gets port from EEPROM
+	unsigned short port = confGetInt(conf_port);
+
 	//!! prints
 	serialWriteString("Connecting to Host: ");
 	serialWriteString(host);
 	serialWriteChar(':');
-	serialWriteString("...");
-
-	// Gets port from EEPROM
-	unsigned short port = 0;
-	for (short i = 0; i < conf_port.len; i++) {
-		const char c = confRead(conf_port.addr + i);
-		serialWriteChar(c);
-		if (c == '\0') break;
-		if (port > 6553 || port == 6553 && (c > '5' || c < '0')) {
-			serialWriteString("\nPort is outside range\n");
-			return;
-		}
-		port = port * 10 + c - '0';
-	}
+	serialWriteInt(port);
 
 	// Connects to host and retries if connection fails
 	if (!socketConnect(host, port)) {
@@ -399,6 +416,7 @@ void connectSocket() {
 	sprintf(accept + 50, "\r\n");
 
 	// Awaits HTTP response
+	serialWriteString("...");
 	if (!socketWaitForResponse()) {
 		serialWriteString("\nTimed out waiting for HTTP response\n");
 		socketClose();
@@ -472,7 +490,7 @@ void connectSocket() {
 	//!! prints
 	serialWriteString("WebSocket connection established\n");
 
-	// Gets project and project_key from EEPROM
+	// Gets project and project key from EEPROM
 	char proj[conf_proj.len + 1];
 	confGetString(conf_proj, proj);
 	char projKey[conf_projKey.len + 1];
@@ -566,7 +584,7 @@ void initialize() {
 		connectSocket();
 	}
 
-	// Sets speed and calibration values from config
+	// Sets speed and calibration values from EEPROM
 	speed_max = confGetInt(conf_speedMax);
 	speed_min = confGetInt(conf_speedMin);
 	speed_deadzone = confGetInt(conf_speedDeadzone);

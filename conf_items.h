@@ -34,69 +34,69 @@ struct config conf_host = {
 // Creates config item for websocket servers port
 struct config conf_port = {
 	159,
-	5,
+	0,
 	"port"
 };
 
 // Creates config item for verbaleyes project name
 struct config conf_proj = {
-	164,
+	161,
 	32,
 	"proj"
 };
 
 // Creates config item for verbaleyes project password
 struct config conf_projKey = {
-	196,
+	193,
 	64,
 	"projKey"
 };
 
 // Creates config item for maximum scroll speed
 struct config conf_speedMax = {
-	260,
-	7,
+	257,
+	0,
 	"speedMax"
 };
 
 // Creates config item for minimum scroll speed
 struct config conf_speedMin = {
-	267,
-	7,
+	259,
+	0,
 	"speedMin"
 };
 
 // Creates config item for deadzone around zero
 struct config conf_speedDeadzone = {
-	274,
+	261,
 	7,
 	"speedDeadzone"
 };
 
 // Creates config item for calibration at analog inputs minimum value
 struct config conf_calLow = {
-	281,
+	263,
 	4,
 	"calLow"
 };
 
 // Creates config item for calibration at analog inputs maximum value
 struct config conf_calHigh = {
-	285,
+	265,
 	4,
 	"calHigh"
 };
 
 // Creates config item for calibration of sensitivity for jitter
 struct config conf_calIgnorejitter = {
-	289,
+	267,
 	4,
 	"calIgnorejitter"
 };
 
 // Creates config item for maximum interval of sending data to server
 struct config conf_calInterval = {
-	293,
+	269,
 	4,
 	"calInterval"
 };
