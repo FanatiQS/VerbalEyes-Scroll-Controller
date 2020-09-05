@@ -12,23 +12,20 @@
 
 
 // Pin and board specific definitions
-#define POT_MAX 1024
 #define SAMPLERATE 3
-#define LED_PIN LED_BUILTIN
-#define SPEEDPIN A0
-#define JUMPTOTOPPIN 0
 
 
 
-// Values for interpreting analog input to scroll speed are customizable through config system
-int speed_max;
-int speed_min;
-int speed_deadzone;
+// Global variables for mapping analog scroll input
+int speedCalLow;
+int speedMin;
+float speedMapper;
+float deadzoneSize;
+float jitterSize;
 
-// Values for calibrating analog input are customizable through config system
-int cal_low = 5;
-int cal_high = 0;
-int cal_ignorejitter = 8;
+// Max speed the analog read can supply
+int POT_MAX = 1024;
+
 int cal_interval = 200;
 
 
@@ -587,55 +584,50 @@ void initialize() {
 		connectSocket();
 	}
 
-	// Sets speed and calibration values from EEPROM
-	speed_max = confGetInt(conf_speedMax);
-	speed_min = confGetInt(conf_speedMin);
-	speed_deadzone = confGetInt(conf_speedDeadzone);
-	cal_low = confGetInt(conf_calLow);
-	cal_high = confGetInt(conf_calHigh);
-	cal_ignorejitter = confGetInt(conf_calIgnorejitter);
-	cal_interval = confGetInt(conf_calInterval);
+	// Sets global values for speed updating
+	const int deadzone = confGetInt(conf_speedDeadzone);
+	const float speedSize = (confGetInt(conf_speedMax) - speedMin) / (1 - (float)deadzone / 100);
+	speedMin = confGetInt(conf_speedMin);
+	speedCalLow = confGetInt(conf_calLow);
+	speedMapper = speedSize / (POT_MAX - speedCalLow - confGetInt(conf_calHigh));
+	deadzoneSize = speedSize * deadzone / 100;
+	jitterSize = speedSize * confGetInt(conf_calIgnorejitter) / 100;
 }
 
 
 
 // Sends remapped analog speed reading to the server
-void updateSpeed() {
-	static unsigned long intervalLock;
+void updateSpeed(const int value) {
 	static float speed;
 
-	// Only handles data at a maximum frequency rate
-	const unsigned long current = getTime();
- 	if (intervalLock > current) return;
-
 	// Maps analog input value to conf range
-	const int value = readSpeed();
-	float mappedValue = (float)(speed_max - speed_min) * (value - cal_low) / (POT_MAX - cal_low - cal_high) + speed_min;
-	if (speed_min < 0) {
-		mappedValue += speed_deadzone * value / POT_MAX;
-		if (mappedValue > 0) {
-			if (mappedValue < speed_deadzone) mappedValue = 0;
-			else mappedValue -= speed_deadzone;
-		}
+	float mappedValue = (float)(value - speedCalLow) * speedMapper + speedMin;
+
+	// Shifts mapped value above deadzone
+	if (mappedValue > deadzoneSize) {
+		mappedValue -= deadzoneSize;
+	}
+	// Clamps value to deadzone around 0 mark
+	else if (mappedValue > 0) {
+		if (speed == 0) return;
+		mappedValue = 0;
 	}
 
-	// Only sends speed if it has changed more than what cal_ignorejitter allows
-	const float ignorejitter = (float)(speed_max + speed_deadzone - speed_min) * cal_ignorejitter / POT_MAX;
-	if (mappedValue == speed || (mappedValue != 0 && mappedValue < speed + ignorejitter && mappedValue > speed - ignorejitter)) {
-		// Turns off info LED and prevents reading analog value for 3ms
-		intervalLock = current + 3;
+	// Supresses updating speed if it has not changed enough
+	if (mappedValue != 0 && mappedValue < speed + jitterSize && mappedValue > speed - jitterSize )
+	{
 		infoLED(1);
 		return;
 	}
 
-	// Turns on info LED and prevents sending speed again for cal_interval ms
-	intervalLock = current + cal_interval;
+	// Turns on info LED
 	infoLED(0);
 	speed = mappedValue;
 
-	// Converts float speed to string
-	char speed_str[(((int)(speed * 100) == 0) ? 0 : (int)log10(abs(speed * 100))) + 3];
-	sprintf(speed_str, "%.2f", speed);
+	// Puts speed float in a string
+	const int speedStrLen = (((int)speed == 0) ? 0 : log10(abs((int)floor(speed)))) + 5;
+	char speedStr[speedStrLen];
+	sprintf(speedStr, "%.2f", speed);
 
 	// Sends speed update message to server
 	char msg[8 + 32 + strlen(speed_str)];
@@ -646,7 +638,7 @@ void updateSpeed() {
 
 	//!! prints
 	serialWriteString("Speed has been updated to: ");
-	serialWriteString(speed_str);
+	serialWriteString(speedStr);
 	serialWriteChar('\n');
 }
 
