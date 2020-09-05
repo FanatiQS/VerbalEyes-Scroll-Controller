@@ -17,8 +17,8 @@
 
 
 // Global variables for mapping analog scroll input
-int speedCalLow;
-int speedMin;
+short speedCalLow;
+signed short speedMin;
 float speedMapper;
 float deadzoneSize;
 float jitterSize;
@@ -585,9 +585,9 @@ void initialize() {
 	}
 
 	// Sets global values for speed updating
-	const int deadzone = confGetInt(conf_speedDeadzone);
-	const float speedSize = (confGetInt(conf_speedMax) - speedMin) / (1 - (float)deadzone / 100);
+	const float deadzone = confGetInt(conf_speedDeadzone);
 	speedMin = confGetInt(conf_speedMin);
+	const float speedSize = (float)(confGetInt(conf_speedMax) - speedMin) / (1 - deadzone / 100);
 	speedCalLow = confGetInt(conf_calLow);
 	speedMapper = speedSize / (POT_MAX - speedCalLow - confGetInt(conf_calHigh));
 	deadzoneSize = speedSize * deadzone / 100;
