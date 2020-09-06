@@ -11,10 +11,6 @@
 #include "conf_items.h"
 
 
-// Pin and board specific definitions
-#define SAMPLERATE 3
-
-
 
 // Global variables for mapping analog scroll input
 short speedCalLow;
@@ -643,19 +639,13 @@ void updateSpeed(const int value) {
 }
 
 // Tells server to reset position to 0 when button is pressed
-void jumpToTop() {
-	static unsigned long intervalLock;
+void jumpToTop(int pin) {
 	static bool state;
 
-	// Only handles data at a maximum frequency rate
-	const unsigned long current = getTime();
- 	if (intervalLock > current) return;
-
 	// Only sends data on button down event
-	const bool value = !readButton(JUMPTOTOPPIN);
+	const bool value = !readButton(pin);
 	if (value == state) return;
 	state = value;
-	intervalLock = current + cal_interval;
 	if (value == 0) return;
 
 	// Sends message to server
