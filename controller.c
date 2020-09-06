@@ -22,8 +22,6 @@ float jitterSize;
 // Max speed the analog read can supply
 int POT_MAX = 1024;
 
-int cal_interval = 200;
-
 
 
 // Context structure for parsing incomming data when updating configuration values
@@ -257,10 +255,21 @@ void progressbar() {
 }
 
 // Writes an int as a string to the serial interface
-void serialWriteInt(const int port) {
+void serialWriteInt(const int value) {
 	char str[6];
-	sprintf(str, "%i", port);
+	sprintf(str, "%i", value);
 	serialWriteString(str);
+}
+
+// Writes a character to the serial interface
+void serialWriteChar(const char c) {
+	const char str[2] = { c, '\0' };
+	serialWriteString(str);
+}
+
+// Writes a string to the serial interface
+void serialWriteString(const char str[]) {
+	serialWrite(str);
 }
 
 

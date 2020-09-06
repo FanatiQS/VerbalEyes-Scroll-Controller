@@ -5,8 +5,6 @@
 
 
 // Pin and board specific definitions
-#define POT_MAX 1024
-#define SAMPLERATE 3
 #define LED_PIN LED_BUILTIN
 #define SPEEDPIN A0
 #define JUMPTOTOPPIN 0
@@ -14,6 +12,7 @@
 
 
 extern "C" void initialize();
+extern "C" void updateSpeed(const int value);
 
 //!!
 void setup() {
@@ -23,7 +22,6 @@ void setup() {
 	//pinMode(JUMPTOTOPPIN, INPUT_PULLUP);
 
 	Serial.print("\n\n\n");
-	Serial.println(getArray());
 	initialize();
 }
 
@@ -35,10 +33,15 @@ void loop() {
 	// 	connectSocket();
 	// }
 	// if (serialHasData()) confSerialLoop();
-	// updateSpeed();
-	// jumpToTop();
+	updateSpeed(analogRead(SPEEDPIN));
+	jumpToTop();
+	delay(100);
 }
+
+
+
 extern "C" {
+
 // Gets elapsed time in milliseconds
 unsigned long getTime() {
 	return millis();
@@ -120,16 +123,8 @@ char serialRead() {
 
 //!! Serial.print is still used. Mainly because it prints the ip in connectNetwork and that one is not a string, but also because currently it prints both strings and characters.
 //!! In the future, this is the one that is supposed to be used instead of Serial.print.
-char logString[1024] = "";
-char* logStart = logString;
-void serialWriteString(const char str[]) {
-	//Serial.print(str);
-	Serial.println(str);
-}
-
-//!!
-void serialWriteChar(const char c) {
-	Serial.print(c);
+void serialWrite(const char str[]) {
+	Serial.print(str);
 }
 
 
