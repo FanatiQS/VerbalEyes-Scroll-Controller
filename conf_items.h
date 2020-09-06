@@ -69,28 +69,28 @@ struct config conf_speedMin = {
 // Creates config item for deadzone around zero
 struct config conf_speedDeadzone = {
 	261,
-	7,
+	0,
 	"speedDeadzone"
 };
 
 // Creates config item for calibration at analog inputs minimum value
 struct config conf_calLow = {
 	263,
-	4,
+	0,
 	"calLow"
 };
 
 // Creates config item for calibration at analog inputs maximum value
 struct config conf_calHigh = {
 	265,
-	4,
+	0,
 	"calHigh"
 };
 
 // Creates config item for calibration of sensitivity for jitter
 struct config conf_calIgnorejitter = {
 	267,
-	4,
+	0,
 	"calIgnorejitter"
 };
 
