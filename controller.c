@@ -635,10 +635,10 @@ void updateSpeed(const int value) {
 	sprintf(speedStr, "%.2f", speed);
 
 	// Sends speed update message to server
-	char msg[8 + 32 + strlen(speed_str)];
+	char msg[8 + 32 + speedStrLen];
 	strcpy(msg, "{\"_core\": {\"doc\": {\"speed\": ");
-	strcpy(msg + 28, speed_str);
-	strcpy(msg + 28 + strlen(speed_str), "}}}");
+	strcpy(msg + 28, speedStr);
+	strcpy(msg + 28 + speedStrLen - 1, "}}}");
 	writeWebSocketFrame(msg);
 
 	//!! prints
