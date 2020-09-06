@@ -648,11 +648,10 @@ void updateSpeed(const int value) {
 }
 
 // Tells server to reset position to 0 when button is pressed
-void jumpToTop(int pin) {
+void jumpToTop(const bool value) {
 	static bool state;
 
 	// Only sends data on button down event
-	const bool value = !readButton(pin);
 	if (value == state) return;
 	state = value;
 	if (value == 0) return;

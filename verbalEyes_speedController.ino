@@ -12,14 +12,16 @@
 
 
 extern "C" void initialize();
+extern "C" void confSerialLoop();
 extern "C" void updateSpeed(const int value);
+extern "C" void jumpToTop(const int pin);
 
 //!!
 void setup() {
 	EEPROM.begin(512);
 	Serial.begin(9600);
-	//pinMode(LED_BUILTIN, OUTPUT);
-	//pinMode(JUMPTOTOPPIN, INPUT_PULLUP);
+	pinMode(LED_BUILTIN, OUTPUT);
+	pinMode(JUMPTOTOPPIN, INPUT_PULLUP);
 
 	Serial.print("\n\n\n");
 	initialize();
@@ -32,9 +34,9 @@ void loop() {
 	// 	if (!networkStatus()) connectNetwork();
 	// 	connectSocket();
 	// }
-	// if (serialHasData()) confSerialLoop();
+	if (serialHasData()) confSerialLoop();
 	updateSpeed(analogRead(SPEEDPIN));
-	jumpToTop();
+	jumpToTop(readButton(JUMPTOTOPPIN));
 	delay(100);
 }
 
