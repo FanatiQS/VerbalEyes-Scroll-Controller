@@ -19,9 +19,6 @@ float speedMapper;
 float deadzoneSize;
 float jitterSize;
 
-// Max speed the analog read can supply
-int POT_MAX = 1024;
-
 
 
 // Context structure for parsing incomming data when updating configuration values
@@ -573,7 +570,7 @@ void connectSocket() {
 }
 
 // Connects to network and socket server and gets calibration
-void initialize() {
+void initialize(const int potMax) {
 	// Connects to the network and socket server using conf item values
 	connectNetwork();
 	connectSocket();
@@ -594,7 +591,7 @@ void initialize() {
 	speedMin = confGetInt(conf_speedMin);
 	const float speedSize = (float)(confGetInt(conf_speedMax) - speedMin) / (1 - deadzone / 100);
 	speedCalLow = confGetInt(conf_calLow);
-	speedMapper = speedSize / (POT_MAX - speedCalLow - confGetInt(conf_calHigh));
+	speedMapper = speedSize / (potMax - speedCalLow - confGetInt(conf_calHigh));
 	deadzoneSize = speedSize * deadzone / 100;
 	jitterSize = speedSize * confGetInt(conf_calIgnorejitter) / 100;
 }

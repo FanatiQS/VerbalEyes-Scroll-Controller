@@ -8,10 +8,11 @@
 #define LED_PIN LED_BUILTIN
 #define SPEEDPIN A0
 #define JUMPTOTOPPIN 0
+#define POT_MAX 1024
 
 
 
-extern "C" void initialize();
+extern "C" void initialize(const int potMax);
 extern "C" void confSerialLoop();
 extern "C" void updateSpeed(const int value);
 extern "C" void jumpToTop(const int pin);
@@ -24,7 +25,7 @@ void setup() {
 	pinMode(JUMPTOTOPPIN, INPUT_PULLUP);
 
 	Serial.print("\n\n\n");
-	initialize();
+	initialize(POT_MAX);
 }
 
 
