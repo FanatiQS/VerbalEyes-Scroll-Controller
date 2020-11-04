@@ -8,10 +8,25 @@
 // Number of characters required for configuration
 #define CONFIGLEN 238 // Needs to be updated manually
 
+// Number of seconds before unfinished configuration input times out
+#ifndef CONFIGTIMEOUT
+#define CONFIGTIMEOUT 5
+#endif
+
 // Returing states of ensureConnection
 #define CONNECTIONFAILED -1
 #define CONNECTING 1
 #define CONNECTED 0
+
+// Number of seconds before unsuccessful connection times out
+#ifndef CONNECTINGTIMEOUT
+#define CONNECTINGTIMEOUT 10
+#endif
+
+// Number of seconds to delay retrying after connection has failed
+#ifndef CONNECTIONFAILEDDELAY
+#define CONNECTIONFAILEDDELAY 5
+#endif
 
 // Makes functions work in c++
 #ifdef __cplusplus

@@ -192,7 +192,7 @@ bool updateConfig(const int16_t c) {
 			if (confState != HANDLINGVALUE) {
 				// Initialize new configuration update
 				if (!confIndex) {
-					timeout = time(NULL) + 5;
+					timeout = time(NULL) + CONFIGTIMEOUT;
 					confState = HANDLINGKEY;
 					logprintf("\n[ ");
 				}
@@ -400,7 +400,7 @@ int8_t ensureConnection() {
 			verbaleyes_network_connect(ssid, ssidkey);
 
 			// Sets timeout for awaiting connection
-			timeout = time(NULL) + 10;
+			timeout = time(NULL) + CONNECTINGTIMEOUT;
 			state = 1;
 		}
 		// Completes network connection
@@ -412,7 +412,7 @@ int8_t ensureConnection() {
 
 				// Handles timeout error
 				logprintf("\n\nFailed to connect to network");
-				timeout = time(NULL) + 5;
+				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 0 | 0x80;
 				return CONNECTIONFAILED;
 			}
@@ -445,7 +445,7 @@ int8_t ensureConnection() {
 			verbaleyes_socket_connect(host, port);
 
 			// Sets timeout for awaiting connection
-			timeout = time(NULL) + 10;
+			timeout = time(NULL) + CONNECTINGTIMEOUT;
 			state = 3;
 		}
 		// Completes socket connection
@@ -458,7 +458,7 @@ int8_t ensureConnection() {
 
 			// Handles timeout error
 			logprintf("\nFailed to connect to host");
-			timeout = time(NULL) + 5;
+			timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 			state = 2 | 0x80;
 			return CONNECTIONFAILED;
 		}
@@ -506,7 +506,7 @@ int8_t ensureConnection() {
 			strcpy(acceptHeader + 50, "\r\n");
 
 			// Sets timeout value for awaiting http response
-			timeout = time(NULL) + 10;
+			timeout = time(NULL) + CONNECTINGTIMEOUT;
 
 			// Sets up to read and verify http response
 			resIndex = 0;
@@ -531,7 +531,7 @@ int8_t ensureConnection() {
 						logprintf("\nResponse from server ended prematurely");
 					}
 
-					timeout = time(NULL) + 5;
+					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
 				}
@@ -573,7 +573,7 @@ int8_t ensureConnection() {
 				if (c == EOF) {
 					if (time(NULL) < timeout) return 1;
 					logprintf("\nResponse from server ended prematurely");
-					timeout = time(NULL) + 5;
+					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
 				}
@@ -600,28 +600,28 @@ int8_t ensureConnection() {
 			// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
 			if (!resMatchIndexes[0] || !resMatchIndexes[1]) {
 				logprintf("\nHTTP response is not an upgrade to the WebSockets protocol");
-				timeout = time(NULL) + 5;
+				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 			// Requires WebSocket accept header with correct value
 			else if (!resMatchIndexes[2]) {
 				logprintf("\nMissing or incorrect WebSocket accept header");
-				timeout = time(NULL) + 5;
+				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 			// Checks for non-requested WebSocket extension header
 			else if (resMatchIndexes[3]) {
 				logprintf("\nUnexpected WebSocket Extension header");
-				timeout = time(NULL) + 5;
+				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 			// Checks for non-requested WebSocket protocol header
 			else if (resMatchIndexes[4]) {
 				logprintf("\nUnexpected WebSocket Protocol header");
-				timeout = time(NULL) + 5;
+				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
@@ -644,7 +644,7 @@ int8_t ensureConnection() {
 			writeWebSocketFrame("{\"_core\": {\"auth\": {\"id\": \"%s\", \"key\": \"%s\"}}}", proj, projkey);
 
 			// Sets timeout value for awaiting websocket response
-			timeout = time(NULL) + 10;
+			timeout = time(NULL) + CONNECTINGTIMEOUT;
 
 			// Sets up to read and verify websocket response
 			resIndex = 0;
@@ -665,7 +665,7 @@ int8_t ensureConnection() {
 					logprintf("\nResponse from server ended prematurely");
 				}
 
-				timeout = time(NULL) + 5;
+				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
@@ -673,7 +673,7 @@ int8_t ensureConnection() {
 			// Makes sure this is an unfragmented WebSocket frame in text format
 			if (c != 0x81) {
 				logprintf("\nReceived response data is either not a WebSocket frame or uses an unsupported WebSocket feature");
-				timeout = time(NULL) + 5;
+				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
@@ -691,7 +691,7 @@ int8_t ensureConnection() {
 				if (c == EOF) {
 					if (time(NULL) < timeout) return 1;
 					logprintf("\nResponse from server ended prematurely");
-					timeout = time(NULL) + 5;
+					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
 				}
@@ -701,7 +701,7 @@ int8_t ensureConnection() {
 					// Server is not allowed to mask messages sent to the client according to the spec
 					if (c & 0x80) {
 						logprintf("\nReveiced a masked frame which is not allowed");
-						timeout = time(NULL) + 5;
+						timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 						state = 2 | 0x80;
 						return CONNECTIONFAILED;
 					}
@@ -715,7 +715,7 @@ int8_t ensureConnection() {
 					// Aborts if payload length requires more than the 16 bits available in resIndex
 					if (resIndex == 127) {
 						logprintf("\nWebsocket frame was unexpectedly long");
-						timeout = time(NULL) + 5;
+						timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 						state = 2 | 0x80;
 						return CONNECTIONFAILED;
 					}
@@ -746,7 +746,7 @@ int8_t ensureConnection() {
 				if (c == EOF) {
 					if (time(NULL) < timeout) return 1;
 					logprintf("\nResponse from server ended prematurely");
-					timeout = time(NULL) + 5;
+					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
 				}
@@ -767,7 +767,7 @@ int8_t ensureConnection() {
 			// Validates authentication
 			if (!resMatchIndexes[0]) {
 				logprintf("\nAuthentication failed");
-				timeout = time(NULL) + 5;
+				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
