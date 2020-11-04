@@ -8,13 +8,18 @@
 //!!
 #define CONFIGLEN 238
 
+// Returing states of ensureConnection
+#define CONNECTIONFAILED -1
+#define CONNECTING 1
+#define CONNECTED
+
 //!!
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 //!!
-bool ensureConnection();
+int8_t ensureConnection();
 bool updateConfig(const int16_t);
 void updateSpeed(const uint16_t);
 void jumpToTop(const bool);

@@ -367,14 +367,15 @@ float deadzoneSize;
 float jitterSize;
 
 // Ensures everything is connected to be able to transmit speed changes to the server
-bool ensureConnection() {
+int8_t ensureConnection() {
 	static uint16_t resIndex = 0;
 	static uint8_t resMatchIndexes[5];
 	static char acceptHeader[22 + 28 + 2] = "sec-websocket-accept: ";
 
 	// Prevents immediately retrying after something fails
 	if (state & 0x80) {
-		if (timeout > time(NULL)) return 1;
+		if (timeout > time(NULL)) return CONNECTING;
+		printLog(", retrying in 5 seconds");
 		state &= 0x7F;
 	}
 
@@ -409,13 +410,13 @@ bool ensureConnection() {
 			// Awaits network connection established
 			if (!networkConnected()) {
 				// Shows progress bar until network is connected
-				if (showProgressBar()) return 1;
+				if (showProgressBar()) return CONNECTING;
 
 				// Handles timeout error
-				printLog("\n\nFailed to connect to network, retrying in 5 seconds");
+				printLog("\n\nFailed to connect to network");
 				timeout = time(NULL) + 5;
 				state = 0 | 0x80;
-				return 1;
+				return CONNECTIONFAILED;
 			}
 
 			// Prints devices IP address
@@ -456,13 +457,13 @@ bool ensureConnection() {
 			if (socketConnected()) break;
 
 			// Shows progress bar until socket is connected
-			if (showProgressBar()) return 1;
+			if (showProgressBar()) return CONNECTING;
 
 			// Handles timeout error
 			printLog("\nFailed to connect to host, retrying in 5 seconds");
 			timeout = time(NULL) + 5;
 			state = 2 | 0x80;
-			return 1;
+			return CONNECTIONFAILED;
 		}
 	}
 
@@ -535,7 +536,7 @@ bool ensureConnection() {
 
 					timeout = time(NULL) + 5;
 					state = 2 | 0x80;
-					return 1;
+					return CONNECTIONFAILED;
 				}
 
 				// Prints HTTP status-line
@@ -570,10 +571,10 @@ bool ensureConnection() {
 				// Handles timeout error
 				if (c == EOF) {
 					if (time(NULL) < timeout) return 1;
-					printLog("\nResponse from server ended prematurely, retrying in 5 seconds");
+					printLog("\nResponse from server ended prematurely");
 					timeout = time(NULL) + 5;
 					state = 2 | 0x80;
-					return 1;
+					return CONNECTIONFAILED;
 				}
 
 				// Analyzes HTTP headers up to end of head
@@ -593,31 +594,31 @@ bool ensureConnection() {
 
 			// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
 			if (!resMatchIndexes[0] || !resMatchIndexes[1]) {
-				printLog("\nHTTP response is not an upgrade to the WebSockets protocol, retrying in 5 seconds");
+				printLog("\nHTTP response is not an upgrade to the WebSockets protocol");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
-				return 1;
+				return CONNECTIONFAILED;
 			}
 			// Requires WebSocket accept header with correct value
 			else if (!resMatchIndexes[2]) {
-				printLog("\nMissing or incorrect WebSocket accept header, retrying in 5 seconds");
+				printLog("\nMissing or incorrect WebSocket accept header");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
-				return 1;
+				return CONNECTIONFAILED;
 			}
 			// Checks for non-requested WebSocket extension header
 			else if (resMatchIndexes[3]) {
-				printLog("\nUnexpected WebSocket Extension header, retrying in 5 seconds");
+				printLog("\nUnexpected WebSocket Extension header");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
-				return 1;
+				return CONNECTIONFAILED;
 			}
 			// Checks for non-requested WebSocket protocol header
 			else if (resMatchIndexes[4]) {
-				printLog("\nUnexpected WebSocket Protocol header, retrying in 5 seconds");
+				printLog("\nUnexpected WebSocket Protocol header");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
-				return 1;
+				return CONNECTIONFAILED;
 			}
 
 			// Successfully validated http headers
@@ -653,24 +654,24 @@ bool ensureConnection() {
 			if (c == EOF) {
 				if (resIndex == 0) {
 					if (showProgressBar()) return 1;
-					printLog("\nDid not get a response from the server, retrying in 5 seconds");
+					printLog("\nDid not get a response from the server");
 				}
 				else {
 					if (time(NULL) < timeout) return 1;
-					printLog("\nResponse from server ended prematurely, retrying in 5 seconds");
+					printLog("\nResponse from server ended prematurely");
 				}
 
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
-				return 1;
+				return CONNECTIONFAILED;
 			}
 
 			// Makes sure this is an unfragmented WebSocket frame in text format
 			if (c != 0x81) {
-				printLog("\nReceived response data is either not a WebSocket frame or uses an unsupported WebSocket feature, retrying in 5 seconds");
+				printLog("\nReceived response data is either not a WebSocket frame or uses an unsupported WebSocket feature");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
-				return 1;
+				return CONNECTIONFAILED;
 			}
 
 			// Sets up to read WebSocket payload length
@@ -685,20 +686,20 @@ bool ensureConnection() {
 				// Handles timeout error
 				if (c == EOF) {
 					if (time(NULL) < timeout) return 1;
-					printLog("\nResponse from server ended prematurely, retrying in 5 seconds");
+					printLog("\nResponse from server ended prematurely");
 					timeout = time(NULL) + 5;
 					state = 2 | 0x80;
-					return 1;
+					return CONNECTIONFAILED;
 				}
 
 				// Gets payload length and continues if extended payload length is used
 				if (resIndex == WS_PAYLOADLEN_NOTSET) {
 					// Server is not allowed to mask messages sent to the client according to the spec
 					if (c & 0x80) {
-						printLog("\nReveiced a masked frame which is not allowed, retrying in 5 seconds");
+						printLog("\nReveiced a masked frame which is not allowed");
 						timeout = time(NULL) + 5;
 						state = 2 | 0x80;
-						return 1;
+						return CONNECTIONFAILED;
 					}
 
 					// Gets payload length without mask bit
@@ -709,10 +710,10 @@ bool ensureConnection() {
 
 					// Aborts if payload length requires more than the 16 bits available in resIndex
 					if (resIndex == 127) {
-						printLog("\nWebsocket frame was unexpectedly long, retrying, retrying in 5 seconds");
+						printLog("\nWebsocket frame was unexpectedly long, retrying");
 						timeout = time(NULL) + 5;
 						state = 2 | 0x80;
-						return 1;
+						return CONNECTIONFAILED;
 					}
 				}
 				// Gets first byte of extended payload length
@@ -740,10 +741,10 @@ bool ensureConnection() {
 				// Handles timeout error
 				if (c == EOF) {
 					if (time(NULL) < timeout) return 1;
-					printLog("\nResponse from server ended prematurely, retrying in 5 seconds");
+					printLog("\nResponse from server ended prematurely");
 					timeout = time(NULL) + 5;
 					state = 2 | 0x80;
-					return 1;
+					return CONNECTIONFAILED;
 				}
 
 				// Prints entire WebSocket payload
@@ -757,10 +758,10 @@ bool ensureConnection() {
 
 			// Validates authentication
 			if (!resMatchIndexes[0]) {
-				printLog("\nAuthentication failed, retrying in 5 seconds");
+				printLog("\nAuthentication failed");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
-				return 1;
+				return CONNECTIONFAILED;
 			}
 
 			// Moves on for successful authentication
@@ -804,7 +805,7 @@ bool ensureConnection() {
 	}
 
 	// Allows caller function to continue past this function
-	return 0;
+	return CONNECTED;
 }
 
 // Sends remapped analog speed reading to the server
