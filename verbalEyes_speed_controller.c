@@ -25,11 +25,12 @@ static uint32_t timeout = 0;
 static void logprintf(const char* format, ...) {
 	va_list args;
     va_start(args, format);
-	char buffer[vsnprintf(NULL, 0, format, args) + 1];
+	const uint32_t len = vsnprintf(NULL, 0, format, args);
+	char buffer[len + 1];
 	va_start(args, format);
     vsprintf(buffer, format, args);
     va_end(args);
-	serialPrint(buffer);
+	serialPrint(buffer, len);
 }
 
 // Prints progress bar every second to indicate a process is working and handle timeout errors

@@ -41,7 +41,7 @@ extern int16_t socketRead();
 extern void socketWrite(const char*, const uint32_t);
 
 //!!
-extern void serialPrint(const char*);
+extern void serialPrint(const char*, const uint32_t);
 
 // Ends extern c block
 #ifdef __cplusplus
