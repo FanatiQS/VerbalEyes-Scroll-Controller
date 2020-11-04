@@ -5,15 +5,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-//!!
-#define CONFIGLEN 238
+// Number of characters required for configuration
+#define CONFIGLEN 238 // Needs to be updated manually
 
 // Returing states of ensureConnection
 #define CONNECTIONFAILED -1
 #define CONNECTING 1
 #define CONNECTED
 
-//!!
+// Makes functions work in c++
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -43,12 +43,12 @@ extern void socketWrite(const char*, const uint32_t);
 //!!
 extern void serialPrint(const char*);
 
-//!!
+// Ends extern c block
 #ifdef __cplusplus
 }
 #endif
 
-#endif // Include Guard
+#endif // Ends include Guard
 
 
 /* Configuration items available
