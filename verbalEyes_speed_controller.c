@@ -72,7 +72,7 @@ static void writeWebSocketFrame(const char* format, ...) {
 	uint8_t payloadOffset;
 
 	// Creates websocket frame to send payload with
-	char frame[8 + payloadLen];
+	char frame[8 + payloadLen + 1];
 
 	// Sets fin bit, reserved bits and opcode for websocket frame
 	frame[0] = 0x81;
