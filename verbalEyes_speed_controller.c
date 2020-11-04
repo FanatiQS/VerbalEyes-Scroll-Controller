@@ -47,17 +47,20 @@ static bool showProgressBar() {
 	return 1;
 }
 
-// Matches incoming data character by character
+// Indication that a match has already succeeded
 #define SUCCESSFULMATCH 255
+
+// Matches incoming data character by character
 static void matchStr(uint8_t* index, const char c, const char* match) {
 	if (match[*index] == '\0') *index = SUCCESSFULMATCH;
 	else if (c == match[*index]) *index += 1;
 	else *index = 0;
 }
 
-// Sends a string in a WebSocket frame to the server
 #define WS_PAYLOADLEN_NOTSET 1
 #define WS_PAYLOADLEN_EXTENDED 126
+
+// Sends a string in a WebSocket frame to the server
 static void writeWebSocketFrame(const char* format, ...) {
 	// Gets length of formated payload
 	va_list args;
