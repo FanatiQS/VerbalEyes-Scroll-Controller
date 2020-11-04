@@ -374,7 +374,6 @@ int8_t ensureConnection() {
 	// Prevents immediately retrying after something fails
 	if (state & 0x80) {
 		if (timeout > time(NULL)) return CONNECTING;
-		logprintf("\n");
 		state &= 0x7F;
 	}
 
