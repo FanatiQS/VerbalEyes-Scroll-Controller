@@ -66,7 +66,6 @@ void verbaleyes_socket_write(const char* str, const unsigned int len) {
 // Prints a string to the serial interface
 void verbaleyes_log(const char* str, const uint32_t len) {
   Serial.print(str);
-  logOverHttp.print(str);
 }
 
 
