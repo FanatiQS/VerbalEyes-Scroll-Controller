@@ -22,7 +22,7 @@ static uint32_t timeout = 0;
 
 
 // Prints a string to the serial output with ability to format
-static void printLog(const char* format, ...) {
+static void logprintf(const char* format, ...) {
 	va_list args;
     va_start(args, format);
 	char buffer[vsnprintf(NULL, 0, format, args) + 1];
@@ -43,7 +43,7 @@ static bool showProgressBar() {
 	// Prints progress bar every second
 	if (previous == current) return 1;
 	previous = current;
-	printLog(".");
+	logprintf(".");
 	return 1;
 }
 
@@ -193,7 +193,7 @@ bool updateConfig(const int16_t c) {
 				if (!confIndex) {
 					timeout = time(NULL) + 5;
 					confState = HANDLINGKEY;
-					printLog("\n[ ");
+					logprintf("\n[ ");
 				}
 				// Prevents handling value for key with no match
 				else if (confIndex == CONFFAILED) {
@@ -206,7 +206,7 @@ bool updateConfig(const int16_t c) {
 						if (!confItems[i]->nameMatchFailed && c != confItems[i]->name[confIndex]) confItems[i]->nameMatchFailed = 1;
 					}
 					confIndex++;
-					printLog("%c", c);
+					logprintf("%c", c);
 				}
 				// Finish matching key on delimiter input and setup to update its value
 				else {
@@ -215,7 +215,7 @@ bool updateConfig(const int16_t c) {
 						if (confState == HANDLINGKEY && !confItems[i]->nameMatchFailed && confItems[i]->name[confIndex] == '\0') {
 							item = confItems[i];
 							confState = HANDLINGVALUE;
-							printLog(" ] is now: ");
+							logprintf(" ] is now: ");
 						}
 
 						confItems[i]->nameMatchFailed = 0;
@@ -224,7 +224,7 @@ bool updateConfig(const int16_t c) {
 					// Prevents handling value for keys with no match
 					if (confState == HANDLINGKEY) {
 						confIndex = CONFFAILED;
-						printLog(" ] No matching key");
+						logprintf(" ] No matching key");
 						return 1;
 					}
 
@@ -236,18 +236,18 @@ bool updateConfig(const int16_t c) {
 			else if (confIndex < item->len) {
 				confWrite(item->addr + confIndex, c);
 				confIndex++;
-				printLog("%c", c);
+				logprintf("%c", c);
 			}
 			// Updates integer value for matched key
 			else if (item->len == 0 && confIndex < 5) {
 				// Only accepts a valid numerical representation
 				if (c >= '0' && c <= '9') {
 					// Prints valid character
-					printLog("%c", c);
+					logprintf("%c", c);
 
 					// Clamps numbers higher than maximum value for an unsigned shorts
 					if (confBuffer > 6553 || (confBuffer == 6553 && c > '5')) {
-						printLog("\nValue was too high, claming down to maximum value of 65535");
+						logprintf("\nValue was too high, claming down to maximum value of 65535");
 						confBuffer = 65535;
 					}
 					// Pushes number onto the buffer
@@ -261,18 +261,18 @@ bool updateConfig(const int16_t c) {
 				// Initialises int buffer to be signed
 				else if (c == '-' && confIndex == 0) {
 					confBufferSigned = 1;
-					printLog("-");
+					logprintf("-");
 				}
 				// Displays invalid character warning message once
 				else {
 					confIndex = CONFFAILED;
-					printLog("%c\nCharacter was not a number", c);
+					logprintf("%c\nCharacter was not a number", c);
 				}
 			}
 			// Displays max value length warning message once
 			else if (confIndex != CONFFAILED) {
 				confIndex = CONFFAILED;
-				printLog("\nMaximum input length reached");
+				logprintf("\nMaximum input length reached");
 			}
 
 			// Continue reading more data
@@ -301,7 +301,7 @@ bool updateConfig(const int16_t c) {
 					if (confBufferSigned) {
 						// Clamps negative numbers lower than minimum value for a signed shorts
 						if (confBuffer > 32767) {
-							printLog("\nValue was too low, claming up to minimum value of -32767");
+							logprintf("\nValue was too low, claming up to minimum value of -32767");
 							confBuffer = 65535;
 						}
 						// Makes buffer negative if it input string started with a minus sign
@@ -318,7 +318,7 @@ bool updateConfig(const int16_t c) {
 				}
 
 				// Indicates that value has been stored in configuration
-				printLog("\nValue was updated");
+				logprintf("\nValue was updated");
 
 				// Pulls back state to handle updated value
 				if (state > item->resetState) {
@@ -334,7 +334,7 @@ bool updateConfig(const int16_t c) {
 				// Commits all changed values and exits configuration handling
 				if (confIndex == 0) {
 					confCommit();
-					printLog("\nDone\n");
+					logprintf("\nDone\n");
 					confState = NOTHANDLING;
 				}
 				// Handles termination of value for key without a match
@@ -347,7 +347,7 @@ bool updateConfig(const int16_t c) {
 					for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
 						confItems[i]->nameMatchFailed = 0;
 					}
-					printLog(" ] Aborted");
+					logprintf(" ] Aborted");
 					confIndex = 0;
 				}
 			}
@@ -375,7 +375,7 @@ int8_t ensureConnection() {
 	// Prevents immediately retrying after something fails
 	if (state & 0x80) {
 		if (timeout > time(NULL)) return CONNECTING;
-		printLog(", retrying in 5 seconds");
+		logprintf(", retrying in 5 seconds");
 		state &= 0x7F;
 	}
 
@@ -384,8 +384,7 @@ int8_t ensureConnection() {
 		// Reconnects to network if connection is lost
 		default: {
 			if (networkConnected()) break;
-			printLog("\nLost connection to network");
-			state = 0;
+			logprintf("\nLost connection to network");
 		}
 		// Initialize network connection
 		case 0: {
@@ -396,7 +395,7 @@ int8_t ensureConnection() {
 			confGetStr(conf_ssidkey, ssidkey);
 
 			// Prints
-			printLog("\nConnecting to SSID: %s...", ssid);
+			logprintf("\nConnecting to SSID: %s...", ssid);
 
 			// Connects to ssid with key
 			networkConnect(ssid, ssidkey);
@@ -413,7 +412,7 @@ int8_t ensureConnection() {
 				if (showProgressBar()) return CONNECTING;
 
 				// Handles timeout error
-				printLog("\n\nFailed to connect to network");
+				logprintf("\n\nFailed to connect to network");
 				timeout = time(NULL) + 5;
 				state = 0 | 0x80;
 				return CONNECTIONFAILED;
@@ -421,7 +420,7 @@ int8_t ensureConnection() {
 
 			// Prints devices IP address
 			const uint32_t ip = networkGetIP();
-			printLog("\nIP address: %u.%u.%u.%u", (uint8_t)(ip), (uint8_t)(ip >> 8), (uint8_t)(ip >> 16), (uint8_t)(ip >> 24));
+			logprintf("\nIP address: %u.%u.%u.%u", (uint8_t)(ip), (uint8_t)(ip >> 8), (uint8_t)(ip >> 16), (uint8_t)(ip >> 24));
 			state = 2;
 		}
 	}
@@ -431,8 +430,7 @@ int8_t ensureConnection() {
 		// Reconnects to socket if connection is lost
 		default: {
 			if (socketConnected()) break;
-			printLog("\nLost connection to host");
-			state = 2;
+			logprintf("\nLost connection to host");
 		}
 		// Initialize socket connection
 		case 2: {
@@ -442,7 +440,7 @@ int8_t ensureConnection() {
 			uint16_t port = confGetInt(conf_port);
 
 			// Prints
-			printLog("\nConnecting to host: %s:%hu...", host, port);
+			logprintf("\nConnecting to host: %s:%hu...", host, port);
 
 			// Connects to socket at host
 			socketConnect(host, port);
@@ -460,7 +458,7 @@ int8_t ensureConnection() {
 			if (showProgressBar()) return CONNECTING;
 
 			// Handles timeout error
-			printLog("\nFailed to connect to host, retrying in 5 seconds");
+			logprintf("\nFailed to connect to host, retrying in 5 seconds");
 			timeout = time(NULL) + 5;
 			state = 2 | 0x80;
 			return CONNECTIONFAILED;
@@ -524,14 +522,14 @@ int8_t ensureConnection() {
 				if (c == EOF) {
 					if (resIndex == 0) {
 						if (showProgressBar()) return 1;
-						printLog("\nDid not get a response from server, retrying in 5 seconds");
+						logprintf("\nDid not get a response from server, retrying in 5 seconds");
 					}
 					else if (resIndex == -1) {
-						printLog("\nReceived unexpected HTTP response code, retrying in 5 seconds");
+						logprintf("\nReceived unexpected HTTP response code, retrying in 5 seconds");
 					}
 					else {
 						if (time(NULL) < timeout) return 1;
-						printLog("\nResponse from server ended prematurely, retrying in 5 seconds");
+						logprintf("\nResponse from server ended prematurely, retrying in 5 seconds");
 					}
 
 					timeout = time(NULL) + 5;
@@ -540,11 +538,15 @@ int8_t ensureConnection() {
 				}
 
 				// Prints HTTP status-line
-				if (resIndex == 0) {
-					printLog("\n%s", TAB);
+				if (c == '\n') {
+					logprintf("\n%s", TAB);
 				}
-				printLog("%c", c);
-				if (c == '\n') printLog(TAB);
+				else if (resIndex == 0) {
+					logprintf("\n%s%c", TAB, c);
+				}
+				else {
+					logprintf("%c", c);
+				}
 
 				// Prints entire HTTP response before handling unexpected HTTP response code
 				if (resIndex == -1) continue;
@@ -571,7 +573,7 @@ int8_t ensureConnection() {
 				// Handles timeout error
 				if (c == EOF) {
 					if (time(NULL) < timeout) return 1;
-					printLog("\nResponse from server ended prematurely");
+					logprintf("\nResponse from server ended prematurely");
 					timeout = time(NULL) + 5;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
@@ -581,8 +583,12 @@ int8_t ensureConnection() {
 				matchStr(&resIndex, c, "\r\n\r\n");
 
 				// Prints HTTP headers
-				printLog("%c", c);
-				if (c == '\n') printLog(TAB);
+				if (c == '\n') {
+					logprintf("\n%s", TAB);
+				}
+				else {
+					logprintf("%c", c);
+				}
 
 				// Matches the incoming HTTP response against required and illigal substrings
 				if (resMatchIndexes[0] != SUCCESSFULMATCH) matchStr(&resMatchIndexes[0], tolower(c), "connection: upgrade\r\n");
@@ -594,36 +600,35 @@ int8_t ensureConnection() {
 
 			// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
 			if (!resMatchIndexes[0] || !resMatchIndexes[1]) {
-				printLog("\nHTTP response is not an upgrade to the WebSockets protocol");
+				logprintf("\nHTTP response is not an upgrade to the WebSockets protocol");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 			// Requires WebSocket accept header with correct value
 			else if (!resMatchIndexes[2]) {
-				printLog("\nMissing or incorrect WebSocket accept header");
+				logprintf("\nMissing or incorrect WebSocket accept header");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 			// Checks for non-requested WebSocket extension header
 			else if (resMatchIndexes[3]) {
-				printLog("\nUnexpected WebSocket Extension header");
+				logprintf("\nUnexpected WebSocket Extension header");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 			// Checks for non-requested WebSocket protocol header
 			else if (resMatchIndexes[4]) {
-				printLog("\nUnexpected WebSocket Protocol header");
+				logprintf("\nUnexpected WebSocket Protocol header");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 
 			// Successfully validated http headers
-			printLog("\nWebSocket connection established");
-			state = 6;
+			logprintf("\nWebSocket connection established");
 		}
 		// Connect to verbalEyes project
 		case 6: {
@@ -634,7 +639,7 @@ int8_t ensureConnection() {
 			confGetStr(conf_projkey, projkey);
 
 			// Prints
-			printLog("\nConnecting to project: %s", proj);
+			logprintf("\nConnecting to project: %s", proj);
 
 			// Sends VerbalEyes project authentication request
 			writeWebSocketFrame("{\"_core\": {\"auth\": {\"id\": \"%s\", \"key\": \"%s\"}}}", proj, projkey);
@@ -654,11 +659,11 @@ int8_t ensureConnection() {
 			if (c == EOF) {
 				if (resIndex == 0) {
 					if (showProgressBar()) return 1;
-					printLog("\nDid not get a response from the server");
+					logprintf("\nDid not get a response from the server");
 				}
 				else {
 					if (time(NULL) < timeout) return 1;
-					printLog("\nResponse from server ended prematurely");
+					logprintf("\nResponse from server ended prematurely");
 				}
 
 				timeout = time(NULL) + 5;
@@ -668,7 +673,7 @@ int8_t ensureConnection() {
 
 			// Makes sure this is an unfragmented WebSocket frame in text format
 			if (c != 0x81) {
-				printLog("\nReceived response data is either not a WebSocket frame or uses an unsupported WebSocket feature");
+				logprintf("\nReceived response data is either not a WebSocket frame or uses an unsupported WebSocket feature");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
@@ -686,7 +691,7 @@ int8_t ensureConnection() {
 				// Handles timeout error
 				if (c == EOF) {
 					if (time(NULL) < timeout) return 1;
-					printLog("\nResponse from server ended prematurely");
+					logprintf("\nResponse from server ended prematurely");
 					timeout = time(NULL) + 5;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
@@ -696,7 +701,7 @@ int8_t ensureConnection() {
 				if (resIndex == WS_PAYLOADLEN_NOTSET) {
 					// Server is not allowed to mask messages sent to the client according to the spec
 					if (c & 0x80) {
-						printLog("\nReveiced a masked frame which is not allowed");
+						logprintf("\nReveiced a masked frame which is not allowed");
 						timeout = time(NULL) + 5;
 						state = 2 | 0x80;
 						return CONNECTIONFAILED;
@@ -710,7 +715,7 @@ int8_t ensureConnection() {
 
 					// Aborts if payload length requires more than the 16 bits available in resIndex
 					if (resIndex == 127) {
-						printLog("\nWebsocket frame was unexpectedly long, retrying");
+						logprintf("\nWebsocket frame was unexpectedly long, retrying");
 						timeout = time(NULL) + 5;
 						state = 2 | 0x80;
 						return CONNECTIONFAILED;
@@ -728,7 +733,7 @@ int8_t ensureConnection() {
 			}
 
 			// Sets up to read WebSocket payload
-			printLog("\nReceived authentication response:\n%s", TAB);
+			logprintf("\nReceived authentication response:\n%s", TAB);
 			resMatchIndexes[0] = 0;
 			state = 9;
 		}
@@ -741,15 +746,19 @@ int8_t ensureConnection() {
 				// Handles timeout error
 				if (c == EOF) {
 					if (time(NULL) < timeout) return 1;
-					printLog("\nResponse from server ended prematurely");
+					logprintf("\nResponse from server ended prematurely");
 					timeout = time(NULL) + 5;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
 				}
 
 				// Prints entire WebSocket payload
-				printLog("%c", c);
-				if (c == '\n') printLog(TAB);
+				if (c == '\n') {
+					logprintf("\n%s", TAB);
+				}
+				else {
+					logprintf("%c", c);
+				}
 
 				// Makes sure authentication was successful
 				if (resMatchIndexes[0] != SUCCESSFULMATCH) matchStr(&resMatchIndexes[0], c, "authed");
@@ -758,14 +767,14 @@ int8_t ensureConnection() {
 
 			// Validates authentication
 			if (!resMatchIndexes[0]) {
-				printLog("\nAuthentication failed");
+				logprintf("\nAuthentication failed");
 				timeout = time(NULL) + 5;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 
 			// Moves on for successful authentication
-			printLog("\nAuthenticated\n\n");
+			logprintf("\nAuthenticated\n\n");
 			state = 10;
 		}
 		// Sets global values used for updating speed
@@ -789,7 +798,7 @@ int8_t ensureConnection() {
 			jitterSize = speedSize * sensitivity / 100;
 
 			// Prints settings
-			printLog(
+			logprintf(
 				"\nSetting up speed reader with:\n\tMinimum speed at: %i\n\tMaximum speed at: %i\n\tDeadzone at: %.0f%%\n\tSensitivity at: %.0f%%\n\tCalibration low at: %u\n\tCalibration high: %u\n",
 				speedMin,
 				speedMax,
@@ -833,7 +842,7 @@ void updateSpeed(const uint16_t value) {
 	writeWebSocketFrame("{\"_core\": {\"doc\": {\"id\": \"test\", \"speed\": %.2f}}}", speed);
 
 	// Prints new speed
-	printLog("\nSpeed has been updated to: %.2f", speed);
+	logprintf("\nSpeed has been updated to: %.2f", speed);
 }
 
 // Tells server to reset position to 0 when button is pressed
@@ -849,5 +858,5 @@ void jumpToTop(const bool value) {
 	writeWebSocketFrame("{\"_core\": {\"doc\": {\"id\": \"test\", \"offset\": 0}}}");
 
 	// Prints
-	printLog("\nScroll position has been set to: 0");
+	logprintf("\nScroll position has been set to: 0");
 }
