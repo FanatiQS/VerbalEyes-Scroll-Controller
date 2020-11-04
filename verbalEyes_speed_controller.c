@@ -374,7 +374,7 @@ int8_t ensureConnection() {
 	// Prevents immediately retrying after something fails
 	if (state & 0x80) {
 		if (timeout > time(NULL)) return CONNECTING;
-		logprintf(", retrying in 5 seconds");
+		logprintf("\n");
 		state &= 0x7F;
 	}
 
@@ -457,7 +457,7 @@ int8_t ensureConnection() {
 			if (showProgressBar()) return CONNECTING;
 
 			// Handles timeout error
-			logprintf("\nFailed to connect to host, retrying in 5 seconds");
+			logprintf("\nFailed to connect to host");
 			timeout = time(NULL) + 5;
 			state = 2 | 0x80;
 			return CONNECTIONFAILED;
@@ -521,14 +521,14 @@ int8_t ensureConnection() {
 				if (c == EOF) {
 					if (resIndex == 0) {
 						if (showProgressBar()) return 1;
-						logprintf("\nDid not get a response from server, retrying in 5 seconds");
+						logprintf("\nDid not get a response from server");
 					}
 					else if (resIndex == -1) {
-						logprintf("\nReceived unexpected HTTP response code, retrying in 5 seconds");
+						logprintf("\nReceived unexpected HTTP response code");
 					}
 					else {
 						if (time(NULL) < timeout) return 1;
-						logprintf("\nResponse from server ended prematurely, retrying in 5 seconds");
+						logprintf("\nResponse from server ended prematurely");
 					}
 
 					timeout = time(NULL) + 5;
@@ -714,7 +714,7 @@ int8_t ensureConnection() {
 
 					// Aborts if payload length requires more than the 16 bits available in resIndex
 					if (resIndex == 127) {
-						logprintf("\nWebsocket frame was unexpectedly long, retrying");
+						logprintf("\nWebsocket frame was unexpectedly long");
 						timeout = time(NULL) + 5;
 						state = 2 | 0x80;
 						return CONNECTIONFAILED;
