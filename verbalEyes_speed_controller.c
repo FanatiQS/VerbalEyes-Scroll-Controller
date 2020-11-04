@@ -30,7 +30,7 @@ static void logprintf(const char* format, ...) {
 	va_start(args, format);
     vsprintf(buffer, format, args);
     va_end(args);
-	serialPrint(buffer, len);
+	verbaleyes_log(buffer, len);
 }
 
 // Prints progress bar every second to indicate a process is working and handle timeout errors
@@ -105,7 +105,7 @@ static void writeWebSocketFrame(const char* format, ...) {
 	}
 
 	// Sends frame
-	socketWrite(frame, payloadLen + payloadOffset);
+	verbaleyes_socket_write(frame, payloadLen + payloadOffset);
 }
 
 
@@ -139,7 +139,7 @@ static struct confItem conf_sensitivity = 	{ 	"sensitivity", 	10,		0,	 	236 	}; 
 // Reads a config value into a char array
 static void confGetStr(struct confItem item, char* str) {
 	for (uint8_t i = 0; i < item.len; i++) {
-		str[i] = confRead(item.addr + i);
+		str[i] = verbaleyes_conf_read(item.addr + i);
 		if (str[i] == '\0') return;
 	}
 	str[item.len] = '\0';
@@ -147,7 +147,7 @@ static void confGetStr(struct confItem item, char* str) {
 
 // Reads a config value as a 2 byte int
 static uint16_t confGetInt(struct confItem item) {
-	return (confRead(item.addr) << 8) + confRead(item.addr + 1);
+	return (verbaleyes_conf_read(item.addr) << 8) + verbaleyes_conf_read(item.addr + 1);
 }
 
 
@@ -235,7 +235,7 @@ bool updateConfig(const int16_t c) {
 			}
 			// Updates string value for matched key
 			else if (confIndex < item->len) {
-				confWrite(item->addr + confIndex, c);
+				verbaleyes_conf_write(item->addr + confIndex, c);
 				confIndex++;
 				logprintf("%c", c);
 			}
@@ -294,7 +294,7 @@ bool updateConfig(const int16_t c) {
 			if (confState == HANDLINGVALUE) {
 				// Terminates stored string
 				if (item->len != 0) {
-					if (confIndex < item->len) confWrite(item->addr + confIndex, '\0');
+					if (confIndex < item->len) verbaleyes_conf_write(item->addr + confIndex, '\0');
 				}
 				// Stores 16 bit integer value
 				else {
@@ -313,8 +313,8 @@ bool updateConfig(const int16_t c) {
 					}
 
 					// Stores 16 bit integer for configuration item
-					confWrite(item->addr, confBuffer >> 8);
-					confWrite(item->addr + 1, confBuffer);
+					verbaleyes_conf_write(item->addr, confBuffer >> 8);
+					verbaleyes_conf_write(item->addr + 1, confBuffer);
 					confBuffer = 0;
 				}
 
@@ -334,7 +334,7 @@ bool updateConfig(const int16_t c) {
 			else if (confState == HANDLINGKEY) {
 				// Commits all changed values and exits configuration handling
 				if (confIndex == 0) {
-					confCommit();
+					verbaleyes_conf_commit();
 					logprintf("\nDone\n");
 					confState = NOTHANDLING;
 				}
@@ -384,7 +384,7 @@ int8_t ensureConnection() {
 	switch (state) {
 		// Reconnects to network if connection is lost
 		default: {
-			if (networkConnected()) break;
+			if (verbaleyes_network_connected()) break;
 			logprintf("\nLost connection to network");
 		}
 		// Initialize network connection
@@ -399,7 +399,7 @@ int8_t ensureConnection() {
 			logprintf("\nConnecting to SSID: %s...", ssid);
 
 			// Connects to ssid with key
-			networkConnect(ssid, ssidkey);
+			verbaleyes_network_connect(ssid, ssidkey);
 
 			// Sets timeout for awaiting connection
 			timeout = time(NULL) + 10;
@@ -408,7 +408,7 @@ int8_t ensureConnection() {
 		// Completes network connection
 		case 1: {
 			// Awaits network connection established
-			if (!networkConnected()) {
+			if (!verbaleyes_network_connected()) {
 				// Shows progress bar until network is connected
 				if (showProgressBar()) return CONNECTING;
 
@@ -420,7 +420,7 @@ int8_t ensureConnection() {
 			}
 
 			// Prints devices IP address
-			const uint32_t ip = networkGetIP();
+			const uint32_t ip = verbaleyes_network_getip();
 			logprintf("\nIP address: %u.%u.%u.%u", (uint8_t)(ip), (uint8_t)(ip >> 8), (uint8_t)(ip >> 16), (uint8_t)(ip >> 24));
 			state = 2;
 		}
@@ -430,7 +430,7 @@ int8_t ensureConnection() {
 	switch (state) {
 		// Reconnects to socket if connection is lost
 		default: {
-			if (socketConnected()) break;
+			if (verbaleyes_socket_connected()) break;
 			logprintf("\nLost connection to host");
 		}
 		// Initialize socket connection
@@ -444,7 +444,7 @@ int8_t ensureConnection() {
 			logprintf("\nConnecting to host: %s:%hu...", host, port);
 
 			// Connects to socket at host
-			socketConnect(host, port);
+			verbaleyes_socket_connect(host, port);
 
 			// Sets timeout for awaiting connection
 			timeout = time(NULL) + 10;
@@ -453,7 +453,7 @@ int8_t ensureConnection() {
 		// Completes socket connection
 		case 3: {
 			// Awaits socket connectin established
-			if (socketConnected()) break;
+			if (verbaleyes_socket_connected()) break;
 
 			// Shows progress bar until socket is connected
 			if (showProgressBar()) return CONNECTING;
@@ -495,7 +495,7 @@ int8_t ensureConnection() {
 				path,
 				key
 			);
-			socketWrite(req, reqlen);
+			verbaleyes_socket_write(req, reqlen);
 
 			// Creates websocket accept header to compare against
 			br_sha1_context ctx;
@@ -517,7 +517,7 @@ int8_t ensureConnection() {
 		// Validates HTTP status-line
 		case 4: {
 			while (resIndex != 12) {
-				const int16_t c = socketRead();
+				const int16_t c = verbaleyes_socket_read();
 
 				// Shows progress bar until socket starts receiving data
 				if (c == EOF) {
@@ -569,7 +569,7 @@ int8_t ensureConnection() {
 		// Validates HTTP headers
 		case 5: {
 			while (resIndex != 4) {
-				const int16_t c = socketRead();
+				const int16_t c = verbaleyes_socket_read();
 
 				// Handles timeout error
 				if (c == EOF) {
@@ -654,7 +654,7 @@ int8_t ensureConnection() {
 		}
 		// Validates WebSocket opcode for authentication
 		case 7: {
-			const int16_t c = socketRead();
+			const int16_t c = verbaleyes_socket_read();
 
 			// Shows progress bar until socket starts receiving data
 			if (c == EOF) {
@@ -687,7 +687,7 @@ int8_t ensureConnection() {
 		// Gets length of WebSocket payload for authentication
 		case 8: {
 			while (1) {
-				const uint16_t c = socketRead();
+				const uint16_t c = verbaleyes_socket_read();
 
 				// Handles timeout error
 				if (c == EOF) {
@@ -742,7 +742,7 @@ int8_t ensureConnection() {
 		case 9: {
 			// Reads entire WebSocket authentication response
 			while (resIndex) {
-				const signed short c = socketRead();
+				const signed short c = verbaleyes_socket_read();
 
 				// Handles timeout error
 				if (c == EOF) {

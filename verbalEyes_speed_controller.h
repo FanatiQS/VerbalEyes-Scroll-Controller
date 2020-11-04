@@ -25,23 +25,23 @@ void updateSpeed(const uint16_t);
 void jumpToTop(const bool);
 
 // Access to persistent storage
-extern char confRead(const uint16_t);
-extern void confWrite(const uint16_t, const char);
-extern void confCommit();
+extern char verbaleyes_conf_read(const uint16_t);
+extern void verbaleyes_conf_write(const uint16_t, const char);
+extern void verbaleyes_conf_commit();
 
 //!!
-extern void networkConnect(const char*, const char*);
-extern bool networkConnected();
-extern uint32_t networkGetIP();
+extern void verbaleyes_network_connect(const char*, const char*);
+extern bool verbaleyes_network_connected();
+extern uint32_t verbaleyes_network_getip();
 
 //!!
-extern void socketConnect(const char*, const uint16_t);
-extern bool socketConnected();
-extern int16_t socketRead();
-extern void socketWrite(const char*, const uint32_t);
+extern void verbaleyes_socket_connect(const char*, const uint16_t);
+extern bool verbaleyes_socket_connected();
+extern int16_t verbaleyes_socket_read();
+extern void verbaleyes_socket_write(const char*, const uint32_t);
 
 //!!
-extern void serialPrint(const char*, const uint32_t);
+extern void verbaleyes_log(const char*, const uint32_t);
 
 // Ends extern c block
 #ifdef __cplusplus
