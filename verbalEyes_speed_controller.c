@@ -322,9 +322,7 @@ bool updateConfig(const int16_t c) {
 				logprintf("\nValue was updated");
 
 				// Pulls back state to handle updated value
-				if (state > item->resetState) {
-					state = item->resetState;
-				}
+				if (state > item->resetState) state = item->resetState;
 
 				// Resets to handle new keys
 				confState = HANDLINGKEY;
