@@ -11,7 +11,7 @@
 // Returing states of ensureConnection
 #define CONNECTIONFAILED -1
 #define CONNECTING 1
-#define CONNECTED
+#define CONNECTED 0
 
 // Makes functions work in c++
 #ifdef __cplusplus
