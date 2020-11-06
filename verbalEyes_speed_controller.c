@@ -191,7 +191,7 @@ bool updateConfig(const int16_t c) {
 			// Validates incomming key against valid configuration keys
 			if (confState != HANDLINGVALUE) {
 				// Initialize new configuration update
-				if (!confIndex) {
+				if (confIndex == 0) {
 					timeout = time(NULL) + CONFIGTIMEOUT;
 					confState = HANDLINGKEY;
 					logprintf("\n[ ");
@@ -338,7 +338,6 @@ bool updateConfig(const int16_t c) {
 				}
 				// Handles termination of value for key without a match
 				else if (confIndex == CONFFAILED) {
-					confState = HANDLINGKEY;
 					confIndex = 0;
 				}
 				// Handles termination before key was validated
