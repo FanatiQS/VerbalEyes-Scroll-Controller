@@ -638,6 +638,7 @@ int8_t ensureConnection() {
 		}
 	}
 
+	// Connects to verbalEyes project
 	switch (state) {
 		// Connect to verbalEyes project
 		case 7: {
