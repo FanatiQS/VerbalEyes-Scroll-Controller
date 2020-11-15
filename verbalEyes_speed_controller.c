@@ -460,11 +460,8 @@ int8_t ensureConnection() {
 				return CONNECTIONFAILED;
 			}
 		}
-	}
-
-	switch (state) {
 		// Sends http request to use websocket protocol
-		case 3: {
+		case 4: {
 			// Sets random seed
 			srand(clock());
 
@@ -508,24 +505,27 @@ int8_t ensureConnection() {
 
 			// Sets up to read and verify http response
 			resIndex = 0;
-			state = 4;
+			state = 5;
 		}
 		// Validates HTTP status-line
-		case 4: {
+		case 5: {
 			while (resIndex != 12) {
 				const int16_t c = verbaleyes_socket_read();
 
 				// Shows progress bar until socket starts receiving data
 				if (c == EOF) {
-					if (resIndex == 0) {
-						if (showProgressBar()) return 1;
-						logprintf("\nDid not get a response from server");
-					}
-					else if (resIndex == -1) {
+					if (resIndex == RESINDEXFAILED) {
 						logprintf("\nReceived unexpected HTTP response code");
 					}
+					else if (!verbaleyes_socket_connected()) {
+						logprintf("\nConnection to host closed");
+					}
+					else if (resIndex == 0) {
+						if (showProgressBar()) return CONNECTING;
+						logprintf("\nDid not get a response from server");
+					}
 					else {
-						if (time(NULL) < timeout) return 1;
+						if (time(NULL) < timeout) return CONNECTING;
 						logprintf("\nResponse from server ended prematurely");
 					}
 
@@ -546,7 +546,7 @@ int8_t ensureConnection() {
 				}
 
 				// Prints entire HTTP response before handling unexpected HTTP response code
-				if (resIndex == -1) continue;
+				if (resIndex == RESINDEXFAILED) continue;
 
 				// Validates incoming data for http status-line
 				if (tolower(c) == "http/1.1 101"[resIndex]) {
@@ -554,23 +554,28 @@ int8_t ensureConnection() {
 				}
 				// Failed to validate http status-line
 				else {
-					resIndex = -1;
+					resIndex = RESINDEXFAILED;
 				}
 			}
 
 			// Successfully validated status-line and sets up to validate http headers
 			memset(resMatchIndexes, 0, sizeof resMatchIndexes);
-			state = 5;
+			state = 6;
 		}
 		// Validates HTTP headers
-		case 5: {
+		case 6: {
 			while (resIndex != 4) {
 				const int16_t c = verbaleyes_socket_read();
 
-				// Handles timeout error
+				// Handles timeout and socket close error
 				if (c == EOF) {
-					if (time(NULL) < timeout) return 1;
-					logprintf("\nResponse from server ended prematurely");
+					if (verbaleyes_socket_connected()) {
+						if (time(NULL) < timeout) return CONNECTING;
+						logprintf("\nResponse from server ended prematurely");
+					}
+					else {
+						logprintf("\nConnection to host closed");
+					}
 					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
@@ -626,9 +631,15 @@ int8_t ensureConnection() {
 
 			// Successfully validated http headers
 			logprintf("\nWebSocket connection established");
+
+			// Sets up to connect to project
+			state = 7;
 		}
+	}
+
+	switch (state) {
 		// Connect to verbalEyes project
-		case 6: {
+		case 7: {
 			// Gets project and project key from config
 			char proj[conf_proj.len + 1];
 			confGetStr(conf_proj, proj);
@@ -646,10 +657,10 @@ int8_t ensureConnection() {
 
 			// Sets up to read and verify websocket response
 			resIndex = 0;
-			state = 7;
+			state = 8;
 		}
 		// Validates WebSocket opcode for authentication
-		case 7: {
+		case 8: {
 			const int16_t c = verbaleyes_socket_read();
 
 			// Shows progress bar until socket starts receiving data
@@ -678,10 +689,10 @@ int8_t ensureConnection() {
 
 			// Sets up to read WebSocket payload length
 			resIndex = WS_PAYLOADLEN_NOTSET;
-			state = 8;
+			state = 9;
 		}
 		// Gets length of WebSocket payload for authentication
-		case 8: {
+		case 9: {
 			while (1) {
 				const uint16_t c = verbaleyes_socket_read();
 
@@ -732,10 +743,10 @@ int8_t ensureConnection() {
 			// Sets up to read WebSocket payload
 			logprintf("\nReceived authentication response:\n%s", TAB);
 			resMatchIndexes[0] = 0;
-			state = 9;
+			state = 10;
 		}
 		// Validates WebSocket payload for authentication
-		case 9: {
+		case 10: {
 			// Reads entire WebSocket authentication response
 			while (resIndex) {
 				const signed short c = verbaleyes_socket_read();
@@ -772,10 +783,10 @@ int8_t ensureConnection() {
 
 			// Moves on for successful authentication
 			logprintf("\nAuthenticated\n\n");
-			state = 10;
+			state = 11;
 		}
 		// Sets global values used for updating speed
-		case 10: {
+		case 11: {
 			// Gets deadzone an sensitivity percentage values from config
 			const float deadzone = confGetInt(conf_deadzone);
 			const float sensitivity = confGetInt(conf_sensitivity);
@@ -806,7 +817,7 @@ int8_t ensureConnection() {
 			);
 
 			// Sets state bo be outside range now that it is done
-			state = 11;
+			state = 12;
 		}
 	}
 
