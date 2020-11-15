@@ -409,7 +409,7 @@ int8_t ensureConnection() {
 				if (showProgressBar()) return CONNECTING;
 
 				// Handles timeout error
-				logprintf("\n\nFailed to connect to network");
+				logprintf("\nFailed to connect to network");
 				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 0 | 0x80;
 				return CONNECTIONFAILED;
