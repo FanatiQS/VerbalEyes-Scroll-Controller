@@ -449,16 +449,16 @@ int8_t ensureConnection() {
 		// Completes socket connection
 		case 3: {
 			// Awaits socket connectin established
-			if (verbaleyes_socket_connected()) break;
+			if (!verbaleyes_socket_connected()) {
+				// Shows progress bar until socket is connected
+				if (showProgressBar()) return CONNECTING;
 
-			// Shows progress bar until socket is connected
-			if (showProgressBar()) return CONNECTING;
-
-			// Handles timeout error
-			logprintf("\nFailed to connect to host");
-			timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-			state = 2 | 0x80;
-			return CONNECTIONFAILED;
+				// Handles timeout error
+				logprintf("\nFailed to connect to host");
+				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
+				state = 2 | 0x80;
+				return CONNECTIONFAILED;
+			}
 		}
 	}
 
