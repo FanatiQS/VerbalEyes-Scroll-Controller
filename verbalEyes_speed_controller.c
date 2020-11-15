@@ -364,6 +364,8 @@ float speedMapper;
 float deadzoneSize;
 float jitterSize;
 
+#define RESINDEXFAILED 65535
+
 // Ensures everything is connected to be able to transmit speed changes to the server
 int8_t ensureConnection() {
 	static uint16_t resIndex = 0;
