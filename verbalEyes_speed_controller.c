@@ -784,7 +784,7 @@ int8_t ensureConnection() {
 			}
 
 			// Moves on for successful authentication
-			logprintf("\nAuthenticated\n\n");
+			logprintf("\nAuthenticated");
 			state = 11;
 		}
 		// Sets global values used for updating speed
