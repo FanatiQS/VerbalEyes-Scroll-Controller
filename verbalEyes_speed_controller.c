@@ -14,7 +14,6 @@
 
 
 #define TAB "    "
-#define TIMEOUTDELAY 10
 
 static uint16_t state = 0;
 static uint32_t timeout = 0;
