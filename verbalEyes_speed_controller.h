@@ -1,9 +1,9 @@
+#include <stdint.h>
+#include <stdbool.h>
+
 // Include Guard
 #ifndef VERBALEYES_SPEED_CONTROLLER_H
 #define VERBALEYES_SPEED_CONTROLLER_H
-
-#include <stdint.h>
-#include <stdbool.h>
 
 // Number of characters required for configuration
 #define CONFIGLEN 238 // Needs to be updated manually
