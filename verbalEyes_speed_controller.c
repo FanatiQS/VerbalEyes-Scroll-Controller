@@ -52,6 +52,7 @@ static bool showProgressBar() {
 
 // Matches incoming data character by character
 static void matchStr(uint8_t* index, const char c, const char* match) {
+	if (*index == SUCCESSFULMATCH) return;
 	if (match[*index] == '\0') *index = SUCCESSFULMATCH;
 	else if (c == match[*index]) *index += 1;
 	else *index = 0;
@@ -594,11 +595,12 @@ int8_t ensureConnection() {
 				}
 
 				// Matches the incoming HTTP response against required and illigal substrings
-				if (resMatchIndexes[0] != SUCCESSFULMATCH) matchStr(&resMatchIndexes[0], tolower(c), "connection: upgrade\r\n");
-				if (resMatchIndexes[1] != SUCCESSFULMATCH) matchStr(&resMatchIndexes[1], tolower(c), "upgrade: websocket\r\n");
-				if (resMatchIndexes[2] != SUCCESSFULMATCH) matchStr(&resMatchIndexes[2], (resMatchIndexes[2] <= 20) ? tolower(c) : c, acceptHeader);
-				if (resMatchIndexes[3] != SUCCESSFULMATCH) matchStr(&resMatchIndexes[3], tolower(c), "sec-websocket-extensions: ");
-				if (resMatchIndexes[4] != SUCCESSFULMATCH) matchStr(&resMatchIndexes[4], tolower(c), "sec-webSocket-protocol: ");
+				const lowerc = tolower(c);
+				matchStr(&resMatchIndexes[0], lowerc, "connection: upgrade\r\n");
+				matchStr(&resMatchIndexes[1], lowerc, "upgrade: websocket\r\n");
+				matchStr(&resMatchIndexes[2], (resMatchIndexes[2] <= 20) ? lowerc : c, acceptHeader);
+				matchStr(&resMatchIndexes[3], lowerc, "sec-websocket-extensions: ");
+				matchStr(&resMatchIndexes[4], lowerc, "sec-webSocket-protocol: ");
 			}
 
 			// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
