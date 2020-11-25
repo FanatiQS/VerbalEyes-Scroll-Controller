@@ -1,4 +1,4 @@
-#include <ESP8266WiFi.h>;
+#include <ESP8266WiFi.h>
 #include <EEPROM.h>
 #include <DNSServer.h>
 #include "./verbalEyes_speed_controller.h"
@@ -7,34 +7,34 @@
 
 // Reads a character from the specified address in EEPROM
 char verbaleyes_conf_read(const unsigned short addr) {
-  return EEPROM.read(addr);
+	return EEPROM.read(addr);
 }
 
 // Writes a character to the specified address in EEPROM
 void verbaleyes_conf_write(const unsigned short addr, const char c) {
-  EEPROM.write(addr, c);
+	EEPROM.write(addr, c);
 }
 
 // Commits changes made in EEPROM to flash
 void verbaleyes_conf_commit() {
-  EEPROM.commit();
+	EEPROM.commit();
 }
 
 
 
 // Connects to a WiFi network
 void verbaleyes_network_connect(const char* ssid, const char* key) {
-  WiFi.begin(ssid, key);
+	WiFi.begin(ssid, key);
 }
 
 // Gets the connection status of the WiFi connection
 bool verbaleyes_network_connected() {
-  return WiFi.isConnected();
+	return WiFi.isConnected();
 }
 
 // Gets the local ip address for printing
 uint32_t verbaleyes_network_getip() {
-  return WiFi.localIP();
+	return WiFi.localIP();
 }
 
 
@@ -43,36 +43,36 @@ WiFiClient client;
 
 // Connects the socket to an endpoint
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
-  client.connect(host, port);
+	client.connect(host, port);
 }
 
 // Gets the connection status of the socket connection
 bool verbaleyes_socket_connected() {
-  return client.connected();
+	return client.connected();
 }
 
 // Consumes a single character from the sockets response data buffer
 short verbaleyes_socket_read() {
-  return client.read();
+	return client.read();
 }
 
 // Sends a string to the endpoint the socket is connected to
 void verbaleyes_socket_write(const char* str, const unsigned int len) {
-  client.write(str, len);
+	client.write(str, len);
 }
 
 
 
 // Prints a string to the serial interface
 void verbaleyes_log(const char* str, const uint32_t len) {
-  Serial.print(str);
+	Serial.print(str);
 }
 
 
 
 // Fills missing clock function. Used for getting random value
 unsigned long clock() {
-  return micros();
+	return micros();
 }
 
 void setup() {
