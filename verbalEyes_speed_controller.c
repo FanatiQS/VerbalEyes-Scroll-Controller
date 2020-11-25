@@ -371,6 +371,8 @@ int8_t ensureConnection() {
 	static uint16_t resIndex = 0;
 	static uint8_t resMatchIndexes[5];
 	static char acceptHeader[22 + 28 + 2] = "sec-websocket-accept: ";
+	static char* host;
+	static char* path;
 
 	// Prevents immediately retrying after something fails
 	if (state & 0x80) {
@@ -434,12 +436,14 @@ int8_t ensureConnection() {
 		// Initialize socket connection
 		case 2: {
 			// Gets host and port from config
-			char host[conf_host.len + 1];
+			host = (char*)malloc(conf_host.len + 1);
 			confGetStr(conf_host, host);
 			uint16_t port = confGetInt(conf_port);
+			path = (char*)malloc(conf_path.addr + 1);
+			confGetStr(conf_path, path);
 
 			// Prints
-			logprintf("\nConnecting to host: %s:%hu...", host, port);
+			logprintf("\nConnecting to server: %s:%hu%s...", host, port, path);
 
 			// Connects to socket at host
 			verbaleyes_socket_connect(host, port);
@@ -478,19 +482,18 @@ int8_t ensureConnection() {
 			key[23] = '=';
 			key[24] = '\0';
 
-			// Gets path from config
-			char path[conf_path.addr + 1];
-			confGetStr(conf_path, path);
-
 			// Sends HTTP request to setup WebSocket connection with host
 			char req[4 + strlen(path) + 98 + 24 + 4 + 1];
 			uint8_t reqlen = sprintf(
 				req,
-				"GET %s HTTP/1.1\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: %s\r\n\r\n",
+				"GET %s HTTP/1.1\r\nHost: %s\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: %s\r\n\r\n",
 				path,
+				host,
 				key
 			);
 			verbaleyes_socket_write(req, reqlen);
+			free(host);
+			free(path);
 
 			// Creates websocket accept header to compare against
 			br_sha1_context ctx;
