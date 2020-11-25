@@ -651,7 +651,7 @@ int8_t ensureConnection() {
 			confGetStr(conf_projkey, projkey);
 
 			// Prints
-			logprintf("\nConnecting to project: %s", proj);
+			logprintf("\nConnecting to project: %s...", proj);
 
 			// Sends VerbalEyes project authentication request
 			writeWebSocketFrame("{\"_core\": {\"auth\": {\"id\": \"%s\", \"key\": \"%s\"}}}", proj, projkey);
@@ -846,7 +846,7 @@ void updateSpeed(const uint16_t value) {
 		mappedValue = 0;
 	}
 
-	// Supresses updating speed if it has not changed enough
+	// Supresses updating speed if it has not changed enough unless it is updated to zero
 	if (mappedValue != 0 && mappedValue <= speed + jitterSize && mappedValue >= speed - jitterSize ) return;
 	speed = mappedValue;
 
