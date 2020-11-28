@@ -80,5 +80,5 @@ extern void verbaleyes_log(const char*, const uint32_t);
  * deadzone: The size of the zero mark in percent of entire range.
  * callow: The smalles value received from analog read. Useful when analog values don't go all the way down to 0.
  * calhigh: The largest value received from analog read. For 10 bit readings, this should be 1024 but might not reach all the way.
- * ignorejitter: The sensitivity of the readings in percent of entire range. When analog reads are not stabile, this can be raised to not read small changes.
+ * sensitivity: The sensitivity of the readings in percent of entire range. When analog reads are not stabile, this can be raised to not read small jitter fluctuations.
  */
