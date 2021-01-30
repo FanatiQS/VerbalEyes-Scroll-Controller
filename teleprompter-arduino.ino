@@ -1,3 +1,32 @@
+/*
+An example of how to wire up a wemos d1 mini with a potentiometer to control speed and a button to jump to top.
+
+COMPONENTS:
+            Wemos D1 Mini
+        TX               RST
+        RX                A0
+        D1                D0
+        D2                D5
+        D3                D6
+        D4                D7
+        GND               D8
+        5V              3.3V
+
+
+            Potentiometer
+        VCC     Wiper    GND
+
+            Button
+        GND              VCC
+
+
+CONNECTIONS:
+        Wemos<GND> -- Potentiometer<GND> -- Button<GND>
+        Wemos<3.3V> < -- > Potentiometer<VCC>
+        Wemos<A0> -- Potentiometer<Wiper>
+        Wemos<D3> -- Button<VCC>
+*/
+
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
 #include <DNSServer.h>
@@ -83,7 +112,7 @@ void setup() {
 }
 
 void loop() {
-	while (updateConfig(Serial.read())); // Updates config data from serial input
+	while (updateConfig(Serial.read())) yield(); // Updates config data from serial input
 	if (ensureConnection()) return; // Ensure network and socket are setup and connected. Restart loop if setup is not done
 	updateSpeed(analogRead(A0)); // Update server speed based on potentiometer at A0
 	jumpToTop(digitalRead(0)); // Jump to top of document if button at pin 0 is pulled high
