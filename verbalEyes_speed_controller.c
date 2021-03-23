@@ -195,7 +195,7 @@ bool updateConfig(const int16_t c) {
 				if (confIndex == 0) {
 					timeout = time(NULL) + CONFIGTIMEOUT;
 					confState = HANDLINGKEY;
-					logprintf("\n[ ");
+					logprintf("\r\n[ ");
 				}
 				// Prevents handling value for key with no match
 				else if (confIndex == CONFFAILED) {
@@ -249,7 +249,7 @@ bool updateConfig(const int16_t c) {
 
 					// Clamps numbers higher than maximum value for an unsigned shorts
 					if (confBuffer > 6553 || (confBuffer == 6553 && c > '5')) {
-						logprintf("\nValue was too high, claming down to maximum value of 65535");
+						logprintf("\r\nValue was too high, claming down to maximum value of 65535");
 						confBuffer = 65535;
 					}
 					// Pushes number onto the buffer
@@ -268,13 +268,13 @@ bool updateConfig(const int16_t c) {
 				// Displays invalid character warning message once
 				else {
 					confIndex = CONFFAILED;
-					logprintf("%c\nCharacter was not a number", c);
+					logprintf("%c\r\nCharacter was not a number", c);
 				}
 			}
 			// Displays max value length warning message once
 			else if (confIndex != CONFFAILED) {
 				confIndex = CONFFAILED;
-				logprintf("\nMaximum input length reached");
+				logprintf("\r\nMaximum input length reached");
 			}
 
 			// Continue reading more data
@@ -303,7 +303,7 @@ bool updateConfig(const int16_t c) {
 					if (confBufferSigned) {
 						// Clamps negative numbers lower than minimum value for a signed shorts
 						if (confBuffer > 32767) {
-							logprintf("\nValue was too low, claming up to minimum value of -32767");
+							logprintf("\r\nValue was too low, claming up to minimum value of -32767");
 							confBuffer = 65535;
 						}
 						// Makes buffer negative if it input string started with a minus sign
@@ -320,7 +320,7 @@ bool updateConfig(const int16_t c) {
 				}
 
 				// Indicates that value has been stored in configuration
-				logprintf("\nValue was updated");
+				logprintf("\r\nValue was updated");
 
 				// Pulls back state to handle updated value
 				if (state > item->resetState) state = item->resetState;
@@ -334,7 +334,7 @@ bool updateConfig(const int16_t c) {
 				// Commits all changed values and exits configuration handling
 				if (confIndex == 0) {
 					verbaleyes_conf_commit();
-					logprintf("\nDone\n");
+					logprintf("\r\nDone\r\n");
 					confState = NOTHANDLING;
 				}
 				// Handles termination of value for key without a match
@@ -386,7 +386,7 @@ int8_t ensureConnection() {
 		// Reconnects to network if connection is lost
 		default: {
 			if (verbaleyes_network_connected()) break;
-			logprintf("\nLost connection to network");
+			logprintf("\r\nLost connection to network");
 		}
 		// Initialize network connection
 		case 0: {
@@ -397,7 +397,7 @@ int8_t ensureConnection() {
 			confGetStr(conf_ssidkey, ssidkey);
 
 			// Prints
-			logprintf("\nConnecting to SSID: %s...", ssid);
+			logprintf("\r\nConnecting to SSID: %s...", ssid);
 
 			// Connects to ssid with key
 			verbaleyes_network_connect(ssid, ssidkey);
@@ -414,7 +414,7 @@ int8_t ensureConnection() {
 				if (showProgressBar()) return CONNECTING;
 
 				// Handles timeout error
-				logprintf("\nFailed to connect to network");
+				logprintf("\r\nFailed to connect to network");
 				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 0 | 0x80;
 				return CONNECTIONFAILED;
@@ -422,7 +422,7 @@ int8_t ensureConnection() {
 
 			// Prints devices IP address
 			const uint32_t ip = verbaleyes_network_getip();
-			logprintf("\nIP address: %u.%u.%u.%u", (uint8_t)(ip), (uint8_t)(ip >> 8), (uint8_t)(ip >> 16), (uint8_t)(ip >> 24));
+			logprintf("\r\nIP address: %u.%u.%u.%u", (uint8_t)(ip), (uint8_t)(ip >> 8), (uint8_t)(ip >> 16), (uint8_t)(ip >> 24));
 			state = 2;
 		}
 	}
@@ -432,7 +432,7 @@ int8_t ensureConnection() {
 		// Reconnects to socket if connection is lost
 		default: {
 			if (verbaleyes_socket_connected()) break;
-			logprintf("\nLost connection to host");
+			logprintf("\r\nLost connection to host");
 		}
 		// Initialize socket connection
 		case 2: {
@@ -444,7 +444,7 @@ int8_t ensureConnection() {
 			confGetStr(conf_path, path);
 
 			// Prints
-			logprintf("\nConnecting to host: %s:%hu%s...", host, port, path);
+			logprintf("\r\nConnecting to host: %s:%hu%s...", host, port, path);
 
 			// Connects to socket at host
 			verbaleyes_socket_connect(host, port);
@@ -461,7 +461,7 @@ int8_t ensureConnection() {
 				if (showProgressBar()) return CONNECTING;
 
 				// Handles timeout error
-				logprintf("\nFailed to connect to host");
+				logprintf("\r\nFailed to connect to host");
 				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
@@ -521,18 +521,18 @@ int8_t ensureConnection() {
 				// Shows progress bar until socket starts receiving data
 				if (c == EOF) {
 					if (resIndex == RESINDEXFAILED) {
-						logprintf("\nReceived unexpected HTTP response code");
+						logprintf("\r\nReceived unexpected HTTP response code");
 					}
 					else if (!verbaleyes_socket_connected()) {
-						logprintf("\nConnection to host closed");
+						logprintf("\r\nConnection to host closed");
 					}
 					else if (resIndex == 0) {
 						if (showProgressBar()) return CONNECTING;
-						logprintf("\nDid not get a response from server");
+						logprintf("\r\nDid not get a response from server");
 					}
 					else {
 						if (time(NULL) < timeout) return CONNECTING;
-						logprintf("\nResponse from server ended prematurely");
+						logprintf("\r\nResponse from server ended prematurely");
 					}
 
 					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
@@ -542,10 +542,10 @@ int8_t ensureConnection() {
 
 				// Prints HTTP status-line
 				if (c == '\n') {
-					logprintf("\n%s", TAB);
+					logprintf("\r\n%s", TAB);
 				}
 				else if (resIndex == 0) {
-					logprintf("\n%s%c", TAB, c);
+					logprintf("\r\n%s%c", TAB, c);
 				}
 				else {
 					logprintf("%c", c);
@@ -577,10 +577,10 @@ int8_t ensureConnection() {
 				if (c == EOF) {
 					if (verbaleyes_socket_connected()) {
 						if (time(NULL) < timeout) return CONNECTING;
-						logprintf("\nResponse from server ended prematurely");
+						logprintf("\r\nResponse from server ended prematurely");
 					}
 					else {
-						logprintf("\nConnection to host closed");
+						logprintf("\r\nConnection to host closed");
 					}
 					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 					state = 2 | 0x80;
@@ -592,7 +592,7 @@ int8_t ensureConnection() {
 
 				// Prints HTTP headers
 				if (c == '\n') {
-					logprintf("\n%s", TAB);
+					logprintf("\r\n%s", TAB);
 				}
 				else {
 					logprintf("%c", c);
@@ -609,35 +609,35 @@ int8_t ensureConnection() {
 
 			// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
 			if (!resMatchIndexes[0] || !resMatchIndexes[1]) {
-				logprintf("\nHTTP response is not an upgrade to the WebSockets protocol");
+				logprintf("\r\nHTTP response is not an upgrade to the WebSockets protocol");
 				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 			// Requires WebSocket accept header with correct value
 			else if (!resMatchIndexes[2]) {
-				logprintf("\nMissing or incorrect WebSocket accept header");
+				logprintf("\r\nMissing or incorrect WebSocket accept header");
 				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 			// Checks for non-requested WebSocket extension header
 			else if (resMatchIndexes[3]) {
-				logprintf("\nUnexpected WebSocket Extension header");
+				logprintf("\r\nUnexpected WebSocket Extension header");
 				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 			// Checks for non-requested WebSocket protocol header
 			else if (resMatchIndexes[4]) {
-				logprintf("\nUnexpected WebSocket Protocol header");
+				logprintf("\r\nUnexpected WebSocket Protocol header");
 				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 
 			// Successfully validated http headers
-			logprintf("\nWebSocket connection established");
+			logprintf("\r\nWebSocket connection established");
 
 			// Sets up to connect to project
 			state = 7;
@@ -655,7 +655,7 @@ int8_t ensureConnection() {
 			confGetStr(conf_projkey, projkey);
 
 			// Prints
-			logprintf("\nConnecting to project: %s...", proj);
+			logprintf("\r\nConnecting to project: %s...", proj);
 
 			// Sends VerbalEyes project authentication request
 			writeWebSocketFrame("{\"_core\": {\"auth\": {\"id\": \"%s\", \"key\": \"%s\"}}}", proj, projkey);
@@ -675,11 +675,11 @@ int8_t ensureConnection() {
 			if (c == EOF) {
 				if (resIndex == 0) {
 					if (showProgressBar()) return 1;
-					logprintf("\nDid not get a response from the server");
+					logprintf("\r\nDid not get a response from the server");
 				}
 				else {
 					if (time(NULL) < timeout) return 1;
-					logprintf("\nResponse from server ended prematurely");
+					logprintf("\r\nResponse from server ended prematurely");
 				}
 
 				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
@@ -689,7 +689,7 @@ int8_t ensureConnection() {
 
 			// Makes sure this is an unfragmented WebSocket frame in text format
 			if (c != 0x81) {
-				logprintf("\nReceived response data is either not a WebSocket frame or uses an unsupported WebSocket feature");
+				logprintf("\r\nReceived response data is either not a WebSocket frame or uses an unsupported WebSocket feature");
 				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
@@ -707,7 +707,7 @@ int8_t ensureConnection() {
 				// Handles timeout error
 				if (c == EOF) {
 					if (time(NULL) < timeout) return 1;
-					logprintf("\nResponse from server ended prematurely");
+					logprintf("\r\nResponse from server ended prematurely");
 					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
@@ -717,7 +717,7 @@ int8_t ensureConnection() {
 				if (resIndex == WS_PAYLOADLEN_NOTSET) {
 					// Server is not allowed to mask messages sent to the client according to the spec
 					if (c & 0x80) {
-						logprintf("\nReveiced a masked frame which is not allowed");
+						logprintf("\r\nReveiced a masked frame which is not allowed");
 						timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 						state = 2 | 0x80;
 						return CONNECTIONFAILED;
@@ -731,7 +731,7 @@ int8_t ensureConnection() {
 
 					// Aborts if payload length requires more than the 16 bits available in resIndex
 					if (resIndex == 127) {
-						logprintf("\nWebsocket frame was unexpectedly long");
+						logprintf("\r\nWebsocket frame was unexpectedly long");
 						timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 						state = 2 | 0x80;
 						return CONNECTIONFAILED;
@@ -749,7 +749,7 @@ int8_t ensureConnection() {
 			}
 
 			// Sets up to read WebSocket payload
-			logprintf("\nReceived authentication response:\n%s", TAB);
+			logprintf("\r\nReceived authentication response:\r\n%s", TAB);
 			resMatchIndexes[0] = 0;
 			state = 10;
 		}
@@ -762,7 +762,7 @@ int8_t ensureConnection() {
 				// Handles timeout error
 				if (c == EOF) {
 					if (time(NULL) < timeout) return 1;
-					logprintf("\nResponse from server ended prematurely");
+					logprintf("\r\nResponse from server ended prematurely");
 					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
@@ -770,7 +770,7 @@ int8_t ensureConnection() {
 
 				// Prints entire WebSocket payload
 				if (c == '\n') {
-					logprintf("\n%s", TAB);
+					logprintf("\r\n%s", TAB);
 				}
 				else {
 					logprintf("%c", c);
@@ -783,14 +783,14 @@ int8_t ensureConnection() {
 
 			// Validates authentication
 			if (!resMatchIndexes[0]) {
-				logprintf("\nAuthentication failed");
+				logprintf("\r\nAuthentication failed");
 				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
 			}
 
 			// Moves on for successful authentication
-			logprintf("\nAuthenticated");
+			logprintf("\r\nAuthenticated");
 			state = 11;
 		}
 		// Sets global values used for updating speed
@@ -815,7 +815,7 @@ int8_t ensureConnection() {
 
 			// Prints settings
 			logprintf(
-				"\nSetting up speed reader with:\n\tMinimum speed at: %i\n\tMaximum speed at: %i\n\tDeadzone at: %.0f%%\n\tSensitivity at: %.0f%%\n\tCalibration low at: %u\n\tCalibration high: %u\n",
+				"\r\nSetting up speed reader with:\r\n\tMinimum speed at: %i\r\n\tMaximum speed at: %i\r\n\tDeadzone at: %.0f%%\r\n\tSensitivity at: %.0f%%\r\n\tCalibration low at: %u\r\n\tCalibration high: %u\r\n",
 				speedMin,
 				speedMax,
 				deadzone,
@@ -858,7 +858,7 @@ void updateSpeed(const uint16_t value) {
 	writeWebSocketFrame("{\"_core\": {\"doc\": {\"id\": \"test\", \"speed\": %.2f}}}", speed);
 
 	// Prints new speed
-	logprintf("\nSpeed has been updated to: %.2f", speed);
+	logprintf("\r\nSpeed has been updated to: %.2f", speed);
 }
 
 // Tells server to reset position to 0 when button is pressed
@@ -874,5 +874,5 @@ void jumpToTop(const bool value) {
 	writeWebSocketFrame("{\"_core\": {\"doc\": {\"id\": \"test\", \"offset\": 0}}}");
 
 	// Prints
-	logprintf("\nScroll position has been set to: 0");
+	logprintf("\r\nScroll position has been set to: 0");
 }
