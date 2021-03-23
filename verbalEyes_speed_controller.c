@@ -1,4 +1,5 @@
 #include <stdbool.h> // bool
+#include <stdint.h> // uint8_t uint16_t uint32_t int8_t int16_t
 #include <string.h> // strlen, strcpy, memset
 #include <time.h> // time, clock
 #include <ctype.h> // tolower
