@@ -599,7 +599,7 @@ int8_t ensureConnection() {
 				}
 
 				// Matches the incoming HTTP response against required and illigal substrings
-				const lowerc = tolower(c);
+				const char lowerc = tolower(c);
 				matchStr(&resMatchIndexes[0], lowerc, "connection: upgrade\r\n");
 				matchStr(&resMatchIndexes[1], lowerc, "upgrade: websocket\r\n");
 				matchStr(&resMatchIndexes[2], (resMatchIndexes[2] <= 20) ? lowerc : c, acceptHeader);
