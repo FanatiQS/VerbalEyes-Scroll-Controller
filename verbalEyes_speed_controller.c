@@ -444,7 +444,7 @@ int8_t ensureConnection() {
 			confGetStr(conf_path, path);
 
 			// Prints
-			logprintf("\nConnecting to server: %s:%hu%s...", host, port, path);
+			logprintf("\nConnecting to host: %s:%hu%s...", host, port, path);
 
 			// Connects to socket at host
 			verbaleyes_socket_connect(host, port);
