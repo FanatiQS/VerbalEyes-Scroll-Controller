@@ -203,7 +203,7 @@ bool updateConfig(const int16_t c) {
 				}
 
 				// Invalidates keys that does not match incomming string
-				if (c != '=') {
+				if (c != '=' && c != '\t') {
 					for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
 						if (!confItems[i]->nameMatchFailed && c != confItems[i]->name[confIndex]) confItems[i]->nameMatchFailed = 1;
 					}

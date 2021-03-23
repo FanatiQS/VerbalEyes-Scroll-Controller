@@ -29,6 +29,7 @@ echo "insert data here" > `ls -1 /dev/ttyUSB* | head -1`
 
 ### Interactive:
 Interactive terminal where you can write your data to the device and see feedback from it right away in the same window.
+Tab or '=' are used as delimiter between key and value.
 * OSX: tested
 ```sh
 screen `ls -1 /dev/cu.usbserial-* | head -1`
