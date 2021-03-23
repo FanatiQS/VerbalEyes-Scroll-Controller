@@ -2,22 +2,48 @@
 This is code for the ESP-8266 that will update the scroll speed of the teleprompter system I am building. It uses wi-fi to connect to the server and sends its data with websockets. Network and other settings are configurable through the serial port.
 
 ## Reading and Writing from the command line:
-### Get the tty path
+
+### Read:
+* OSX: tested
+```sh
+cat < `ls -1 /dev/cu.usbserial-* | head -1`
+```
+* Linux: untested
+```sh
+cat < `ls -1 /dev/ttyUSB* | head -1`
+```
+* Windows: I dunno, please let me know if you do
+
+### Writing:
+* OSX: tested
+```sh
+echo "insert data here" > `ls -1 /dev/cu.usbserial-* | head -1`
+```
+* Linux: untested
+```sh
+echo "insert data here" > `ls -1 /dev/ttyUSB* | head -1`
+```
+#### Note:
+* Message should end with a LF
+* If the message contains spaces, they have to be escaped or the string has to be in quotes
+
+### Step-By-Step
+#### Get the tty path
 * OSX: `ls /dev/cu.usbserial-*`
 * Linux: `ls /dev/ttyUSB*`
 * Windows: ?
 
-### Writing:
+#### Writing:
 * OSX: `echo ` message ` > /dev/cu.usbserial-*`
 * Linux: `echo ` message ` > /dev/ttyUSB*`
 * Windows: ?
-#### Notes:
+##### Notes:
 * Message should end with a LF
 * If the message contains spaces, they have to be escaped or the string has to be in quotes
 
-### Reading:
+#### Reading:
 * OSX: `cat < /dev/cu.usbserial-*`
 * Linux: `cat < /dev/ttyUSB*`
 * Windows: ?
-#### Notes:
+##### Notes:
 * If it does not continue to read, try to run `stty -echo -F ` + path (had this issue in raspbian)
