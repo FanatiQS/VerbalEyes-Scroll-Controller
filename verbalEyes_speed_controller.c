@@ -187,6 +187,46 @@ bool updateConfig(const int16_t c) {
 	static bool confBufferSigned = 0;
 
 	switch (c) {
+		// Finish matching key on delimiter input and setup to update value
+		case '\t':
+		case '=': {
+			// Falls through to default if not true
+			if (confState != HANDLINGVALUE) {
+				// Prevents handling failed matches
+				if (confIndex == CONFFAILED) return 1;
+
+				// Finish matching key and reset all items
+				for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
+					if (
+						confState == HANDLINGKEY &&
+						!confItems[i]->nameMatchFailed &&
+						confItems[i]->name[confIndex] == '\0'
+					) {
+						item = confItems[i];
+						confState = HANDLINGVALUE;
+						logprintf(" ] is now: ");
+					}
+
+					confItems[i]->nameMatchFailed = 0;
+				}
+
+				// Prevents handling value for keys with no match
+				if (confState != HANDLINGVALUE) {
+					if (confIndex == 0) {
+						logprintf("\r\n[");
+						timeout = time(NULL) + CONFIGTIMEOUT;
+						confState = HANDLINGKEY;
+					}
+					logprintf(" ] No matching key");
+					confIndex = CONFFAILED;
+					return 1;
+				}
+
+				// Resets index to be reused for value
+				confIndex = 0;
+				return 1;
+			}
+		}
 		// Updates configurable value
 		default: {
 			// Validates incomming key against valid configuration keys
@@ -203,36 +243,16 @@ bool updateConfig(const int16_t c) {
 				}
 
 				// Invalidates keys that does not match incomming string
-				if (c != '=' && c != '\t') {
-					for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
-						if (!confItems[i]->nameMatchFailed && c != confItems[i]->name[confIndex]) confItems[i]->nameMatchFailed = 1;
+				for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
+					if (
+						!confItems[i]->nameMatchFailed &&
+						c != confItems[i]->name[confIndex]
+					) {
+						confItems[i]->nameMatchFailed = 1;
 					}
-					confIndex++;
-					logprintf("%c", c);
 				}
-				// Finish matching key on delimiter input and setup to update its value
-				else {
-					// Finish matching key and reset all items
-					for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
-						if (confState == HANDLINGKEY && !confItems[i]->nameMatchFailed && confItems[i]->name[confIndex] == '\0') {
-							item = confItems[i];
-							confState = HANDLINGVALUE;
-							logprintf(" ] is now: ");
-						}
-
-						confItems[i]->nameMatchFailed = 0;
-					}
-
-					// Prevents handling value for keys with no match
-					if (confState == HANDLINGKEY) {
-						confIndex = CONFFAILED;
-						logprintf(" ] No matching key");
-						return 1;
-					}
-
-					// Resets index to be reused for value
-					confIndex = 0;
-				}
+				confIndex++;
+				logprintf("%c", c);
 			}
 			// Updates string value for matched key
 			else if (confIndex < item->len) {
