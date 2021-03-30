@@ -6,22 +6,22 @@ This is code for the ESP-8266 that will update the scroll speed of the telepromp
 ### Read:
 * OSX: tested
 ```sh
-cat < `ls -1 /dev/cu.usbserial-* | head -1`
+cat < `ls /dev/cu.usbserial-* | head -1`
 ```
 * Linux: untested
 ```sh
-cat < `ls -1 /dev/ttyUSB* | head -1`
+cat < `ls /dev/ttyUSB* | head -1`
 ```
 * Windows: I dunno, please let me know if you do
 
 ### Write:
 * OSX: tested
 ```sh
-echo "insert data here" > `ls -1 /dev/cu.usbserial-* | head -1`
+echo "insert data here" > `ls /dev/cu.usbserial-* | head -1`
 ```
 * Linux: untested
 ```sh
-echo "insert data here" > `ls -1 /dev/ttyUSB* | head -1`
+echo "insert data here" > `ls /dev/ttyUSB* | head -1`
 ```
 #### Note:
 * Message should end with a LF
@@ -32,12 +32,12 @@ Interactive terminal where you can write your data to the device and see feedbac
 Tab or '=' are used as delimiter between key and value.
 * OSX: tested
 ```sh
-screen `ls -1 /dev/cu.usbserial-* | head -1`
+screen `ls /dev/cu.usbserial-* | head -1`
 ```
 Exit with Ctrl+a k y
 * Linux: untested
 ```sh
-screen `ls -1 /dev/ttyUSB* | head -1`
+screen `ls /dev/ttyUSB* | head -1`
 ```
 * Windows: I dunno if its even possible :/
 
