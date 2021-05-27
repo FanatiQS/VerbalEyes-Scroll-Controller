@@ -115,7 +115,7 @@ static void writeWebSocketFrame(const char* format, ...) {
 static struct confItem {
 	char* name;
 	uint8_t resetState;
-	uint8_t len;
+	int8_t len;
 	uint16_t addr;
 	bool nameMatchFailed;
 };
@@ -128,8 +128,8 @@ static struct confItem conf_port = 			{ 	"port", 		2,		0,	 	128 	};
 static struct confItem conf_path = 			{ 	"path", 		2,		32,	 	130 	};
 static struct confItem conf_proj = 			{ 	"proj", 		2,		32,	 	162 	};
 static struct confItem conf_projkey = 		{ 	"projkey", 		2,		32,	 	194 	};
-static struct confItem conf_speedmin = 		{ 	"speedmin", 	10,		0,	 	226 	}; // Minimum scroll speed signed int
-static struct confItem conf_speedmax = 		{ 	"speedmax", 	10,		0,	 	228 	}; // Maximum scroll speed signed int
+static struct confItem conf_speedmin = 		{ 	"speedmin", 	10,		-1,	 	226 	}; // Minimum scroll speed signed int
+static struct confItem conf_speedmax = 		{ 	"speedmax", 	10,		-1,	 	228 	}; // Maximum scroll speed signed int
 static struct confItem conf_deadzone = 		{ 	"deadzone", 	10,		0,	 	230 	}; // Deadzone around 0 mark in % of entire range
 static struct confItem conf_callow = 		{ 	"callow", 		10,		0,	 	232 	}; // Smallest value of analog read unsigned int
 static struct confItem conf_calhigh = 		{ 	"calhigh", 		10,		0,	 	234 	}; // Largest value of analog read unsigned int
@@ -231,15 +231,14 @@ bool updateConfig(const int16_t c) {
 		default: {
 			// Validates incomming key against valid configuration keys
 			if (confState != HANDLINGVALUE) {
+				// Key handling has failed and remaining characters should be ignored
+				if (confIndex == CONFFAILED) return 1;
+
 				// Initialize new configuration update
 				if (confIndex == 0) {
 					timeout = time(NULL) + CONFIGTIMEOUT;
 					confState = HANDLINGKEY;
 					logprintf("\r\n[ ");
-				}
-				// Prevents handling value for key with no match
-				else if (confIndex == CONFFAILED) {
-					return 1;
 				}
 
 				// Invalidates keys that does not match incomming string
@@ -251,53 +250,70 @@ bool updateConfig(const int16_t c) {
 						confItems[i]->nameMatchFailed = 1;
 					}
 				}
-				confIndex++;
-				logprintf("%c", c);
 			}
 			// Updates string value for matched key
 			else if (confIndex < item->len) {
 				verbaleyes_conf_write(item->addr + confIndex, c);
-				confIndex++;
-				logprintf("%c", c);
 			}
-			// Updates integer value for matched key
-			else if (item->len == 0 && confIndex < 5) {
+			// Handles integer input for matched key
+			else if (item->len <= 0 && confIndex != CONFFAILED) {
 				// Only accepts a valid numerical representation
-				if (c >= '0' && c <= '9') {
-					// Prints valid character
-					logprintf("%c", c);
-
-					// Clamps numbers higher than maximum value for an unsigned shorts
-					if (confBuffer > 6553 || (confBuffer == 6553 && c > '5')) {
-						logprintf("\r\nValue was too high, claming down to maximum value of 65535");
-						confBuffer = 65535;
-					}
-					// Pushes number onto the buffer
-					else {
-						confBuffer = confBuffer * 10 + c - '0';
+				if (c < '0' || c > '9') {
+					// Flags input as signed if position of sign and item allows
+					if (c == '-' && item->len == -1 && confIndex == 0 && !confBufferSigned) {
+						confBufferSigned = 1;
+						logprintf("-");
+						return 1;
 					}
 
-					// Increments index
-					confIndex++;
-				}
-				// Initialises int buffer to be signed
-				else if (c == '-' && confIndex == 0) {
-					confBufferSigned = 1;
-					logprintf("-");
-				}
-				// Displays invalid character warning message once
-				else {
+					// Aborts handling input if it contained invalid characters
+					if (confIndex == 0) logprintf("0");
+					logprintf("\r\nInvalid input");
 					confIndex = CONFFAILED;
-					logprintf("%c\r\nCharacter was not a number", c);
+					return 1;
 				}
+
+				// Handles integer overflow, it can only occur with four or more character
+				if (confIndex >= 4) {
+					// Clamps unsigned integers if it would overflow
+					if (item->len == 0) {
+						if (confBuffer > 6553 || (confBuffer == 6553 && c > '5')) {
+							confIndex = CONFFAILED;
+							confBuffer = 65535;
+							logprintf("%c\r\nValue was too high and clamped down to maximum value 65535", c);
+							return 1;
+						}
+					}
+					// Clamps signed integers if it would overflow
+					else if (confBuffer > 3276 || (confBuffer == 3276 && c > '7')) {
+						confIndex = CONFFAILED;
+						confBuffer = 32767;
+
+						if (confBufferSigned) {
+							logprintf("%c\r\nValue was too low and clamped up to minimum value of -32767", c);
+						}
+						else {
+							logprintf("%c\r\nValue was too high and clamped down to maximum value of 32767", c);
+						}
+
+						return 1;
+					}
+				}
+
+				// Pushes number onto the buffer
+				confBuffer = confBuffer * 10 + c - '0';
 			}
 			// Displays max value length warning message once
-			else if (confIndex != CONFFAILED) {
+			else {
+				if (confIndex == CONFFAILED) return 1;
 				confIndex = CONFFAILED;
 				logprintf("\r\nMaximum input length reached");
+				return 1;
 			}
 
-			// Continue reading more data
+			// Character was acceptable and continues reading more data
+			confIndex++;
+			logprintf("%c", c);
 			return 1;
 		}
 		// Exits on no data read
@@ -314,23 +330,15 @@ bool updateConfig(const int16_t c) {
 			// Handles termination of value
 			if (confState == HANDLINGVALUE) {
 				// Terminates stored string
-				if (item->len != 0) {
+				if (item->len > 0) {
 					if (confIndex < item->len) verbaleyes_conf_write(item->addr + confIndex, '\0');
 				}
 				// Stores 16 bit integer value
 				else {
-					// Special handling for negative numbers
+					// Makes confBuffer negative if flag is set
 					if (confBufferSigned) {
-						// Clamps negative numbers lower than minimum value for a signed shorts
-						if (confBuffer > 32767) {
-							logprintf("\r\nValue was too low, claming up to minimum value of -32767");
-							confBuffer = 65535;
-						}
-						// Makes buffer negative if it input string started with a minus sign
-						else {
-							confBuffer *= -1;
-							confBufferSigned = 0;
-						}
+						confBufferSigned = 0;
+						confBuffer *= -1;
 					}
 
 					// Stores 16 bit integer for configuration item
