@@ -24,12 +24,12 @@ static uint32_t timeout = 0;
 // Prints a string to the serial output with ability to format
 static void logprintf(const char* format, ...) {
 	va_list args;
-    va_start(args, format);
+	va_start(args, format);
 	const uint32_t len = vsnprintf(NULL, 0, format, args);
 	char buffer[len + 1];
 	va_start(args, format);
-    vsprintf(buffer, format, args);
-    va_end(args);
+	vsprintf(buffer, format, args);
+	va_end(args);
 	verbaleyes_log(buffer, len);
 }
 
