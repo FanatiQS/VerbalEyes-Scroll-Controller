@@ -400,7 +400,6 @@ int8_t ensureConnection() {
 	static uint8_t resMatchIndexes[5];
 	static char acceptHeader[22 + 28 + 2] = "sec-websocket-accept: ";
 	static char* host;
-	static char* path;
 
 	// Prevents immediately retrying after something fails
 	if (state & 0x80) {
@@ -467,11 +466,9 @@ int8_t ensureConnection() {
 			host = (char*)malloc(conf_host.len + 1);
 			confGetStr(conf_host, host);
 			uint16_t port = confGetInt(conf_port);
-			path = (char*)malloc(conf_path.addr + 1);
-			confGetStr(conf_path, path);
 
 			// Prints
-			logprintf("\r\nConnecting to host: %s:%hu%s...", host, port, path);
+			logprintf("\r\nConnecting to host: %s:%hu...", host, port);
 
 			// Connects to socket at host
 			verbaleyes_socket_connect(host, port);
@@ -496,6 +493,12 @@ int8_t ensureConnection() {
 		}
 		// Sends http request to use websocket protocol
 		case 4: {
+			char path[conf_path.addr + 1];
+			confGetStr(conf_path, path);
+
+			// Prints
+			logprintf("\r\nAccessing WebSocket server at %s", path);
+
 			// Sets random seed
 			srand(clock());
 
@@ -521,7 +524,6 @@ int8_t ensureConnection() {
 			);
 			verbaleyes_socket_write(req, reqlen);
 			free(host);
-			free(path);
 
 			// Creates websocket accept header to compare against
 			br_sha1_context ctx;
