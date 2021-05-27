@@ -339,9 +339,6 @@ bool updateConfig(const int16_t c) {
 					confBuffer = 0;
 				}
 
-				// Indicates that value has been stored in configuration
-				logprintf("\r\nValue was updated");
-
 				// Pulls back state to handle updated value
 				if (state > item->resetState) state = item->resetState;
 
