@@ -378,6 +378,8 @@ bool updateConfig(const int16_t c) {
 
 			return 1;
 		}
+		// Ignores these characters
+		case '\r': return 1;
 	}
 }
 
