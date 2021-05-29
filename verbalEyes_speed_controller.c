@@ -113,26 +113,26 @@ static void writeWebSocketFrame(const char* format, ...) {
 // Structure used to read and write configurable data
 static struct confItem {
 	char* name;
-	uint8_t resetState;
 	int8_t len;
 	uint16_t addr;
+	uint8_t resetState;
 	bool nameMatchFailed;
 };
 
 // All configurable properties
-static struct confItem conf_ssid = 			{ 	"ssid", 		0,		32, 	0 		};
-static struct confItem conf_ssidkey = 		{	"ssidkey", 		0,		32, 	32 		};
-static struct confItem conf_host = 			{ 	"host", 		2,		64, 	64 		};
-static struct confItem conf_port = 			{ 	"port", 		2,		0,	 	128 	};
-static struct confItem conf_path = 			{ 	"path", 		2,		32,	 	130 	};
-static struct confItem conf_proj = 			{ 	"proj", 		2,		32,	 	162 	};
-static struct confItem conf_projkey = 		{ 	"projkey", 		2,		32,	 	194 	};
-static struct confItem conf_speedmin = 		{ 	"speedmin", 	10,		-1,	 	226 	}; // Minimum scroll speed signed int
-static struct confItem conf_speedmax = 		{ 	"speedmax", 	10,		-1,	 	228 	}; // Maximum scroll speed signed int
-static struct confItem conf_deadzone = 		{ 	"deadzone", 	10,		0,	 	230 	}; // Deadzone around 0 mark in % of entire range
-static struct confItem conf_callow = 		{ 	"callow", 		10,		0,	 	232 	}; // Smallest value of analog read unsigned int
-static struct confItem conf_calhigh = 		{ 	"calhigh", 		10,		0,	 	234 	}; // Largest value of analog read unsigned int
-static struct confItem conf_sensitivity = 	{ 	"sensitivity", 	10,		0,	 	236 	}; // Sensitivity of analog read in % of entire range
+static struct confItem conf_ssid = 			{ 	"ssid",			32, 	0, 		0	};
+static struct confItem conf_ssidkey = 		{	"ssidkey",		32, 	32, 	0	};
+static struct confItem conf_host = 			{ 	"host", 		64, 	64, 	2	};
+static struct confItem conf_port = 			{ 	"port", 		0,	 	128 	2	};
+static struct confItem conf_path = 			{ 	"path",			32,	 	130 	2	};
+static struct confItem conf_proj = 			{ 	"proj", 		32,	 	162 	2	};
+static struct confItem conf_projkey = 		{ 	"projkey",		32,	 	194 	2	};
+static struct confItem conf_speedmin = 		{ 	"speedmin",		-1,	 	226 	10	};
+static struct confItem conf_speedmax = 		{ 	"speedmax",		-1,	 	228 	10	};
+static struct confItem conf_deadzone = 		{ 	"deadzone",		0,	 	230 	10	};
+static struct confItem conf_callow = 		{ 	"callow",		0,	 	232 	10	};
+static struct confItem conf_calhigh = 		{ 	"calhigh",		0,	 	234 	10	};
+static struct confItem conf_sensitivity = 	{ 	"sensitivity",	0,	 	236 	10	};
 
 
 
