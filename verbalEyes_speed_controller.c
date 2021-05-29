@@ -398,8 +398,7 @@ float jitterSize;
 int8_t ensureConnection() {
 	static uint16_t resIndex = 0;
 	static uint8_t resMatchIndexes[5];
-	static char acceptHeader[22 + 28 + 2] = "sec-websocket-accept: ";
-	static char* host;
+	static char* buf;
 
 	// Prevents immediately retrying after something fails
 	if (state & 0x80) {
@@ -463,15 +462,15 @@ int8_t ensureConnection() {
 		// Initialize socket connection
 		case 2: {
 			// Gets host and port from config
-			host = (char*)malloc(conf_host.len + 1);
-			confGetStr(conf_host, host);
+			buf = (char*)malloc(conf_host.len + 1);
+			confGetStr(conf_host, buf);
 			uint16_t port = confGetInt(conf_port);
 
 			// Prints
-			logprintf("\r\nConnecting to host: %s:%hu...", host, port);
+			logprintf("\r\nConnecting to host: %s:%hu...", buf, port);
 
 			// Connects to socket at host
-			verbaleyes_socket_connect(host, port);
+			verbaleyes_socket_connect(buf, port);
 
 			// Sets timeout for awaiting connection
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
@@ -520,21 +519,22 @@ int8_t ensureConnection() {
 				req,
 				"GET %s HTTP/1.1\r\nHost: %s\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: %s\r\n\r\n",
 				path,
-				host,
+				buf,
 				key
 			);
 			verbaleyes_socket_write(req, reqlen);
-			free(host);
 
 			// Creates websocket accept header to compare against
+			realloc(buf, 22 + 28 + 2 + 1);
+			strcpy(buf, "sec-websocket-accept: ");
 			br_sha1_context ctx;
 			br_sha1_init(&ctx);
 			br_sha1_update(&ctx, key, 24);
 			br_sha1_update(&ctx, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
 			uint8_t hash[20];
 			br_sha1_out(&ctx, hash);
-			base64_encode_chars((const char*)hash, 20, acceptHeader + 22);
-			strcpy(acceptHeader + 50, "\r\n");
+			base64_encode_chars((const char*)hash, 20, buf + 22);
+			strcpy(buf + 50, "\r\n");
 
 			// Sets timeout value for awaiting http response
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
@@ -632,10 +632,13 @@ int8_t ensureConnection() {
 				const char lowerc = tolower(c);
 				matchStr(&resMatchIndexes[0], lowerc, "connection: upgrade\r\n");
 				matchStr(&resMatchIndexes[1], lowerc, "upgrade: websocket\r\n");
-				matchStr(&resMatchIndexes[2], (resMatchIndexes[2] <= 20) ? lowerc : c, acceptHeader);
+				matchStr(&resMatchIndexes[2], (resMatchIndexes[2] <= 20) ? lowerc : c, buf);
 				matchStr(&resMatchIndexes[3], lowerc, "sec-websocket-extensions: ");
 				matchStr(&resMatchIndexes[4], lowerc, "sec-webSocket-protocol: ");
 			}
+
+			// Frees up allocated buffer
+			free(buf);
 
 			// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
 			if (!resMatchIndexes[0] || !resMatchIndexes[1]) {
