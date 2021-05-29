@@ -525,7 +525,7 @@ int8_t ensureConnection() {
 			verbaleyes_socket_write(req, reqlen);
 
 			// Creates websocket accept header to compare against
-			realloc(buf, 22 + 28 + 2 + 1);
+			buf = realloc(buf, 22 + 28 + 2 + 1);
 			strcpy(buf, "sec-websocket-accept: ");
 			br_sha1_context ctx;
 			br_sha1_init(&ctx);
