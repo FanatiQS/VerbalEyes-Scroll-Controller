@@ -66,7 +66,6 @@ uint32_t verbaleyes_network_getip() {
 	return WiFi.localIP();
 }
 
-
 // Creates a network socket to use for WebSocket communication with the server
 WiFiClient client;
 
@@ -86,20 +85,20 @@ short verbaleyes_socket_read() {
 }
 
 // Sends a string to the endpoint the socket is connected to
-void verbaleyes_socket_write(const char* str, const unsigned int len) {
+void verbaleyes_socket_write(const uint8_t* str, const size_t len) {
 	client.write(str, len);
 }
 
 
 
 // Prints a string to the serial interface
-void verbaleyes_log(const char* str, const uint32_t len) {
+void verbaleyes_log(const char* str, const size_t len) {
 	Serial.print(str);
 }
 
 
 
-// Fills missing clock function. Used for getting random value
+// Fills missing clock function. Used for getting random seed
 unsigned long clock() {
 	return micros();
 }
