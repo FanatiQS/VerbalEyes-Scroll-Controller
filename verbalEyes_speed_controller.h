@@ -28,7 +28,7 @@
 #define CONNECTIONFAILEDDELAY 5
 #endif
 
-// Makes functions work in c++
+// Makes functions work in C++
 #ifdef __cplusplus
 extern "C" {
 #endif
