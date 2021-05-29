@@ -493,7 +493,8 @@ int8_t ensureConnection() {
 		}
 		// Sends http request to use websocket protocol
 		case 4: {
-			char path[conf_path.addr + 1];
+			// Gets path to use on host
+			char path[conf_path.len + 1];
 			confGetStr(conf_path, path);
 
 			// Prints
