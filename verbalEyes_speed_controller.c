@@ -8,7 +8,6 @@
 #include <stdarg.h> // va_list, va_start, va_end
 
 #include <bearssl/bearssl_hash.h> // sha1
-#include <libb64/cencode.h> // base64
 
 #include "./verbalEyes_speed_controller.h"
 
@@ -534,8 +533,15 @@ int8_t ensureConnection() {
 			br_sha1_update(&ctx, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
 			uint8_t hash[20];
 			br_sha1_out(&ctx, hash);
-			base64_encode_chars((const char*)hash, 20, buf + 22);
-			strcpy(buf + 50, "\r\n");
+			hash[20] = 0;
+			for (int i = 0; i < 21; i += 3) {
+				const int offset = i / 3;
+				buf[i + 22 + offset] = table[hash[i] >> 2];
+				buf[i + 1 + 22 + offset] = table[((hash[i] & 0x03) << 4) | hash[i + 1] >> 4];
+				buf[i + 2 + 22 + offset] = table[(hash[i + 1] & 0x0f) << 2 | hash[i + 2] >> 6];
+				buf[i + 3 + 22 + offset] = table[hash[i + 2] & 0x3f];
+			}
+			strcpy(buf + 22 + 27, "=\r\n\0");
 
 			// Sets timeout value for awaiting http response
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
