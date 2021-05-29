@@ -53,10 +53,10 @@ extern uint32_t verbaleyes_network_getip();
 extern void verbaleyes_socket_connect(const char*, const uint16_t);
 extern bool verbaleyes_socket_connected();
 extern int16_t verbaleyes_socket_read();
-extern void verbaleyes_socket_write(const char*, const uint32_t);
+extern void verbaleyes_socket_write(const uint8_t*, const size_t);
 
 // Logs data to an interface
-extern void verbaleyes_log(const char*, const uint32_t);
+extern void verbaleyes_log(const char*, const size_t);
 
 // Ends extern c block
 #ifdef __cplusplus

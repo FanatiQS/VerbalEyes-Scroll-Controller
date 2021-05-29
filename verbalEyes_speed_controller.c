@@ -16,7 +16,7 @@
 #define TAB "    "
 
 static uint16_t state = 0;
-static uint32_t timeout = 0;
+static size_t timeout = 0;
 
 
 
@@ -24,7 +24,7 @@ static uint32_t timeout = 0;
 static void logprintf(const char* format, ...) {
 	va_list args;
 	va_start(args, format);
-	const uint32_t len = vsnprintf(NULL, 0, format, args);
+	const size_t len = vsnprintf(NULL, 0, format, args);
 	char buffer[len + 1];
 	va_start(args, format);
 	vsprintf(buffer, format, args);
@@ -34,8 +34,8 @@ static void logprintf(const char* format, ...) {
 
 // Prints progress bar every second to indicate a process is working and handle timeout errors
 static bool showProgressBar() {
-	static uint32_t previous;
-	const uint32_t current = time(NULL);
+	static size_t previous;
+	const size_t current = time(NULL);
 
 	// Handle timeout error
 	if (current > timeout) return 0;
@@ -66,7 +66,7 @@ static void writeWebSocketFrame(const char* format, ...) {
 	// Gets length of formated payload
 	va_list args;
 	va_start(args, format);
-	const uint32_t payloadLen = vsnprintf(NULL, 0, format, args);
+	const size_t payloadLen = vsnprintf(NULL, 0, format, args);
 
 	// Offset from start of frame to start of payload data
 	uint8_t payloadOffset;
@@ -100,7 +100,7 @@ static void writeWebSocketFrame(const char* format, ...) {
 	va_end(args);
 
 	// Maskes payload
-	for (uint32_t i = 0; i < payloadLen; i++) {
+	for (size_t i = 0; i < payloadLen; i++) {
 		frame[i + payloadOffset] = frame[i + payloadOffset] ^ mask[i & 3];
 	}
 
