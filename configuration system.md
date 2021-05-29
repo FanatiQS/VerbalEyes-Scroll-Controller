@@ -1,6 +1,8 @@
 # Scroll configuration over HTTP
 This file documents ideas on how configuration over HTTP could work.
 
+* ESP can have both access point and connect to existing network. It could setup an access point and serve a configuration webpage that uses simple POST request with same structure as serial data. The issue is security. USB configuration is good since it requires physical access. There could be a password required, but that requires setting a password for the device and might be overlooked by most. It could also not set up the access point if the password is not set up. Initially, the network config does not work, but if the user wants it, they could enable it by configuring a password over usb.
+
 ## Security for HTTP configuration
 * It is very important to be able to lock down access to configuring the device over HTTP.
 * The best way is probably to have some kind of signin, like there is for routers, teradek vidu and so on.
