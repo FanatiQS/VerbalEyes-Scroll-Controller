@@ -123,16 +123,16 @@ static struct confItem {
 static struct confItem conf_ssid = 			{ 	"ssid",			32, 	0, 		0	};
 static struct confItem conf_ssidkey = 		{	"ssidkey",		32, 	32, 	0	};
 static struct confItem conf_host = 			{ 	"host", 		64, 	64, 	2	};
-static struct confItem conf_port = 			{ 	"port", 		0,	 	128 	2	};
-static struct confItem conf_path = 			{ 	"path",			32,	 	130 	2	};
-static struct confItem conf_proj = 			{ 	"proj", 		32,	 	162 	2	};
-static struct confItem conf_projkey = 		{ 	"projkey",		32,	 	194 	2	};
-static struct confItem conf_speedmin = 		{ 	"speedmin",		-1,	 	226 	10	};
-static struct confItem conf_speedmax = 		{ 	"speedmax",		-1,	 	228 	10	};
-static struct confItem conf_deadzone = 		{ 	"deadzone",		0,	 	230 	10	};
-static struct confItem conf_callow = 		{ 	"callow",		0,	 	232 	10	};
-static struct confItem conf_calhigh = 		{ 	"calhigh",		0,	 	234 	10	};
-static struct confItem conf_sensitivity = 	{ 	"sensitivity",	0,	 	236 	10	};
+static struct confItem conf_port = 			{ 	"port", 		0,	 	128, 	2	};
+static struct confItem conf_path = 			{ 	"path",			32,	 	130, 	2	};
+static struct confItem conf_proj = 			{ 	"proj", 		32,	 	162, 	2	};
+static struct confItem conf_projkey = 		{ 	"projkey",		32,	 	194, 	2	};
+static struct confItem conf_speedmin = 		{ 	"speedmin",		-1,	 	226, 	10	};
+static struct confItem conf_speedmax = 		{ 	"speedmax",		-1,	 	228, 	10	};
+static struct confItem conf_deadzone = 		{ 	"deadzone",		0,	 	230, 	10	};
+static struct confItem conf_callow = 		{ 	"callow",		0,	 	232, 	10	};
+static struct confItem conf_calhigh = 		{ 	"calhigh",		0,	 	234, 	10	};
+static struct confItem conf_sensitivity = 	{ 	"sensitivity",	0,	 	236, 	10	};
 
 
 
