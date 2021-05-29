@@ -279,7 +279,7 @@ bool updateConfig(const int16_t c) {
 						if (confBuffer > 6553 || (confBuffer == 6553 && c > '5')) {
 							confIndex = CONFFAILED;
 							confBuffer = 65535;
-							logprintf("%c\r\nValue was too high and clamped down to maximum value 65535", c);
+							logprintf("%c\r\nValue was too high and clamped down to maximum value of 65535", c);
 							return 1;
 						}
 					}
