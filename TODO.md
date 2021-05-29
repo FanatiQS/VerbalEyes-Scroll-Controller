@@ -1,5 +1,7 @@
 ## TODO:
 
+* Replace "Done" message in updateConfig to something better that indicates changes have been saved
+
 * Try getting https to work
 	Now that socket_write function writes uint8_t instead of char, it might work better with defined length.
 
