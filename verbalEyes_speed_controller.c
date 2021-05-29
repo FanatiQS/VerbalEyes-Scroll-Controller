@@ -680,14 +680,7 @@ int8_t ensureConnection() {
 
 			// Successfully validated http headers
 			logprintf("\r\nWebSocket connection established");
-
-			// Sets up to connect to project
-			state = 7;
 		}
-	}
-
-	// Connects to verbalEyes project
-	switch (state) {
 		// Connect to verbalEyes project
 		case 7: {
 			// Gets project and project key from config
