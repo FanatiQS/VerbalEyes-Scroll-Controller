@@ -485,6 +485,7 @@ int8_t ensureConnection() {
 
 				// Handles timeout error
 				logprintf("\r\nFailed to connect to host");
+				free(buf);
 				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 				state = 2 | 0x80;
 				return CONNECTIONFAILED;
@@ -565,6 +566,7 @@ int8_t ensureConnection() {
 						logprintf("\r\nResponse from server ended prematurely");
 					}
 
+					free(buf);
 					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
@@ -612,6 +614,7 @@ int8_t ensureConnection() {
 					else {
 						logprintf("\r\nConnection to host closed");
 					}
+					free(buf);
 					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 					state = 2 | 0x80;
 					return CONNECTIONFAILED;
