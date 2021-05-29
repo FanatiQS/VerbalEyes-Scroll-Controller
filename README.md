@@ -39,10 +39,10 @@ TODO: Add details on how to implement updateConfig
 More details on how the input data should be structured can be found in the [configuration](#configuration) chapter.
 
 ## Connection
-TODO: Add details about ensureConnection function
+TODO: Add details about how to implement ensureConnection function
 
 ## Scroll Control
-TODO: Add details about updateSpeed and jumpToTop functions
+TODO: Add details about how to implement updateSpeed and jumpToTop functions
 
 
 # Configuration
