@@ -5,7 +5,7 @@ This is a C library to control scroll speed and scroll position for a VerbalEyes
 This is an implementation or the library that works on Arduino supported boards.
 
 ## Wiring
-Details on how the board should be wired
+TODO: Add details on how the board should be wired
 
 # Core Library
 The core library should be able to run on anything supporting the standard C libraries. Because of this, the functions to access to Wi-Fi, persistent storage and logging are not defined. These have to be implemented to work on the micro controller that it is used on by defining all the required functions the library uses. These functions are prototyped in `verbalEyes-speed-controler.h`.
@@ -26,7 +26,7 @@ This function commits the updated configuration to persistent storage if micro c
 
 ### Network
 
-...
+TODO: Add documentation for all network functions
 
 ### Logging
 
@@ -35,14 +35,14 @@ Required by: ensureConnection
 This function gets a string that should be passed to the logging function. A length argument is also defined but not not always required.
 
 ## Update Configuration
-Details on how to implement updateConfig
-More details on how the input data should be structured can be found in the [ls][Configuration] chapter.
+TODO: Add details on how to implement updateConfig
+More details on how the input data should be structured can be found in the [configuration](#configuration) chapter.
 
 ## Connection
-Details about ensureConnection function
+TODO: Add details about ensureConnection function
 
 ## Scroll Control
-Details about updateSpeed and jumpToTop
+TODO: Add details about updateSpeed and jumpToTop functions
 
 
 # Configuration
@@ -156,7 +156,7 @@ ls /dev/ttyUSB*
 * Windows: ?
 
 #### Writing:
-Replace path with selected device port from [ls](#get-all-serial-device-paths)
+Replace path with selected device port from [ls](####list-serial-devices)
 
 * OSX:
 ```sh
@@ -169,7 +169,7 @@ echo -e "key=value\n" > path
 * Windows: ?
 
 #### Reading:
-Replace path with selected device port from [ls](#get-all-serial-device-paths)
+Replace path with selected device port from [ls](####list-serial-devices)
 
 * OSX:
 ```sh
