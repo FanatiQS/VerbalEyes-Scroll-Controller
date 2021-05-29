@@ -20,7 +20,9 @@ This function reads configuration data, character by character. The function is 
 Required by: updateConfig
 This function writes new configuration data to the persistent storage. The function is called with a specified address and a one byte integer. The function should write that integer to the specified address in the persistent storage.
 
-...
+#### void verbaleyes_conf_commit()
+Required by: updateConfig
+This function commits the updated configuration to persistent storage if micro controller requires it. Writing to EEPROM does not require this function to do anything, but writing to flash storage should be done in one go instead of writing each character as they come in.
 
 ### Network
 
@@ -28,7 +30,9 @@ This function writes new configuration data to the persistent storage. The funct
 
 ### Logging
 
-...
+#### void verbaleyes_log(const char* str, const size_t len)
+Required by: ensureConnection
+This function gets a string that should be passed to the logging function. A length argument is also defined but not not always required.
 
 ## Update Configuration
 Details on how to implement updateConfig
