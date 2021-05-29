@@ -1,5 +1,10 @@
 ## TODO:
 
+* Try getting https to work
+	Now that socket_write function writes uint8_t instead of char, it might work better with defined length.
+
+* Continue working on HTTP POST configuration with captive portals and softAP. Maybe it should be its own branch?
+
 * Update unfinished documentation
 
 * Find a way to add logs like "invalid ssid" or "invalid ssid key" into verbaleyes_network_connected.
