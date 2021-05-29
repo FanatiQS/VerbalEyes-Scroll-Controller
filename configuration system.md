@@ -1,13 +1,12 @@
-# Scroll thingimajigg configuration
-
-## What we have
-Currently we have a parser that accepts `key=value\n` text. Spaces before or after the delimiter is currently not trimmed so `key = value` is not going to find the config property for `key`. When it finds a matching key, it then updates it with the following value until it finds a `\n`. If the value is too long, it is going to stop adding more data, but the data up until that point is still accepted and added. Number values are parsed into integers when they are used instead of when they are stored. This might be better to do when storing, but the EEPROM handles bytes and I am not sure how it is going to handle storing and loading of integers since they are longer than 1 byte.
+# Scroll configuration over HTTP
+This file documents ideas on how configuration over HTTP could work.
 
 ## Security for HTTP configuration
 * It is very important to be able to lock down access to configuring the device over HTTP.
 * The best way is probably to have some kind of signin, like there is for routers, teradek vidu and so on.
 * Since data would then be transmitted back to the server through an HTTP POST request, it would need a cookie or something like that to store the session login.
 * Another way to authenticate is to use query parameters instead of a cookie. The pros about this is that it is possible to configure via cURL or anything similar and the only thing that needs to be done is to serve the html file with a changable `action` on the form element.
+* A simple way of handling security would be to set up a softAP with a key and then create an http server on that APs IP. That would make it only accessible with the APs key. More info here https://arduino.stackexchange.com/questions/67269/create-one-server-in-ap-mode-and-another-in-station-mode.
 
 ## Sending HTTP POST data
 * A way of sending form data to the server is to use the form attribute `enctype` set to `text/plain`. This would separate every form element with `\r\n` and not encode any special characters.
@@ -25,8 +24,3 @@ Currently we have a parser that accepts `key=value\n` text. Spaces before or aft
 * Just put `const char* html = R"%%(` as the first line and `)%%"` as the last. Where `%%` is configurable to be anything not available in the html file.
 * Might also be better to store the data in a different way with `PROGMEM`, but I have not yet read up on it.
 * The string does also need to end with a null byte, so adding that is also needed.
-
-## TODO
-* Add documentation for how configuration works. If someone would want to configure manually, there should be information to read about how to do so. Include examples and tables for types and max lengths of all properties. I don't like reading instructions in plain text, so try to put as much information as possible in tables or examples for to make it easy to skim.
-* Rework storage of numbers to store them as ints instead of strings.
-* Ability to configure over HTTP
