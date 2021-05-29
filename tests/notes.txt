@@ -1,0 +1,36 @@
+// Connect to non-existing network to test timeout
+// If it tries for 10 seconds and then fails and starts over, it all works as it should
+
+// Connect to existing network to test reconnection
+// Unplug network
+// If it sais lost connection and retries to connect, it all works as it should
+
+//!! reconnect socket
+//!! timeout socket connection
+
+//!! validate http request
+//!! test http status line timeout
+//!! test http status line unexpected res code
+//!! test http status line premature end
+//!! test http status line correct
+//!! test http header premature end
+//!! test http header connection != upgrade
+//!! test http header upgrade != websocket
+//!! test http header missing ws accept
+//!! test http header incorrect ws accept
+//!! test http header with ws extension header
+//!! test http header with ws protocol header
+//!! test http header all correct
+//!! validate websocket payload
+//!! test ws res timeout
+//!! test ws res premature end
+//!! test ws res fragmented res
+//!! test ws res other opcode
+//!! test ws res premature end at byte 2
+//!! test ws res masked frame
+//!! test ws res <126 byte payload
+//!! test ws res >125 byte payload
+//!! test ws res >65535 byte payload
+//!! test ws res payload premature end
+//!! test ws res authed
+//!! test ws res not authed
