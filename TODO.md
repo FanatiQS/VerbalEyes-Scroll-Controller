@@ -2,6 +2,8 @@
 
 * Replace "Done" message in updateConfig to something better that indicates changes have been saved
 
+* Continue working on tests for the API
+
 * Continue working on test system
 
 * Try getting https to work
