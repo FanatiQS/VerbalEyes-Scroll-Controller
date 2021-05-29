@@ -1,5 +1,7 @@
 ## TODO:
 
+* Update unfinished documentation
+
 * Go through code and see if anything would serve better as a size_t. writing data to socket and serial would probably be better to use size_t
 
 * Find a better way for getting random seed than to overwrite clock function on ESP since it does not exist. Maybe it needs a verbaleyes_seed function.
