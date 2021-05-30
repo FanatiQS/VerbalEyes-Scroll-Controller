@@ -102,7 +102,6 @@ For the pre-built example, configuration is done over the serial connection to t
 
 ### Notes
 * The echo command might not like the `-e` argument depending on OS. (When character escape is done for config parser, `-e` won't be needed anymore)
-* The read command should continue reading from the serial device until canceled. If it stops right away, try running `stty -echo -F path` and replace path with the path to your serial port (had this issue in raspbian)
 
 ### Read:
 Reading logs from the device
@@ -110,9 +109,13 @@ Reading logs from the device
 ```sh
 cat < `ls /dev/cu.usbserial-* | head -1`
 ```
-* Linux: untested
+* Linux: tested
 ```sh
 cat < `ls /dev/ttyUSB* | head -1`
+```
+Note: If the device is spamming logs or stops the reading right away, try running this command (had this issue in raspbian)
+```sh
+stty -echo -F `ls /dev/cu.usbserial-* | head -1`
 ```
 * Windows: I dunno
 
@@ -122,7 +125,7 @@ Writing configuration data to the device
 ```sh
 echo -e "key=value\n" > `ls /dev/cu.usbserial-* | head -1`
 ```
-* Linux: untested
+* Linux: tested
 ```sh
 echo -e "key=value\n" > `ls /dev/ttyUSB* | head -1`
 ```
@@ -139,6 +142,7 @@ Exit with Ctrl+a k y
 ```sh
 screen `ls /dev/ttyUSB* | head -1`
 ```
+Note: screen command might need to be installed from the package manager
 * Windows: I dunno if its even possible :/
 
 ### Manually selecting device
