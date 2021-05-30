@@ -1,6 +1,6 @@
 const fs = require('fs');
 const http = require('http');
-const WebSocket = require('../teleprompter-server/node_modules/ws/index.js');
+const WebSocket = require('../../teleprompter-server/node_modules/ws/index.js');
 
 const server = http.createServer((req, res) => {
 	res.end(fs.readFileSync('./index.html'));
