@@ -30,6 +30,7 @@ CONNECTIONS:
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
 #include <DNSServer.h>
+#include <WiFiClientSecure.h>
 #include "./verbalEyes_speed_controller.h"
 
 
@@ -68,9 +69,11 @@ uint32_t verbaleyes_network_getip() {
 
 // Creates a network socket to use for WebSocket communication with the server
 WiFiClient client;
+// WiFiClientSecure client; // Enable this line when using HTTPS
 
 // Connects the socket to an endpoint
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
+	// client.setInsecure();  // Enable this line when using HTTPS
 	client.connect(host, port);
 }
 
