@@ -531,7 +531,7 @@ int8_t ensureConnection() {
 			br_sha1_init(&ctx);
 			br_sha1_update(&ctx, key, 24);
 			br_sha1_update(&ctx, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
-			uint8_t hash[20];
+			uint8_t hash[21];
 			br_sha1_out(&ctx, hash);
 			hash[20] = 0;
 			for (int i = 0; i < 21; i += 3) {
