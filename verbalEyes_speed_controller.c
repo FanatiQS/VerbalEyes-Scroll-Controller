@@ -72,7 +72,7 @@ static void writeWebSocketFrame(const char* format, ...) {
 	uint8_t payloadOffset;
 
 	// Creates websocket frame to send payload with
-	char frame[8 + payloadLen + 1];
+	uint8_t frame[8 + payloadLen + 1];
 
 	// Sets fin bit, reserved bits and opcode for websocket frame
 	frame[0] = 0x81;
@@ -96,7 +96,7 @@ static void writeWebSocketFrame(const char* format, ...) {
 
 	// Inserts formated payload unmasked into frame
 	va_start(args, format);
-	vsprintf(frame + payloadOffset, format, args);
+	vsprintf((char*)(frame + payloadOffset), format, args);
 	va_end(args);
 
 	// Maskes payload
@@ -522,7 +522,7 @@ int8_t ensureConnection() {
 				buf,
 				key
 			);
-			verbaleyes_socket_write(req, reqlen);
+			verbaleyes_socket_write((uint8_t*)req, reqlen);
 
 			// Creates websocket accept header to compare against
 			buf = realloc(buf, 22 + 28 + 2 + 1);
@@ -627,7 +627,7 @@ int8_t ensureConnection() {
 				}
 
 				// Analyzes HTTP headers up to end of head
-				matchStr(&resIndex, c, "\r\n\r\n");
+				matchStr((uint8_t*)&resIndex, c, "\r\n\r\n");
 
 				// Prints HTTP headers
 				if (c == '\n') {
