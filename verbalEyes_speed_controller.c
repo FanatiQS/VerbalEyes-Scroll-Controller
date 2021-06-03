@@ -737,7 +737,7 @@ int8_t ensureConnection() {
 		// Gets length of WebSocket payload for authentication
 		case 9: {
 			while (1) {
-				const uint16_t c = verbaleyes_socket_read();
+				const int16_t c = verbaleyes_socket_read();
 
 				// Handles timeout error
 				if (c == EOF) {
