@@ -352,6 +352,7 @@ bool updateConfig(const int16_t c) {
 				// Resets to handle new keys
 				confState = HANDLINGKEY;
 				confIndex = 0;
+				return 1;
 			}
 			// Handles termination of key
 			else if (confState == HANDLINGKEY) {
@@ -373,9 +374,11 @@ bool updateConfig(const int16_t c) {
 					logprintf(" ] Aborted");
 					confIndex = 0;
 				}
+
+				return 1;
 			}
 
-			return 1;
+			return 0;
 		}
 		// Ignores these characters
 		case '\r': return 1;
