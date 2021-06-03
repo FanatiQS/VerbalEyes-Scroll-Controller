@@ -111,7 +111,7 @@ static void writeWebSocketFrame(const char* format, ...) {
 
 
 // Structure used to read and write configurable data
-static struct confItem {
+struct confItem {
 	char* name;
 	int8_t len;
 	uint16_t addr;
