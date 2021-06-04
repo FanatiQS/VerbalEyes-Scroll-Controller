@@ -4,8 +4,8 @@
 
 * Continue working on tests for the API
 
-* Try getting https to work
-	Now that socket_write function writes uint8_t instead of char, it might work better with defined length.
+* Get HTTPS to work
+	HTTPS is working, but there is currently no way to distinguish between HTTP and HTTPS hosts
 
 * Continue working on HTTP POST configuration with captive portals and softAP. Maybe it should be its own branch?
 
