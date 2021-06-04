@@ -4,8 +4,6 @@
 
 * Continue working on tests for the API
 
-* Continue working on test system
-
 * Try getting https to work
 	Now that socket_write function writes uint8_t instead of char, it might work better with defined length.
 
