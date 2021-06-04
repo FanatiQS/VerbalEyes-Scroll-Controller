@@ -60,5 +60,5 @@
 	3 blinks indicating error
 	fading indicating connecting
 	constant blinking on off indicating configuration mode
-	low brightness shine indicates standby
-	high brighness shine indicates sending
+	periodically blinking light indicates standby
+	high brightness shine indicates sending
