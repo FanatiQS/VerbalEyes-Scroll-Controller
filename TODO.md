@@ -12,7 +12,7 @@
 * Update unfinished documentation
 
 * Find a way to add logs like "invalid ssid" or "invalid ssid key" into verbaleyes_network_connected.
-	When getting status, it returns incorrect password code until connected.
+	When getting status, it returns "incorrect password" code until connected.
 
 * Find a better way for getting random seed than to overwrite clock function on ESP since it does not exist. Maybe it needs a verbaleyes_seed function.
 
@@ -34,6 +34,7 @@
 	Trim all spaces before key (so a key can not start with spaces)
 	Trim all spaces after key unless there is a match (so a key can end end with spaces)
 	Trim one or multiple spaces before value
+	Does ssid, ssidkey, host or path even allow for leading or trailing spaces if even spaces at all?
 
 ## LED INDICATION Notes:
    * writing to conf
