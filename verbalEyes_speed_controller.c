@@ -59,7 +59,7 @@ static int8_t connectionFailToState(const char* msg, const uint16_t backToState)
 }
 
 // Reconnects to socket if unable to get data before timeout
-static int8_t socketHadNotData() {
+static int8_t socketHadNoData() {
 	if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
 	if (time(NULL) < timeout) return CONNECTING;
 	return connectionFailToState("\r\nResponse from server ended prematurely", 0x82);
@@ -614,7 +614,7 @@ int8_t ensureConnection() {
 				const int16_t c = verbaleyes_socket_read();
 
 				// Handles timeout and socket close error
-				if (c == EOF) return socketHadNotData();
+				if (c == EOF) return socketHadNoData();
 
 				// Analyzes HTTP headers up to end of head
 				matchStr((uint8_t*)&resIndex, c, "\r\n\r\n");
@@ -706,7 +706,7 @@ int8_t ensureConnection() {
 				const int16_t c = verbaleyes_socket_read();
 
 				// Handles timeout error
-				if (c == EOF) return socketHadNotData();
+				if (c == EOF) return socketHadNoData();
 
 				// Gets payload length and continues if extended payload length is used
 				if (resIndex == WS_PAYLOADLEN_NOTSET) {
@@ -745,7 +745,7 @@ int8_t ensureConnection() {
 				const signed short c = verbaleyes_socket_read();
 
 				// Handles timeout error
-				if (c == EOF) return socketHadNotData();
+				if (c == EOF) return socketHadNoData();
 
 				// Prints entire WebSocket payload
 				if (c == '\n') {
