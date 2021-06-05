@@ -50,6 +50,21 @@ static bool showProgressBar() {
 // Indication that a match has already succeeded
 #define SUCCESSFULMATCH 255
 
+// Resets state back with an error message
+static int8_t connectionFailToState(const char* msg, const uint16_t backToState) {
+	logprintf(msg);
+	timeout = time(NULL) + CONNECTIONFAILEDDELAY;
+	state = backToState;
+	return CONNECTIONFAILED;
+}
+
+// Reconnects to socket if unable to get data before timeout
+static int8_t socketHadNotData() {
+	if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
+	if (time(NULL) < timeout) return CONNECTING;
+	return connectionFailToState("\r\nResponse from server ended prematurely", 0x82);
+}
+
 // Matches incoming data character by character
 static void matchStr(uint8_t* index, const char c, const char* match) {
 	if (*index == SUCCESSFULMATCH) return;
@@ -106,21 +121,6 @@ static void writeWebSocketFrame(const char* format, ...) {
 
 	// Sends frame
 	verbaleyes_socket_write(frame, payloadLen + payloadOffset);
-}
-
-// Resets state back with an error message
-static int8_t connectionFailToState(const char* msg, const uint16_t backToState) {
-	logprintf(msg);
-	timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-	state = backToState;
-	return CONNECTIONFAILED;
-}
-
-// Reconnects to socket if unable to get data before timeout
-static int8_t socketHadNotData() {
-	if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
-	if (time(NULL) < timeout) return CONNECTING;
-	return connectionFailToState("\r\nResponse from server ended prematurely", 0x82);
 }
 
 
