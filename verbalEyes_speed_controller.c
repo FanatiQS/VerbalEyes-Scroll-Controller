@@ -686,11 +686,9 @@ int8_t ensureConnection() {
 
 			// Shows progress bar until socket starts receiving data
 			if (c == EOF) {
-				if (resIndex == 0) {
-					if (showProgressBar()) return CONNECTING;
-					return connectionFailToState("\r\nDid not get a response from the server", 0x82);
-				}
-				return socketHadNotData();
+				if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
+				if (showProgressBar()) return CONNECTING;
+				return connectionFailToState("\r\nDid not get a response from the server", 0x82);
 			}
 
 			// Makes sure this is an unfragmented WebSocket frame in text format
