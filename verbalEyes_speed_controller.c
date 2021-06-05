@@ -108,6 +108,21 @@ static void writeWebSocketFrame(const char* format, ...) {
 	verbaleyes_socket_write(frame, payloadLen + payloadOffset);
 }
 
+// Resets state back with an error message
+static int8_t connectionFailToState(const char* msg, const uint16_t backToState) {
+	logprintf(msg);
+	timeout = time(NULL) + CONNECTIONFAILEDDELAY;
+	state = backToState;
+	return CONNECTIONFAILED;
+}
+
+// Reconnects to socket if unable to get data before timeout
+static int8_t socketHadNotData() {
+	if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
+	if (time(NULL) < timeout) return CONNECTING;
+	return connectionFailToState("\r\nResponse from server ended prematurely", 0x82);
+}
+
 
 
 // Structure used to read and write configurable data
@@ -441,10 +456,7 @@ int8_t ensureConnection() {
 				if (showProgressBar()) return CONNECTING;
 
 				// Handles timeout error
-				logprintf("\r\nFailed to connect to network");
-				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-				state = 0 | 0x80;
-				return CONNECTIONFAILED;
+				return connectionFailToState("\r\nFailed to connect to network", 0x80);
 			}
 
 			// Prints devices IP address
@@ -464,7 +476,7 @@ int8_t ensureConnection() {
 		// Initialize socket connection
 		case 2: {
 			// Gets host and port from config
-			buf = (char*)malloc(conf_host.len + 1);
+			buf = realloc(buf, conf_host.len + 1);
 			confGetStr(conf_host, buf);
 			uint16_t port = confGetInt(conf_port);
 
@@ -486,11 +498,7 @@ int8_t ensureConnection() {
 				if (showProgressBar()) return CONNECTING;
 
 				// Handles timeout error
-				logprintf("\r\nFailed to connect to host");
-				free(buf);
-				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-				state = 2 | 0x80;
-				return CONNECTIONFAILED;
+				return connectionFailToState("\r\nFailed to connect to host", 0x82);
 			}
 		}
 		// Sends http request to use websocket protocol
@@ -561,24 +569,19 @@ int8_t ensureConnection() {
 				// Shows progress bar until socket starts receiving data
 				if (c == EOF) {
 					if (resIndex == RESINDEXFAILED) {
-						logprintf("\r\nReceived unexpected HTTP response code");
+						return connectionFailToState("\r\nReceived unexpected HTTP response code", 0x82);
 					}
 					else if (!verbaleyes_socket_connected()) {
-						logprintf("\r\nConnection to host closed");
+						return connectionFailToState("\r\nConnection to host closed", 0x82);
 					}
 					else if (resIndex == 0) {
 						if (showProgressBar()) return CONNECTING;
-						logprintf("\r\nDid not get a response from server");
+						return connectionFailToState("\r\nDid not get a response from server", 0x82);
 					}
 					else {
 						if (time(NULL) < timeout) return CONNECTING;
-						logprintf("\r\nResponse from server ended prematurely");
+						return connectionFailToState("\r\nResponse from server ended prematurely", 0x82);
 					}
-
-					free(buf);
-					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-					state = 2 | 0x80;
-					return CONNECTIONFAILED;
 				}
 
 				// Prints HTTP status-line
@@ -615,19 +618,7 @@ int8_t ensureConnection() {
 				const int16_t c = verbaleyes_socket_read();
 
 				// Handles timeout and socket close error
-				if (c == EOF) {
-					if (verbaleyes_socket_connected()) {
-						if (time(NULL) < timeout) return CONNECTING;
-						logprintf("\r\nResponse from server ended prematurely");
-					}
-					else {
-						logprintf("\r\nConnection to host closed");
-					}
-					free(buf);
-					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-					state = 2 | 0x80;
-					return CONNECTIONFAILED;
-				}
+				if (c == EOF) return socketHadNotData();
 
 				// Analyzes HTTP headers up to end of head
 				matchStr((uint8_t*)&resIndex, c, "\r\n\r\n");
@@ -654,31 +645,19 @@ int8_t ensureConnection() {
 
 			// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
 			if (!resMatchIndexes[0] || !resMatchIndexes[1]) {
-				logprintf("\r\nHTTP response is not an upgrade to the WebSockets protocol");
-				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-				state = 2 | 0x80;
-				return CONNECTIONFAILED;
+				return connectionFailToState("\r\nHTTP response is not an upgrade to the WebSockets protocol", 0x82);
 			}
 			// Requires WebSocket accept header with correct value
 			else if (!resMatchIndexes[2]) {
-				logprintf("\r\nMissing or incorrect WebSocket accept header");
-				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-				state = 2 | 0x80;
-				return CONNECTIONFAILED;
+				return connectionFailToState("\r\nMissing or incorrect WebSocket accept header", 0x82);
 			}
 			// Checks for non-requested WebSocket extension header
 			else if (resMatchIndexes[3]) {
-				logprintf("\r\nUnexpected WebSocket Extension header");
-				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-				state = 2 | 0x80;
-				return CONNECTIONFAILED;
+				return connectionFailToState("\r\nUnexpected WebSocket Extension header", 0x82);
 			}
 			// Checks for non-requested WebSocket protocol header
 			else if (resMatchIndexes[4]) {
-				logprintf("\r\nUnexpected WebSocket Protocol header");
-				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-				state = 2 | 0x80;
-				return CONNECTIONFAILED;
+				return connectionFailToState("\r\nUnexpected WebSocket Protocol header", 0x82);
 			}
 
 			// Successfully validated http headers
@@ -712,25 +691,15 @@ int8_t ensureConnection() {
 			// Shows progress bar until socket starts receiving data
 			if (c == EOF) {
 				if (resIndex == 0) {
-					if (showProgressBar()) return 1;
-					logprintf("\r\nDid not get a response from the server");
+					if (showProgressBar()) return CONNECTING;
+					return connectionFailToState("\r\nDid not get a response from the server", 0x82);
 				}
-				else {
-					if (time(NULL) < timeout) return 1;
-					logprintf("\r\nResponse from server ended prematurely");
-				}
-
-				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-				state = 2 | 0x80;
-				return CONNECTIONFAILED;
+				return socketHadNotData();
 			}
 
 			// Makes sure this is an unfragmented WebSocket frame in text format
 			if (c != 0x81) {
-				logprintf("\r\nReceived response data is either not a WebSocket frame or uses an unsupported WebSocket feature");
-				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-				state = 2 | 0x80;
-				return CONNECTIONFAILED;
+				return connectionFailToState("\r\nReceived response data is either not a WebSocket frame or uses an unsupported WebSocket feature", 0x82);
 			}
 
 			// Sets up to read WebSocket payload length
@@ -743,22 +712,13 @@ int8_t ensureConnection() {
 				const int16_t c = verbaleyes_socket_read();
 
 				// Handles timeout error
-				if (c == EOF) {
-					if (time(NULL) < timeout) return 1;
-					logprintf("\r\nResponse from server ended prematurely");
-					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-					state = 2 | 0x80;
-					return CONNECTIONFAILED;
-				}
+				if (c == EOF) return socketHadNotData();
 
 				// Gets payload length and continues if extended payload length is used
 				if (resIndex == WS_PAYLOADLEN_NOTSET) {
 					// Server is not allowed to mask messages sent to the client according to the spec
 					if (c & 0x80) {
-						logprintf("\r\nReveiced a masked frame which is not allowed");
-						timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-						state = 2 | 0x80;
-						return CONNECTIONFAILED;
+						return connectionFailToState("\r\nReveiced a masked frame which is not allowed", 0x82);
 					}
 
 					// Gets payload length without mask bit
@@ -769,10 +729,7 @@ int8_t ensureConnection() {
 
 					// Aborts if payload length requires more than the 16 bits available in resIndex
 					if (resIndex == 127) {
-						logprintf("\r\nWebsocket frame was unexpectedly long");
-						timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-						state = 2 | 0x80;
-						return CONNECTIONFAILED;
+						return connectionFailToState("\r\nWebsocket frame was unexpectedly long", 0x82);
 					}
 				}
 				// Gets first byte of extended payload length
@@ -798,13 +755,7 @@ int8_t ensureConnection() {
 				const signed short c = verbaleyes_socket_read();
 
 				// Handles timeout error
-				if (c == EOF) {
-					if (time(NULL) < timeout) return 1;
-					logprintf("\r\nResponse from server ended prematurely");
-					timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-					state = 2 | 0x80;
-					return CONNECTIONFAILED;
-				}
+				if (c == EOF) return socketHadNotData();
 
 				// Prints entire WebSocket payload
 				if (c == '\n') {
@@ -821,10 +772,7 @@ int8_t ensureConnection() {
 
 			// Validates authentication
 			if (!resMatchIndexes[0]) {
-				logprintf("\r\nAuthentication failed");
-				timeout = time(NULL) + CONNECTIONFAILEDDELAY;
-				state = 2 | 0x80;
-				return CONNECTIONFAILED;
+				return connectionFailToState("\r\nAuthentication failed", 0x82);
 			}
 
 			// Moves on for successful authentication
