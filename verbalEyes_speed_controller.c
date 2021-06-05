@@ -781,7 +781,7 @@ int8_t ensureConnection() {
 				}
 				// Adds second byte of extended payload length and moves on
 				else {
-					resIndex += c;
+					resIndex |= c;
 					break;
 				}
 			}
