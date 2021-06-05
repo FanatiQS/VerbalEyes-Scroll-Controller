@@ -711,9 +711,7 @@ int8_t ensureConnection() {
 				// Gets payload length and continues if extended payload length is used
 				if (resIndex == WS_PAYLOADLEN_NOTSET) {
 					// Server is not allowed to mask messages sent to the client according to the spec
-					if (c & 0x80) {
-						return connectionFailToState("\r\nReveiced a masked frame which is not allowed", 0x82);
-					}
+					if (c & 0x80) return connectionFailToState("\r\nReveiced a masked frame which is not allowed", 0x82);
 
 					// Gets payload length without mask bit
 					resIndex = c & 0x7F;
@@ -722,9 +720,7 @@ int8_t ensureConnection() {
 					if (resIndex < WS_PAYLOADLEN_EXTENDED) break;
 
 					// Aborts if payload length requires more than the 16 bits available in resIndex
-					if (resIndex == 127) {
-						return connectionFailToState("\r\nWebsocket frame was unexpectedly long", 0x82);
-					}
+					if (resIndex == 127) return connectionFailToState("\r\nWebsocket frame was unexpectedly long", 0x82);
 				}
 				// Gets first byte of extended payload length
 				else if (resIndex == WS_PAYLOADLEN_EXTENDED) {
@@ -765,9 +761,7 @@ int8_t ensureConnection() {
 			}
 
 			// Validates authentication
-			if (!resMatchIndexes[0]) {
-				return connectionFailToState("\r\nAuthentication failed", 0x82);
-			}
+			if (!resMatchIndexes[0]) return connectionFailToState("\r\nAuthentication failed", 0x82);
 
 			// Moves on for successful authentication
 			logprintf("\r\nAuthenticated");
