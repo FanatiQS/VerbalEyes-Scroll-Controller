@@ -837,11 +837,11 @@ void updateSpeed(const uint16_t value) {
 
 // Tells server to reset position to 0 when button is pressed
 void jumpToTop(const bool value) {
-	static bool state = 1;
+	static bool buttonState = 1;
 
 	// Only sends data on button down event
-	if (value == state) return;
-	state = value;
+	if (value == buttonState) return;
+	buttonState = value;
 	if (value == 0) return;
 
 	// Sends message to server
