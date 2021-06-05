@@ -15,7 +15,7 @@
 
 #define TAB "    "
 
-static uint16_t state = 0;
+static uint8_t state = 0;
 static size_t timeout = 0;
 
 
