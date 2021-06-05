@@ -442,10 +442,8 @@ int8_t ensureConnection() {
 			logprintf("\r\nConnecting to SSID: %s...", ssid);
 
 			// Connects to ssid with key
-			verbaleyes_network_connect(ssid, ssidkey);
-
-			// Sets timeout for awaiting connection
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
+			verbaleyes_network_connect(ssid, ssidkey);
 			state = 1;
 		}
 		// Completes network connection
@@ -484,10 +482,8 @@ int8_t ensureConnection() {
 			logprintf("\r\nConnecting to host: %s:%hu...", buf, port);
 
 			// Connects to socket at host
-			verbaleyes_socket_connect(buf, port);
-
-			// Sets timeout for awaiting connection
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
+			verbaleyes_socket_connect(buf, port);
 			state = 3;
 		}
 		// Completes socket connection
