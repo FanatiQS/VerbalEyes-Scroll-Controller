@@ -599,7 +599,7 @@ int8_t ensureConnection() {
 				if (tolower(c) == "http/1.1 101"[resIndex]) {
 					resIndex++;
 				}
-				// Failed to validate http status-line
+				// Failed to validate http status-line, abort after printing entire request
 				else {
 					resIndex = RESINDEXFAILED;
 				}
