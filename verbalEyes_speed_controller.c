@@ -162,7 +162,7 @@ static void confGetStr(struct confItem item, char* str) {
 
 // Reads a config value as a 2 byte int
 static uint16_t confGetInt(struct confItem item) {
-	return (verbaleyes_conf_read(item.addr) << 8) + verbaleyes_conf_read(item.addr + 1);
+	return (verbaleyes_conf_read(item.addr) << 8) | verbaleyes_conf_read(item.addr + 1);
 }
 
 
