@@ -136,18 +136,18 @@ struct confItem {
 
 // All configurable properties
 static struct confItem conf_ssid = 			{ 	"ssid",			32, 	0, 		0	};
-static struct confItem conf_ssidkey = 		{	"ssidkey",		32, 	32, 	0	};
-static struct confItem conf_host = 			{ 	"host", 		64, 	64, 	2	};
-static struct confItem conf_port = 			{ 	"port", 		0,	 	128, 	2	};
-static struct confItem conf_path = 			{ 	"path",			32,	 	130, 	2	};
-static struct confItem conf_proj = 			{ 	"proj", 		32,	 	162, 	2	};
-static struct confItem conf_projkey = 		{ 	"projkey",		32,	 	194, 	2	};
-static struct confItem conf_speedmin = 		{ 	"speedmin",		-1,	 	226, 	11	};
-static struct confItem conf_speedmax = 		{ 	"speedmax",		-1,	 	228, 	11	};
-static struct confItem conf_deadzone = 		{ 	"deadzone",		0,	 	230, 	11	};
-static struct confItem conf_callow = 		{ 	"callow",		0,	 	232, 	11	};
-static struct confItem conf_calhigh = 		{ 	"calhigh",		0,	 	234, 	11	};
-static struct confItem conf_sensitivity = 	{ 	"sensitivity",	0,	 	236, 	11	};
+static struct confItem conf_ssidkey = 		{	"ssidkey",		63, 	95, 	0	};
+static struct confItem conf_host = 			{ 	"host", 		64, 	159, 	2	};
+static struct confItem conf_port = 			{ 	"port", 		0,	 	161, 	2	};
+static struct confItem conf_path = 			{ 	"path",			32,	 	193, 	2	};
+static struct confItem conf_proj = 			{ 	"proj", 		32,	 	225, 	2	};
+static struct confItem conf_projkey = 		{ 	"projkey",		32,	 	257, 	2	};
+static struct confItem conf_speedmin = 		{ 	"speedmin",		-1,	 	259, 	11	};
+static struct confItem conf_speedmax = 		{ 	"speedmax",		-1,	 	261, 	11	};
+static struct confItem conf_deadzone = 		{ 	"deadzone",		0,	 	263, 	11	};
+static struct confItem conf_callow = 		{ 	"callow",		0,	 	265, 	11	};
+static struct confItem conf_calhigh = 		{ 	"calhigh",		0,	 	267, 	11	};
+static struct confItem conf_sensitivity = 	{ 	"sensitivity",	0,	 	269, 	11	};
 
 
 
