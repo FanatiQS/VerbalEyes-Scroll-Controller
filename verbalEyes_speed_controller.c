@@ -638,6 +638,7 @@ int8_t ensureConnection() {
 
 			// Frees up allocated buffer
 			free(buf);
+			buf = NULL;
 
 			// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
 			if (!resMatchIndexes[0] || !resMatchIndexes[1]) {
