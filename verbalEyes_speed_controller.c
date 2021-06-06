@@ -798,8 +798,8 @@ int8_t ensureConnection() {
 				speedCalHigh
 			);
 
-			// Sets state bo be outside range now that it is done
-			state = 12;
+			// Sets state to be outside range now that it is done
+			state = 0xFF;
 		}
 	}
 
