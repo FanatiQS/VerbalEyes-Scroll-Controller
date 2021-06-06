@@ -417,14 +417,14 @@ int8_t ensureConnection() {
 	static uint8_t resMatchIndexes[5];
 	static char* buf;
 
-	// Prevents immediately retrying after something fails
-	if (state & 0x80) {
-		if (timeout > time(NULL)) return CONNECTING;
-		state &= 0x7F;
-	}
-
 	// Ensure network connection
 	switch (state) {
+		// Prevents immediately retrying after something fails
+		case 0x80:
+		case 0x82: {
+			if (time(NULL) >= timeout) state &= 0x7F;
+			return CONNECTING;
+		}
 		// Reconnects to network if connection is lost
 		default: {
 			if (verbaleyes_network_connected()) break;
