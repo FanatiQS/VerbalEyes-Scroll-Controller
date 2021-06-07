@@ -1,13 +1,17 @@
 ## TODO:
+Important todos: HTTPS, documentation, ssid logs, led indication
 
 * Replace "Done" message in updateConfig to something better that indicates changes have been saved
 
 * Continue working on tests for the API
 
 * Get HTTPS to work
-	HTTPS is working, but there is currently no way to distinguish between HTTP and HTTPS hosts
+	* HTTPS is working, but there is currently no way to distinguish between HTTP and HTTPS hosts.
+	* A big issue with HTTPS is fingerprints. They don't lookup Certificate Authority things in ESP code.
 
 * Continue working on HTTP POST configuration with captive portals and softAP. Maybe it should be its own branch?
+
+* Add documentation about only supporting ipv4 and not ipv6. Implementing ipv6 could be done with a buffer argument since returning 128bit ints does not sound like a good way. That could also be an indication if it is using ipv4 or ipv6. If it is returning a value, it should use ipv4, if it is returning 0, it should use ipv6 from the buffer.
 
 * Update unfinished documentation
 
@@ -23,7 +27,11 @@
 * Config parser - support escaped characters
 	Used to escape delimiter and add support for `\n` to LF conversion
 	Maybe even escape `\n` to make `\\n` to make multiline comments?
-	List of escape sequences found here https://www.lix.polytechnique.fr/~liberti/public/computing/prog/c/C/FUNCTIONS/escape.html. Support \n \r \\ \↵ \x30 (hex)
+	List of escape sequences found here https://www.lix.polytechnique.fr/~liberti/public/computing/prog/c/C/FUNCTIONS/escape.html. Support:
+	 	* \n to add in LF (this is the one that is actually important)
+		* \t to add in tab (not important since '=' is main delimiter)
+		* \\ to add in slash (important if implemented since slash is escape character)
+		* \↵ to escape next newline (not really important unless wanting to comment out multiple lines, might not even work in comments anyway)
 
 * Config parser - support comments
 	Use `#` to indicate comment
@@ -43,7 +51,7 @@
 
    * port outside range			- bad host/port		-	configuration issue and should not occur with configuration software
    * host connection failed		- bad host/port		-	no server at host:port
-   * http response timeout		- bad host/port		-	no responce from server
+   * http response timeout		- bad host/port		-	no response from server
    * websocket response bad		- bad host/port		-	server does not know websocket
    * authentication timeout		- bad host/port		-	server did not send a websocket response
    * websocket format bad		- bad host/port		-	server fucked up websocket frame
@@ -61,4 +69,4 @@
 	fading indicating connecting
 	constant blinking on off indicating configuration mode
 	periodically blinking light indicates standby
-	high brightness shine indicates sending
+	shining led indicates sending
