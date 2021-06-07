@@ -340,6 +340,7 @@ bool updateConfig(const int16_t c) {
 			if (time(NULL) < timeout) return 1;
 		}
 		// Terminates updating configurable data
+		case '\e':
 		case '\n': {
 			// Handles termination of value
 			if (confState == HANDLINGVALUE) {
@@ -396,11 +397,13 @@ bool updateConfig(const int16_t c) {
 			return 0;
 		}
 		// Ignores these characters
+		case 0x7F:
 		case '\b':
-		case '\e':
 		case '\f':
 		case '\v':
-		case '\r': return 1;
+		case '\r': {
+			return confState != NOTHANDLING;
+		}
 	}
 }
 
