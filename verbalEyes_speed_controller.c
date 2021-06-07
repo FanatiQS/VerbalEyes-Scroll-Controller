@@ -13,6 +13,9 @@
 
 
 
+// Initial buffer size for logging
+#define LOGBUFFERLEN 45
+
 #define TAB "    "
 
 static uint8_t state = 0;
@@ -23,13 +26,25 @@ static size_t timeout = 0;
 // Prints a string to the serial output with ability to format
 static void logprintf(const char* format, ...) {
 	va_list args;
+
+	// Format arguments to buffer
 	va_start(args, format);
-	const size_t len = vsnprintf(NULL, 0, format, args);
-	char buffer[len + 1];
-	va_start(args, format);
-	vsprintf(buffer, format, args);
+	char buffer[LOGBUFFERLEN];
+	const size_t len = vsnprintf(buffer, LOGBUFFERLEN, format, args);
+
+	// Retry with known length if buffer was too small
+	if (len > LOGBUFFERLEN) {
+		va_start(args, format);
+		char buffer2[len + 1];
+		vsnprintf(buffer2, len + 1, format, args);
+		printf("\n\n\x1b[32mDEBUG: Log buffer was too short\n%i\n%s\n\n\x1b[0m", len, buffer2);
+		verbaleyes_log(buffer2, len);
+	}
+	else {
+		verbaleyes_log(buffer, len);
+	}
+
 	va_end(args);
-	verbaleyes_log(buffer, len);
 }
 
 // Prints progress bar every second to indicate a process is working and handle timeout errors
