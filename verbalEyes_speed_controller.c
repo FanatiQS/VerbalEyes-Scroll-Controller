@@ -16,6 +16,21 @@
 // Initial buffer size for logging
 #define LOGBUFFERLEN 45
 
+// Number of seconds before unfinished configuration input times out
+#ifndef CONFIGTIMEOUT
+#define CONFIGTIMEOUT 5
+#endif
+
+// Number of seconds before unsuccessful connection times out
+#ifndef CONNECTINGTIMEOUT
+#define CONNECTINGTIMEOUT 10
+#endif
+
+// Number of seconds to delay retrying after connection has failed
+#ifndef CONNECTIONFAILEDDELAY
+#define CONNECTIONFAILEDDELAY 5
+#endif
+
 #define TAB "    "
 
 static uint8_t state = 0;
