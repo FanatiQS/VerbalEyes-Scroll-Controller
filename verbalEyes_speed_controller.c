@@ -1,10 +1,10 @@
 #include <stdbool.h> // bool
-#include <stdint.h> // uint8_t uint16_t uint32_t int8_t int16_t
-#include <string.h> // strlen, strcpy, memset
-#include <time.h> // time, clock
+#include <stdint.h> // int8_t uint8_t int16_t uint16_t uint32_t
+#include <string.h> // strlen, strcpy, memset, memcpy, size_t
+#include <time.h> // time, clock, size_t
 #include <ctype.h> // tolower
-#include <stdlib.h> // rand, srand
-#include <stdio.h> // sprintf, svnprintf, vsprintf, EOF
+#include <stdlib.h> // realloc, free, rand, srand, size_t
+#include <stdio.h> // sprintf, vsprintf, vsnprintf, EOF, size_t, va_list
 #include <stdarg.h> // va_list, va_start, va_end
 
 #include <bearssl/bearssl_hash.h> // sha1

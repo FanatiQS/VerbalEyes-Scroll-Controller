@@ -1,5 +1,5 @@
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 // Include Guard
 #ifndef VERBALEYES_SPEED_CONTROLLER_H
