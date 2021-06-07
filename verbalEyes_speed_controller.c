@@ -31,8 +31,6 @@
 #define CONNECTIONFAILEDDELAY 5
 #endif
 
-#define TAB "    "
-
 static uint8_t state = 0;
 static size_t timeout = 0;
 
@@ -619,10 +617,10 @@ int8_t ensureConnection() {
 
 				// Prints HTTP status-line
 				if (c == '\n') {
-					logprintf("\r\n%s", TAB);
+					logprintf("\r\n\t");
 				}
 				else if (resIndex == 0) {
-					logprintf("\r\n%s%c", TAB, c);
+					logprintf("\r\n\t%c", c);
 				}
 				else {
 					logprintf("%c", c);
@@ -658,7 +656,7 @@ int8_t ensureConnection() {
 
 				// Prints HTTP headers
 				if (c == '\n') {
-					logprintf("\r\n%s", TAB);
+					logprintf("\r\n\t");
 				}
 				else {
 					logprintf("%c", c);
@@ -772,7 +770,7 @@ int8_t ensureConnection() {
 			}
 
 			// Sets up to read WebSocket payload
-			logprintf("\r\nReceived authentication response:\r\n%s", TAB);
+			logprintf("\r\nReceived authentication response:\r\n\t");
 			resMatchIndexes[0] = 0;
 			state = 10;
 		}
@@ -787,7 +785,7 @@ int8_t ensureConnection() {
 
 				// Prints entire WebSocket payload
 				if (c == '\n') {
-					logprintf("\r\n%s", TAB);
+					logprintf("\r\n\t");
 				}
 				else {
 					logprintf("%c", c);
