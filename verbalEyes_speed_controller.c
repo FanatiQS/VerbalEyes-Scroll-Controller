@@ -508,7 +508,7 @@ int8_t ensureConnection() {
 			confGetStr(conf_path, path);
 
 			// Prints
-			logprintf("\r\nAccessing WebSocket server at %s", path);
+			logprintf("\r\nAccessing WebSocket server at %s...", path);
 
 			// Sets random seed
 			srand(clock());
