@@ -54,7 +54,7 @@ Configuration of the device is done with a simple text based serial protocol con
 
 ## Configuration items
 * Keys are case sensitive
-* An empty line indicates configuration update is done, so sending an extra `\n` at the end leaves configuration mode.
+* An empty line indicates configuration update is done, so sending an extra `\n` at the end leaves configuration mode
 
 | Type 				| Description |
 | ----------------- | -
@@ -93,9 +93,9 @@ If an error occurs after delimiter has been received, all further data is ignore
 
 
 ## Examples
-* To configure the Wi-Fi SSID to `myWifi`, it would look like this `ssid=myWifi\n`
-* To configure minimum speed to -10, it would look like this `speedmin=-10\n`
-* To configure sensitivity to 5, it would look like this `sensitivity=5\n`
+* To configure the Wi-Fi SSID to `myWifi`, it would look like this `ssid=myWifi\n\n`
+* To configure minimum speed to -10, it would look like this `speedmin=-10\n\n`
+* To configure sensitivity to 5, it would look like this `sensitivity=5\n\n`
 
 ## Serial communication
 For the pre-built example, configuration is done over the serial connection to the micro controller, most likely connected to a computer over USB. Communicating with the device over serial can be done with the command line.
@@ -123,11 +123,11 @@ stty -echo -F `ls /dev/cu.usbserial-* | head -1`
 Writing configuration data to the device
 * OSX: tested
 ```sh
-echo -e "key=value\n" > `ls /dev/cu.usbserial-* | head -1`
+echo -e "key=value\n\n" > `ls /dev/cu.usbserial-* | head -1`
 ```
 * Linux: tested
 ```sh
-echo -e "key=value\n" > `ls /dev/ttyUSB* | head -1`
+echo -e "key=value\n\n" > `ls /dev/ttyUSB* | head -1`
 ```
 * Windows: I dunno
 
@@ -164,11 +164,11 @@ Replace path with selected device port from [ls](####list-serial-devices)
 
 * OSX:
 ```sh
-echo -e "key=value\n" > path
+echo -e "key=value\n\n" > path
 ```
 * Linux:
 ```sh
-echo -e "key=value\n" > path
+echo -e "key=value\n\n" > path
 ```
 * Windows: ?
 
