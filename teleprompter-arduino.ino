@@ -36,7 +36,7 @@ CONNECTIONS:
 
 
 // Reads a character from the specified address in EEPROM
-char verbaleyes_conf_read(const unsigned short addr) {
+unsigned char verbaleyes_conf_read(const unsigned short addr) {
 	return EEPROM.read(addr);
 }
 
