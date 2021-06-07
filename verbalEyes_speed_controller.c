@@ -126,6 +126,7 @@ static void writeWebSocketFrame(const char* format, ...) {
 
 
 // Structure used to read and write configurable data
+// Length of 0 indicates it is a 16bit unsigned integer, -1 indicates 16bit signed integer
 struct confItem {
 	char* name;
 	int8_t len;
