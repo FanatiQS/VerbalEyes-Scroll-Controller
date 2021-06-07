@@ -589,38 +589,48 @@ int8_t ensureConnection() {
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
 
 			// Sets up to read and verify http response
-			resIndex = 0;
 			state = 5;
 		}
-		// Validates HTTP status-line
+		// Validates first HTTP status-line character
 		case 5: {
+			const int16_t c = verbaleyes_socket_read();
+
+			// Shows progress bar until socket starts receiving data
+			if (c == EOF) {
+				if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
+				if (showProgressBar()) return CONNECTING;
+				return connectionFailToState("\r\nDid not get a response from server", 0x82);
+			}
+
+			// Prints first character in status-line
+			logprintf("\r\n\t%c", c);
+
+			// Validates first character for status-line
+			if (tolower(c) == 'h') {
+				resIndex = 1;
+			}
+			else {
+				resIndex = RESINDEXFAILED;
+			}
+
+			state = 6;
+		}
+		// Validates HTTP status-line
+		case 6: {
 			while (resIndex != 12) {
 				const int16_t c = verbaleyes_socket_read();
 
-				// Shows progress bar until socket starts receiving data
+				// Handles incorrect status code, timeout and socket close error
 				if (c == EOF) {
 					if (resIndex == RESINDEXFAILED) {
 						return connectionFailToState("\r\nReceived unexpected HTTP response code", 0x82);
 					}
-					else if (!verbaleyes_socket_connected()) {
-						return connectionFailToState("\r\nConnection to host closed", 0x82);
-					}
-					else if (resIndex == 0) {
-						if (showProgressBar()) return CONNECTING;
-						return connectionFailToState("\r\nDid not get a response from server", 0x82);
-					}
-					else {
-						if (time(NULL) < timeout) return CONNECTING;
-						return connectionFailToState("\r\nResponse from server ended prematurely", 0x82);
-					}
+					return socketHadNoData();
 				}
 
 				// Prints HTTP status-line
 				if (c == '\n') {
 					logprintf("\r\n\t");
-				}
-				else if (resIndex == 0) {
-					logprintf("\r\n\t%c", c);
 				}
 				else {
 					logprintf("%c", c);
@@ -641,10 +651,10 @@ int8_t ensureConnection() {
 
 			// Successfully validated status-line and sets up to validate http headers
 			memset(resMatchIndexes, 0, sizeof resMatchIndexes);
-			state = 6;
+			state = 7;
 		}
 		// Validates HTTP headers
-		case 6: {
+		case 7: {
 			while (resIndex != 4) {
 				const int16_t c = verbaleyes_socket_read();
 
@@ -696,7 +706,7 @@ int8_t ensureConnection() {
 			logprintf("\r\nWebSocket connection established");
 		}
 		// Connect to verbalEyes project
-		case 7: {
+		case 8: {
 			// Gets project and project key from config
 			char proj[conf_proj.len + 1];
 			confGetStr(conf_proj, proj);
@@ -714,10 +724,10 @@ int8_t ensureConnection() {
 
 			// Sets up to read and verify websocket response
 			resIndex = 0;
-			state = 8;
+			state = 9;
 		}
 		// Validates WebSocket opcode for authentication
-		case 8: {
+		case 9: {
 			const int16_t c = verbaleyes_socket_read();
 
 			// Shows progress bar until socket starts receiving data
@@ -734,10 +744,10 @@ int8_t ensureConnection() {
 
 			// Sets up to read WebSocket payload length
 			resIndex = WS_PAYLOADLEN_NOTSET;
-			state = 9;
+			state = 10;
 		}
 		// Gets length of WebSocket payload for authentication
-		case 9: {
+		case 10: {
 			while (1) {
 				const int16_t c = verbaleyes_socket_read();
 
@@ -772,10 +782,10 @@ int8_t ensureConnection() {
 			// Sets up to read WebSocket payload
 			logprintf("\r\nReceived authentication response:\r\n\t");
 			resMatchIndexes[0] = 0;
-			state = 10;
+			state = 11;
 		}
 		// Validates WebSocket payload for authentication
-		case 10: {
+		case 11: {
 			// Reads entire WebSocket authentication response
 			while (resIndex) {
 				const signed short c = verbaleyes_socket_read();
@@ -803,7 +813,7 @@ int8_t ensureConnection() {
 			logprintf("\r\nAuthenticated");
 		}
 		// Sets global values used for updating speed
-		case 11: {
+		case 12: {
 			// Gets deadzone an sensitivity percentage values from config
 			const float deadzone = confGetInt(conf_deadzone);
 			const float sensitivity = confGetInt(conf_sensitivity);
