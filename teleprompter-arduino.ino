@@ -29,7 +29,6 @@ CONNECTIONS:
 
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
-#include <DNSServer.h>
 #include <WiFiClientSecure.h>
 #include "./verbalEyes_speed_controller.h"
 
@@ -94,7 +93,7 @@ void verbaleyes_socket_write(const uint8_t* str, const size_t len) {
 
 
 
-// Prints a string to the serial interface
+// Prints the logs to the serial interface
 void verbaleyes_log(const char* str, const size_t len) {
 	Serial.print(str);
 }
@@ -107,6 +106,7 @@ unsigned long clock() {
 }
 
 void setup() {
+	WiFi.setAutoConnect(0);
 	Serial.begin(9600);
 	EEPROM.begin(CONFIGLEN);
 	pinMode(LED_BUILTIN, OUTPUT);
