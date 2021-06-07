@@ -396,6 +396,10 @@ bool updateConfig(const int16_t c) {
 			return 0;
 		}
 		// Ignores these characters
+		case '\b':
+		case '\e':
+		case '\f':
+		case '\v':
 		case '\r': return 1;
 	}
 }
