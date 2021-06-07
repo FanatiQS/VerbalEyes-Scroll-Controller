@@ -6,7 +6,7 @@
 #define VERBALEYES_SPEED_CONTROLLER_H
 
 // Number of characters required for configuration
-#define CONFIGLEN 267 // Needs to be updated manually
+#define CONFIGLEN 269 // Needs to be updated manually
 
 // Returing states of ensureConnection
 #define CONNECTIONFAILED -1
