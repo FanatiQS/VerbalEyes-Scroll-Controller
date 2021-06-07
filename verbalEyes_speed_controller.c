@@ -37,7 +37,6 @@ static void logprintf(const char* format, ...) {
 		va_start(args, format);
 		char buffer2[len + 1];
 		vsnprintf(buffer2, len + 1, format, args);
-		printf("\n\n\x1b[32mDEBUG: Log buffer was too short\n%i\n%s\n\n\x1b[0m", len, buffer2);
 		verbaleyes_log(buffer2, len);
 	}
 	else {
