@@ -78,7 +78,7 @@ static bool showProgressBar() {
 #define SUCCESSFULMATCH 255
 
 // Resets state back with an error message
-static int8_t connectionFailToState(const char* msg, const uint16_t backToState) {
+static int8_t connectionFailToState(const char* msg, const uint8_t backToState) {
 	logprintf(msg);
 	timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 	state = backToState;
