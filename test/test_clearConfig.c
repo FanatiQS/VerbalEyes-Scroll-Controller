@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../../verbalEyes_speed_controller.h"
+#include "../verbalEyes_speed_controller.h"
 
 #include "./eeprom.h"
 #include "./log.h"
