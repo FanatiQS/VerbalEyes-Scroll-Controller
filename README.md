@@ -160,7 +160,7 @@ ls /dev/ttyUSB*
 * Windows: ?
 
 #### Writing:
-Replace path with selected device port from [ls](####list-serial-devices)
+Replace path with selected device port from [ls](####listing-serial-devices)
 
 * OSX:
 ```sh
@@ -173,7 +173,7 @@ echo -e "key=value\n\n" > path
 * Windows: ?
 
 #### Reading:
-Replace path with selected device port from [ls](####list-serial-devices)
+Replace path with selected device port from [ls](####listing-serial-devices)
 
 * OSX:
 ```sh
