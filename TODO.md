@@ -15,6 +15,8 @@ Important todos: HTTPS, documentation, ssid logs, led indication
 
 * Update unfinished documentation
 
+* Add readmes for tools and test
+
 * Find a way to add logs like "invalid ssid" or "invalid ssid key" into verbaleyes_network_connected.
 	When getting status, it returns "incorrect password" code until connected.
 
