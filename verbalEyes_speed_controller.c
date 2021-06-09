@@ -514,7 +514,7 @@ int8_t ensureConnection() {
 			uint16_t port = confGetInt(conf_port);
 
 			// Prints
-			logprintf("\r\nConnecting to host: %s:%hu...", buf, port);
+			logprintf("\r\nConnecting to host: %s:%u...", buf, port);
 
 			// Connects to socket at host
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
@@ -583,7 +583,7 @@ int8_t ensureConnection() {
 				buf[i + 2 + 22 + offset] = table[(hash[i + 1] & 0x0f) << 2 | hash[i + 2] >> 6];
 				buf[i + 3 + 22 + offset] = table[hash[i + 2] & 0x3f];
 			}
-			strcpy(buf + 22 + 27, "=\r\n\0");
+			strcpy(buf + 22 + 27, "=\r\n");
 
 			// Sets timeout value for awaiting http response
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
@@ -602,17 +602,9 @@ int8_t ensureConnection() {
 				return connectionFailToState("\r\nDid not get a response from server", 0x82);
 			}
 
-			// Prints first character in status-line
+			// Validates first character for status-line and moves on to validate the rest
 			logprintf("\r\n\t%c", c);
-
-			// Validates first character for status-line
-			if (tolower(c) == 'h') {
-				resIndex = 1;
-			}
-			else {
-				resIndex = RESINDEXFAILED;
-			}
-
+			resIndex = (tolower(c) == 'h') ? 1 : RESINDEXFAILED;
 			state = 6;
 		}
 		// Validates HTTP status-line
