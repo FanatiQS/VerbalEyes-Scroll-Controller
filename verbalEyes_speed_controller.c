@@ -510,6 +510,7 @@ int8_t ensureConnection() {
 		case 2: {
 			// Gets host and port from config
 			buf = realloc(buf, conf_host.len + 1);
+			if (buf == NULL) logprintf("\r\nERROR: realloc failed\r\n");
 			confGetStr(conf_host, buf);
 			uint16_t port = confGetInt(conf_port);
 
@@ -568,6 +569,7 @@ int8_t ensureConnection() {
 
 			// Creates websocket accept header to compare against
 			buf = realloc(buf, 22 + 28 + 2 + 1);
+			if (buf == NULL) logprintf("\r\nERROR: realloc failed\r\n");
 			strcpy(buf, "sec-websocket-accept: ");
 			br_sha1_context ctx;
 			br_sha1_init(&ctx);
