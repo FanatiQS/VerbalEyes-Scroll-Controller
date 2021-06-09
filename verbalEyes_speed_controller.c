@@ -46,7 +46,7 @@ static void logprintf(const char* format, ...) {
 	const size_t len = vsnprintf(buffer, LOGBUFFERLEN, format, args);
 
 	// Retry with known length if buffer was too small
-	if (len > LOGBUFFERLEN) {
+	if (len >= LOGBUFFERLEN) {
 		va_start(args, format);
 		char buffer2[len + 1];
 		vsnprintf(buffer2, len + 1, format, args);
