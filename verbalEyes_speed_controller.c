@@ -92,6 +92,13 @@ static int8_t socketHadNoData() {
 	return connectionFailToState("\r\nResponse from server ended prematurely", 0x82);
 }
 
+// Prints progress bar until timeing out if unable to get data
+static int8_t socketHadNoDataProgressBar() {
+	if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
+	if (showProgressBar()) return CONNECTING;
+	return connectionFailToState("\r\nDid not get a response from the server", 0x82);
+}
+
 // Matches incoming data character by character
 static void matchStr(uint8_t* index, const char c, const char* match) {
 	if (*index == SUCCESSFULMATCH) return;
@@ -598,11 +605,7 @@ int8_t ensureConnection() {
 			const int16_t c = verbaleyes_socket_read();
 
 			// Shows progress bar until socket starts receiving data
-			if (c == EOF) {
-				if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
-				if (showProgressBar()) return CONNECTING;
-				return connectionFailToState("\r\nDid not get a response from server", 0x82);
-			}
+			if (c == EOF) socketHadNoDataProgressBar();
 
 			// Validates first character for status-line and moves on to validate the rest
 			logprintf("\r\n\t%c", c);
@@ -725,11 +728,7 @@ int8_t ensureConnection() {
 			const int16_t c = verbaleyes_socket_read();
 
 			// Shows progress bar until socket starts receiving data
-			if (c == EOF) {
-				if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
-				if (showProgressBar()) return CONNECTING;
-				return connectionFailToState("\r\nDid not get a response from the server", 0x82);
-			}
+			if (c == EOF) socketHadNoDataProgressBar();
 
 			// Makes sure this is an unfragmented WebSocket frame in text format
 			if (c != 0x81) {
