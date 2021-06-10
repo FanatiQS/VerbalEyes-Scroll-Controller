@@ -11,13 +11,59 @@
 
 #include "../../verbalEyes_speed_controller.h"
 
+/*
+ * Hotkeys:
+ *	Arrow_Up:		Speed up scroll speed
+ *	Arrow_Down:		Slow down scroll speed
+ *	Arrow_Right:	Network connected
+ *	Arrow_Left:		Socket connected (if actual socket is connected)
+ */
 
+
+
+#define POTMAX 32
+
+bool wifiConnected = 0;
+bool socketConnected = 0;
+uint16_t potSpeed = 0;
 
 // Reads one character from the standard in if it has anything
 int16_t readFromSocket(int fd) {
 	unsigned char c;
 	read(fd, &c, 1);
-	return c;
+
+	if (c != '\e') return c;
+	read(fd, &c, 1);
+
+	if (c != '[') return EOF;
+	read(fd, &c, 1);
+
+	switch (c) {
+		// Up
+		case 'A': {
+			if (potSpeed == POTMAX) break;
+			potSpeed++;
+			break;
+		}
+		// Down
+		case 'B': {
+			if (potSpeed == 0) break;
+			potSpeed--;
+			break;
+		}
+		// Right
+		case 'C': {
+			wifiConnected = !wifiConnected;
+			break;
+		}
+		// Left
+		case 'D': {
+			socketConnected = !socketConnected;
+			break;
+		}
+	}
+
+	return EOF;
 }
 
 
@@ -40,23 +86,15 @@ void verbaleyes_conf_commit() {}
 
 
 
-// Number of seconds to delay before being considered connected to wifi
-size_t wifitimeout;
-
 // Connects to a WiFi network
 void verbaleyes_network_connect(const char* ssid, const char* key) {
-	if (strcmp(ssid, "myWifi")) return;
-	if (strcmp(key, "password123")) return;
-	wifitimeout = time(NULL) + 2;
 }
 
 // Gets the connection status of the WiFi connection
 bool verbaleyes_network_connected() {
-	if (!wifitimeout) return 0;
-	return wifitimeout < time(NULL);
+	return wifiConnected;
 }
 
-//!! Gets the local ip address for printing
 // Gets random 32bit value to represent fake ip address
 uint32_t verbaleyes_network_getip() {
 	srand(clock() * clock());
@@ -89,7 +127,7 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 
 // Gets the connection status of the socket connection
 bool verbaleyes_socket_connected() {
-	return sockstatus;
+	return sockstatus && socketConnected;
 }
 
 // Consumes a single character from the sockets response data buffer
@@ -118,6 +156,13 @@ void disableRawMode() {
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
 }
 
+void updateConfig_str(char* str) {
+	while (*str != '\0') {
+		updateConfig(*str);
+		str++;
+	}
+}
+
 //!!
 int main() {
 	// Sets STDIN to be unbuffered
@@ -129,19 +174,22 @@ int main() {
     raw.c_cc[VTIME] = 1;
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 
-	strcpy(EEPROM, "myWifi");
-	strcpy(EEPROM + 32, "password123");
-	strcpy(EEPROM + 95, "127.0.0.1");
-	EEPROM[159] = 31;
-	EEPROM[160] = (signed char)144;
-	strcpy(EEPROM + 161, "/");
+	updateConfig_str("ssid=myWiFi\n");
+	updateConfig_str("host=127.0.0.1\n");
+	updateConfig_str("port=8080\n");
+	updateConfig_str("path=/\n");
+	updateConfig_str("proj=myProject\n");
+	updateConfig_str("speedmin=-10\n");
+	updateConfig_str("speedmax=10\n");
+	EEPROM[266] = POTMAX;
+	updateConfig('\n');
 
 	while (1) {
 		time(NULL); // Why doesn't it work without this line?!?
 		if (updateConfig(readFromSocket(0))) continue;
 		if (ensureConnection()) continue;
-		usleep(10000000 / 25);
-		// updateSpeed(analogRead(A0));
+		// usleep(10000000 / 120);
+		updateSpeed(potSpeed);
 		// jumpToTop(digitalRead(0));
 	}
 	return 0;
