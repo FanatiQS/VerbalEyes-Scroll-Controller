@@ -605,7 +605,7 @@ int8_t ensureConnection() {
 			const int16_t c = verbaleyes_socket_read();
 
 			// Shows progress bar until socket starts receiving data
-			if (c == EOF) socketHadNoDataProgressBar();
+			if (c == EOF) return socketHadNoDataProgressBar();
 
 			// Validates first character for status-line and moves on to validate the rest
 			logprintf("\r\n\t%c", c);
@@ -728,7 +728,7 @@ int8_t ensureConnection() {
 			const int16_t c = verbaleyes_socket_read();
 
 			// Shows progress bar until socket starts receiving data
-			if (c == EOF) socketHadNoDataProgressBar();
+			if (c == EOF) return socketHadNoDataProgressBar();
 
 			// Makes sure this is an unfragmented WebSocket frame in text format
 			if (c != 0x81) {
