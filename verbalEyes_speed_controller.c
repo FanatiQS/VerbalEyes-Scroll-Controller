@@ -857,7 +857,7 @@ void updateSpeed(const uint16_t value) {
 		mappedValue -= deadzoneSize;
 	}
 	// Clamps value to deadzone around 0 mark
-	else if (mappedValue > 0) {
+	else if (mappedValue >= 0) {
 		if (speed == 0) return;
 		mappedValue = 0;
 	}
