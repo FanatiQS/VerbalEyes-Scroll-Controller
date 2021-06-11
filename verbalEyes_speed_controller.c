@@ -863,7 +863,7 @@ void updateSpeed(const uint16_t value) {
 	}
 
 	// Supresses updating speed if it has not changed enough unless it is updated to zero
-	if (mappedValue != 0 && mappedValue <= speed + jitterSize && mappedValue >= speed - jitterSize ) return;
+	if (mappedValue != 0 && mappedValue <= speed + jitterSize && mappedValue >= speed - jitterSize) return;
 	speed = mappedValue;
 
 	// Sends new speed to the server
