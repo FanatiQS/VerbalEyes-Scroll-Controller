@@ -55,6 +55,7 @@ Configuration of the device is done with a simple text based serial protocol con
 ## Configuration items
 * Keys are case sensitive
 * An empty line indicates configuration update is done, so sending an extra `\n` at the end leaves configuration mode
+* When calibrating the analog input with callow and calhigh, make sure to set sensitivity to 0 before to see fine details in the analog values
 
 | Type 				| Description |
 | ----------------- | -
