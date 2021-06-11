@@ -280,14 +280,15 @@ bool updateConfig(const int16_t c) {
 		default: {
 			// Validates incomming key against valid configuration keys
 			if (confState != HANDLINGVALUE) {
-				// Key handling has failed and remaining characters should be ignored
-				if (confIndex == CONFFAILED) return 1;
-
 				// Initialize new configuration update
 				if (confIndex == 0) {
 					timeout = time(NULL) + CONFIGTIMEOUT;
 					confState = HANDLINGKEY;
 					logprintf("\r\n[ ");
+				}
+				// Key handling has failed and remaining characters should be ignored
+				else if (confIndex == CONFFAILED) {
+					return;
 				}
 
 				// Invalidates keys that does not match incomming string
