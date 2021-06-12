@@ -58,6 +58,7 @@ int16_t readFromSocket(int fd) {
 		}
 		// Left
 		case 'D': {
+			if (!wifiConnected) break;
 			socketConnected = !socketConnected;
 			break;
 		}
