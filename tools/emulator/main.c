@@ -32,12 +32,13 @@ int16_t readFromSocket(int fd) {
 	unsigned char c = 0;
 	read(fd, &c, 1);
 
+	// Returns character unless it is escape character
 	if (c != '\e') return c;
-	read(fd, &c, 1);
 
+	// Gets escaped sequence
+	read(fd, &c, 1);
 	if (c != '[') return EOF;
 	read(fd, &c, 1);
-
 	switch (c) {
 		// Up
 		case 'A': {
@@ -72,26 +73,25 @@ int16_t readFromSocket(int fd) {
 // The virual EEPROM
 char EEPROM[CONFIGLEN];
 
-// Reads a character from the specified address in EEPROM
+// Reads a character from the specified address in fake EEPROM
 unsigned char verbaleyes_conf_read(const unsigned short addr) {
 	return EEPROM[addr];
 }
 
-// Writes a character to the specified address in EEPROM
+// Writes a character to the specified address in fake EEPROM
 void verbaleyes_conf_write(const unsigned short addr, const char c) {
 	EEPROM[addr] = c;
 }
 
-// Commits changes made in EEPROM to flash
+// Commits changes made in EEPROM, nothing to be done
 void verbaleyes_conf_commit() {}
 
 
 
-// Connects to a WiFi network
-void verbaleyes_network_connect(const char* ssid, const char* key) {
-}
+// Connects to a WiFi network, nothing to be done
+void verbaleyes_network_connect(const char* ssid, const char* key) {}
 
-// Gets the connection status of the WiFi connection
+// Gets the fake connection status of the WiFi connection
 bool verbaleyes_network_connected() {
 	return wifiConnected;
 }
@@ -108,7 +108,7 @@ uint32_t verbaleyes_network_getip() {
 int sockfd = 0;
 bool sockstatus = 0;
 
-// Connects the socket to an endpoint
+// Connects the socket to the endpoint
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 	if (sockfd != 0) close(sockfd);
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -118,7 +118,6 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 
 	struct sockaddr_in servaddr;
 	bzero(&servaddr, sizeof(servaddr));
-
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = inet_addr(host);
 	servaddr.sin_port = htons(port);
@@ -126,7 +125,7 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 	sockstatus = !connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
 }
 
-// Gets the connection status of the socket connection
+// Gets the fake and real connection status of the socket connection
 bool verbaleyes_socket_connected() {
 	return sockstatus && socketConnected;
 }
@@ -136,7 +135,7 @@ short verbaleyes_socket_read() {
 	return readFromSocket(sockfd);
 }
 
-// Sends a string to the endpoint the socket is connected to
+// Sends a packet to the endpoint the socket is connected to
 void verbaleyes_socket_write(const uint8_t* packet, const size_t len) {
 	write(sockfd, packet, len);
 }
@@ -151,12 +150,13 @@ void verbaleyes_log(const char* str, const size_t len) {
 
 
 
-//!!
+// Some kind of raw mode reset
 struct termios orig_termios;
 void disableRawMode() {
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
 }
 
+// Sends a string to config instead of char by char
 void updateConfig_str(char* str) {
 	while (*str != '\0') {
 		updateConfig(*str);
@@ -175,6 +175,7 @@ int main() {
     raw.c_cc[VTIME] = 1;
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 
+	// Configure initial configuration
 	updateConfig_str("ssid=myWiFi\n");
 	updateConfig_str("host=127.0.0.1\n");
 	updateConfig_str("port=8080\n");
@@ -185,6 +186,7 @@ int main() {
 	EEPROM[266] = POTMAX;
 	updateConfig('\n');
 
+	// Main loop
 	while (1) {
 		if (updateConfig(readFromSocket(0))) continue;
 		if (ensureConnection()) continue;
