@@ -137,8 +137,8 @@ short verbaleyes_socket_read() {
 }
 
 // Sends a string to the endpoint the socket is connected to
-void verbaleyes_socket_write(const uint8_t* str, const size_t len) {
-	write(sockfd, str, len);
+void verbaleyes_socket_write(const uint8_t* packet, const size_t len) {
+	write(sockfd, packet, len);
 }
 
 
