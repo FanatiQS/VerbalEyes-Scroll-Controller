@@ -188,7 +188,6 @@ int main() {
 	while (1) {
 		if (updateConfig(readFromSocket(0))) continue;
 		if (ensureConnection()) continue;
-		// usleep(10000000 / 120);
 		updateSpeed(potSpeed);
 		// jumpToTop(digitalRead(0));
 	}
