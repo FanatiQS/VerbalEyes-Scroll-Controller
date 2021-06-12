@@ -288,7 +288,7 @@ bool updateConfig(const int16_t c) {
 				}
 				// Key handling has failed and remaining characters should be ignored
 				else if (confIndex == CONFFAILED) {
-					return;
+					return 1;
 				}
 
 				// Invalidates keys that does not match incomming string
