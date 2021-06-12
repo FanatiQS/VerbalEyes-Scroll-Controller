@@ -29,7 +29,7 @@ uint16_t potSpeed = 0;
 
 // Reads one character from the standard in if it has anything
 int16_t readFromSocket(int fd) {
-	unsigned char c;
+	unsigned char c = 0;
 	read(fd, &c, 1);
 
 	if (c != '\e') return c;
@@ -186,7 +186,6 @@ int main() {
 	updateConfig('\n');
 
 	while (1) {
-		time(NULL); // Why doesn't it work without this line?!?
 		if (updateConfig(readFromSocket(0))) continue;
 		if (ensureConnection()) continue;
 		// usleep(10000000 / 120);
