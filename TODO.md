@@ -5,6 +5,16 @@ Important todos: HTTPS, documentation, ssid logs, led indication
 
 * Continue working on tests for the API
 
+* Replace all calls to logprintf not using variadic function with verbaleyes_log
+
+* Rewrite ws write to use better vsnprintf method. Create frame first, add length+opcode, then offset start. So create buffer, vsnprintf with max offset, add length and opcode, write with offset.
+
+* Create a file for testing verbalEyes-speed-controller implementation. First updateConfig should be called and it should require a string to be sent in over serial or whatever is used.
+
+* Handle something other than auth response as first message
+
+* Handle close and ping after auth
+
 * Get HTTPS to work
 	* HTTPS is working, but there is currently no way to distinguish between HTTP and HTTPS hosts.
 	* A big issue with HTTPS is fingerprints. They don't lookup Certificate Authority things in ESP code.
@@ -18,7 +28,7 @@ Important todos: HTTPS, documentation, ssid logs, led indication
 * Add readmes for tools and test
 
 * Find a way to add logs like "invalid ssid" or "invalid ssid key" into verbaleyes_network_connected.
-	When getting status, it returns "incorrect password" code until connected.
+	Should there be a code for [ connecting, connected, failed ] and not just connected or not?
 
 * Find a better way for getting random seed than to overwrite clock function on ESP since it does not exist. Maybe it needs a verbaleyes_seed function.
 
