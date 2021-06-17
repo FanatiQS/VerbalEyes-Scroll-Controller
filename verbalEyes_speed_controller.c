@@ -74,9 +74,6 @@ static bool showProgressBar() {
 	return 1;
 }
 
-// Indication that a match has already succeeded
-#define SUCCESSFULMATCH 255
-
 // Resets state back with an error message
 static int8_t connectionFailToState(const char* msg, const uint8_t backToState) {
 	logprintf(msg);
@@ -99,6 +96,11 @@ static int8_t socketHadNoDataProgressBar() {
 	return connectionFailToState("\r\nDid not get a response from the server", 0x82);
 }
 
+
+
+// Indication that a match has already succeeded
+#define SUCCESSFULMATCH 255
+
 // Matches incoming data character by character
 static void matchStr(uint8_t* index, const char c, const char* match) {
 	if (*index == SUCCESSFULMATCH) return;
@@ -106,6 +108,8 @@ static void matchStr(uint8_t* index, const char c, const char* match) {
 	else if (c == match[*index]) *index += 1;
 	else *index = 0;
 }
+
+
 
 #define WS_PAYLOADLEN_NOTSET 1
 #define WS_PAYLOADLEN_EXTENDED 126
