@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" href="styles.css">
+		<script src="serial.js"></script>
+	</head>
+	<body>
+		<form>
+			<p style="text-align: center;">Configurator</p>
+			<label class="config-container">
+				<div class="config-name">SSID</div>
+				<input class="config-textbox" type="text" maxlength="32" name="ssid" placeholder=" ">
+			</label>
+			<label class="config-container">
+				<div class="config-name">SSID Key</div>
+				<input class="config-textbox" type="password" maxlength="63" name="ssidkey" placeholder=" ">
+			</label>
+
+			<br>
+
+			<label class="config-container">
+				<div class="config-name">Host</div>
+				<input class="config-textbox" type="text" maxlength="32" name="host" placeholder=" ">
+			</label>
+			<label class="config-container">
+				<div class="config-name">Port</div>
+				<input class="config-textbox" type="number" min="0" max="65535" name="port" style="width: 7ch;" placeholder=" " title="max 65535 min 0">
+			</label>
+			<label class="config-container">
+				<div class="config-name">Path</div>
+				<input class="config-textbox" type="text" maxlength="32" name="path" style="width: calc(32ch - 7ch - 2.5ch - 2px);" placeholder=" ">
+			</label>
+
+			<br>
+
+			<label class="config-container">
+				<div class="config-name">Project</div>
+				<input class="config-textbox" type="text" maxlength="32" name="proj" placeholder=" ">
+			</label>
+			<label class="config-container">
+				<div class="config-name">Project Key</div>
+				<input class="config-textbox" type="text" maxlength="32" name="projkey" placeholder=" ">
+			</label>
+
+			<br>
+
+			<label class="config-container">
+				<div class="config-name">Speed Minimum</div>
+				<input class="config-textbox" type="number" min="-32767" max="32767" name="speedmax" placeholder=" ">
+			</label>
+			<label class="config-container">
+				<div class="config-name">Speed Maximum</div>
+				<input class="config-textbox" type="number" min="-32767" max="32767" name="speedmin" placeholder=" ">
+			</label>
+
+			<label class="config-container">
+				<div class="config-name">Sensitivity</div>
+				<input class="config-textbox" type="number" min="0" max="65535" name="sensitivity" placeholder=" ">
+			</label>
+			<label class="config-container">
+				<div class="config-name">Deadzone</div>
+				<input class="config-textbox" type="number" min="0" max="65535" name="deadzone" placeholder=" ">
+			</label>
+
+			<label class="config-container">
+				<div class="config-name">Calibration Low</div>
+				<input class="config-textbox" type="number" min="0" max="65535" name="callow" placeholder=" ">
+			</label>
+			<label class="config-container">
+				<div class="config-name">Calibration High</div>
+				<input class="config-textbox" type="number" min="0" max="65535" name="calhigh" placeholder=" ">
+			</label>
+
+			<br>
+
+			<input id="config-load" type="button" value="Load Preset">
+			<input id="config-save" type="button" value="Save Preset">
+
+			<br>
+			<br>
+
+			<input type="button" value="Upload Configuration" id="webserial-upload">
+			<input type="button" value="Disconnect" id="webserial-disconnect" disabled>
+
+			<br>
+			<span>or</span>
+			<br>
+
+			<select id="generate-os">
+				<option value="macos">MacOS</option>
+				<option value="windows">Windows</option>
+				<option value="linux">Linux</option>
+			</select>
+			<input type="button" value="Generate Configuration Command" id="gen-conf">
+
+			<br>
+			<br>
+
+			<pre class="config-console"></pre>
+		</form>
+		<script src="script.js"></script>
+	</body>
+</html>

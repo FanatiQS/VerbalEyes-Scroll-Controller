@@ -1,0 +1,68 @@
+.config-container {
+	display: inline-block;
+	border: 1px solid lightgray;
+	padding: 0.2em 1ch;
+	border-radius: 0.4em;
+	font-size: 1.2em;
+	margin: 0.5ch 0.25ch;
+	outline: none;
+}
+.config-name {
+	line-height: 1.5;
+	font-size: 0.55em;
+}
+.config-textbox {
+	display: block;
+	height: 1.5em;
+	border: 0;
+	outline: none;
+	background: none;
+	font-family: monospace;
+	font-size: inherit;
+	padding: 0;
+	float: left;
+	transition: height 0.3s ease-in-out;
+}
+.config-textbox[type=text], .config-textbox[type=password] {
+	width: 32ch;
+}
+.config-textbox[type=number] {
+	width: 100%;
+	width: calc((32ch - 1ch - 0.5px - 4ch + 1px - 4px) / 3);
+}
+.config-textbox:placeholder-shown:not(:focus) {
+	height: 0;
+	opacity: 0;
+}
+
+.config-console {
+	height: 100px;
+	width: 85ch;
+	border: 1px solid gray;
+	white-space: pre-wrap;
+	overflow: scroll;
+	padding: 0 0.75em;
+	box-sizing: border-box;
+}
+
+form {
+	display: table;
+	box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+	background: white;
+	padding: 0 1em 2em;
+}
+body {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	background: #eee;
+}
+html,body {
+	height: 100%;
+}
+
+
+input:invalid {
+	background: red;
+}
