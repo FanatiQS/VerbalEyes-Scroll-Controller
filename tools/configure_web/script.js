@@ -60,11 +60,6 @@ document.querySelector("#gen-conf").onclick = function () {
 	const os = this.previousElementSibling.selectedOptions[0].value;
 	let output = "Copy and paste this command into you command line tool:\n";
 	switch (os) {
-		case "": {
-			//!! Preselect os instead based on current platform
-			log("No OS selected" + '\n');
-			return;
-		}
 		case "macos": {
 			output += `echo -e '${serializeConfig('\\n')}' > \`ls /dev/cu.usbserial-* | head -1\` & cat < \`ls /dev/cu.usbserial-* | head -1\``;
 			break;
