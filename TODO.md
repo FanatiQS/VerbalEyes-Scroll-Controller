@@ -15,6 +15,8 @@ Important todos: HTTPS, documentation, ssid logs, led indication
 
 * Handle close and ping after auth
 
+* Replace static timeout after fail with exponential backoff
+
 * Get HTTPS to work
 	* HTTPS is working, but there is currently no way to distinguish between HTTP and HTTPS hosts.
 	* A big issue with HTTPS is fingerprints. They don't lookup Certificate Authority things in ESP code.
