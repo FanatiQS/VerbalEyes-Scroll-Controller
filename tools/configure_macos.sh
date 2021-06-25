@@ -60,4 +60,4 @@ case $index in
 	1) key="sensitivity" ;;
 esac
 
-echo -e "$key=$value\n" > `ls /dev/cu.usbserial-* | head -1`
+echo -e '$key=$value\n' > `ls /dev/cu.usbserial-* | head -1`

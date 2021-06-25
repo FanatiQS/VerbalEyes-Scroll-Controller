@@ -124,11 +124,11 @@ stty -echo -F `ls /dev/cu.usbserial-* | head -1`
 Writing configuration data to the device
 * OSX: tested
 ```sh
-echo -e "key=value\n\n" > `ls /dev/cu.usbserial-* | head -1`
+echo -e 'key=value\n\n' > `ls /dev/cu.usbserial-* | head -1`
 ```
 * Linux: tested
 ```sh
-echo -e "key=value\n\n" > `ls /dev/ttyUSB* | head -1`
+echo -e 'key=value\n\n' > `ls /dev/ttyUSB* | head -1`
 ```
 * Windows: I dunno
 
@@ -165,11 +165,11 @@ Replace path with selected device port from [ls](####listing-serial-devices)
 
 * OSX:
 ```sh
-echo -e "key=value\n\n" > path
+echo -e 'key=value\n\n' > path
 ```
 * Linux:
 ```sh
-echo -e "key=value\n\n" > path
+echo -e 'key=value\n\n' > path
 ```
 * Windows: ?
 

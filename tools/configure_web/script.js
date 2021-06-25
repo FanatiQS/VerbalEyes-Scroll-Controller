@@ -66,11 +66,11 @@ document.querySelector("#gen-conf").onclick = function () {
 			return;
 		}
 		case "macos": {
-			output += `echo -e "${serializeConfig('\\n')}" > \`ls /dev/cu.usbserial-* | head -1\` & cat < \`ls /dev/cu.usbserial-* | head -1\``;
+			output += `echo -e '${serializeConfig('\\n')}' > \`ls /dev/cu.usbserial-* | head -1\` & cat < \`ls /dev/cu.usbserial-* | head -1\``;
 			break;
 		}
 		case "linux": {
-			output += `echo -e "${serializeConfig('\\n')}" > \`ls /dev/ttyUSB* | head -1\` & cat < \`ls /dev/ttyUSB* | head -1\``;
+			output += `echo -e '${serializeConfig('\\n')}' > \`ls /dev/ttyUSB* | head -1\` & cat < \`ls /dev/ttyUSB* | head -1\``;
 			break;
 		}
 		case "windows": {
