@@ -97,6 +97,7 @@ If an error occurs after delimiter has been received, all further data is ignore
 * To configure the Wi-Fi SSID to `myWifi`, it would look like this `ssid=myWifi\n\n`
 * To configure minimum speed to -10, it would look like this `speedmin=-10\n\n`
 * To configure sensitivity to 5, it would look like this `sensitivity=5\n\n`
+* To configure both sensitivity to 5 and minimum speed to -10 on one go, it would look like this `sensitivity=5\nspeedmin=-10\n\n`
 
 ## Serial communication
 For the pre-built example, configuration is done over the serial connection to the micro controller, most likely connected to a computer over USB. Communicating with the device over serial can be done with the command line.
