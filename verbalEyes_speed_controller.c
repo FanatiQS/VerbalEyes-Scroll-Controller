@@ -113,52 +113,61 @@ static void matchStr(uint8_t* index, const char c, const char* match) {
 
 #define WS_PAYLOADLEN_NOTSET 1
 #define WS_PAYLOADLEN_EXTENDED 126
+#define WS_MASKLEN 4
+
+// Inserts randomly generated mask and uses it to mask payload for WebSocket frame
+static void maskWebSocketFrame(uint8_t* frame, size_t len) {
+	// Generates mask
+	frame[0] = rand() % 256;
+	frame[1] = rand() % 256;
+	frame[2] = rand() % 256;
+	frame[3] = rand() % 256;
+
+	// Masks payload
+	for (size_t i = WS_MASKLEN; i < len; i++) {
+		frame[i] = frame[i] ^ frame[i - WS_MASKLEN & 3];
+	}
+}
 
 // Sends a string in a WebSocket frame to the server
 static void writeWebSocketFrame(const char* format, ...) {
-	// Gets length of formated payload
+	// Initializes variadic function
 	va_list args;
 	va_start(args, format);
-	const size_t payloadLen = vsnprintf(NULL, 0, format, args);
 
-	// Offset from start of frame to start of payload data
-	uint8_t payloadOffset;
+	// Creates WebSocket frame for non extended frame
+	uint8_t frame[2 + WS_MASKLEN + WS_PAYLOADLEN_EXTENDED];
+	const size_t payloadLen = vsnprintf((char*)frame + 2 + WS_MASKLEN, WS_PAYLOADLEN_EXTENDED, format, args);
 
-	// Creates websocket frame to send payload with
-	uint8_t frame[8 + payloadLen + 1];
-
-	// Sets fin bit, reserved bits and opcode for websocket frame
-	frame[0] = 0x81;
-
-	// Sets payload length and mask bit for websocket frame
-	if (payloadLen >= WS_PAYLOADLEN_EXTENDED) {
-		frame[1] = 0x80 | WS_PAYLOADLEN_EXTENDED;
-		frame[2] = payloadLen >> 8;
-		frame[3] = payloadLen;
-		payloadOffset = 4;
-	}
-	else {
+	// Handles non extended frame
+	if (payloadLen < WS_PAYLOADLEN_EXTENDED) {
+		// Sets fin bit, reserved buts, opcode and payload length for websocket frame
+		frame[0] = 0x81;
 		frame[1] = 0x80 | payloadLen;
-		payloadOffset = 2;
+
+		// Generates mask, masks payload and sends frame
+		maskWebSocketFrame(frame + 2, payloadLen + WS_MASKLEN);
+		verbaleyes_socket_write(frame, 2 + WS_MASKLEN + payloadLen);
+	}
+	// Handles extended WebSocket frames
+	else {
+		// Creates separate buffer for extended frame
+		uint8_t frame2[4 + WS_MASKLEN + payloadLen + 1];
+		vsnprintf((char*)frame2 + 4 + WS_MASKLEN, payloadLen + 1, format, args);
+
+		// Sets fin bit, reserved bits, opcode and payload length for websocket frame
+		frame2[0] = 0x81;
+		frame2[1] = 0x80 | WS_PAYLOADLEN_EXTENDED;
+		frame2[2] = payloadLen >> 8;
+		frame2[3] = payloadLen;
+
+		// Generates mask, masks payload and sends frame
+		maskWebSocketFrame(frame2 + 4, payloadLen + WS_MASKLEN);
+		verbaleyes_socket_write(frame2, 4 + WS_MASKLEN + payloadLen);
 	}
 
-	// Generates mask and inserts it into websocket frame
-	const char mask[] = {rand() % 256, rand() % 256, rand() % 256, rand() % 256};
-	memcpy(&frame[payloadOffset], mask, 4);
-	payloadOffset += 4;
-
-	// Inserts formated payload unmasked into frame
-	va_start(args, format);
-	vsprintf((char*)(frame + payloadOffset), format, args);
+	// Cleans up variadic function
 	va_end(args);
-
-	// Maskes payload
-	for (size_t i = 0; i < payloadLen; i++) {
-		frame[i + payloadOffset] = frame[i + payloadOffset] ^ mask[i & 3];
-	}
-
-	// Sends frame
-	verbaleyes_socket_write(frame, payloadLen + payloadOffset);
 }
 
 
