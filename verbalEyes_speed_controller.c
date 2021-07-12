@@ -175,11 +175,11 @@ static void writeWebSocketFrame(const char* format, ...) {
 // Structure used to read and write configurable data
 // Length of 0 indicates it is a 16bit unsigned integer, -1 indicates 16bit signed integer
 struct confItem {
-	char* name;
-	int8_t len;
-	uint16_t addr;
-	uint8_t resetState;
-	bool nameMatchFailed;
+	char* name; // Name used for configuration
+	int8_t len; // Maxumum length for item
+	uint16_t addr; // Start address in percistent storage
+	uint8_t resetState; // State to go back to when item is updated
+	bool nameMatchFailed; // Internally used by configuration parser
 };
 
 // All configurable properties
