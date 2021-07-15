@@ -34,8 +34,6 @@ clearString() {
 	done
 }
 
-printf "" > $path
-
 clearString ssid 32
 clearString ssidkey 63
 clearString host 64
