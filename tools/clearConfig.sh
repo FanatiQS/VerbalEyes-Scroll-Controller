@@ -3,7 +3,9 @@
 # The first argument is a path to where to output the configuration commands or to serial if undefined
 # The second argument prevents delaying writes as done by default to not risk loosing data in transmission
 
-delay=$2
+if [[ -z "$2" || $2 -eq 1 || $2 == true ]]; then
+	delay=1
+fi
 
 if [[ $# > 0 ]]; then
 	path=$1
@@ -25,8 +27,7 @@ clearString() {
 		for ((i = 0; i < len; i++)) {
 			printf x >> $path
 		}
-		if [[ -z "$delay" ]]
-		then
+		if [ "$delay" ]; then
 			sleep 0.1
 		fi
 		printf "\\n" >> $path
