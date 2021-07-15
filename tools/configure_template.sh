@@ -1,3 +1,4 @@
+#!/bin/bash
 # Just remove the configuration items you do not want to update
 while read value; do printf "$value\n" >> $(ls /dev/cu.usbserial-* | head -1); done <<< '\
 ssid=

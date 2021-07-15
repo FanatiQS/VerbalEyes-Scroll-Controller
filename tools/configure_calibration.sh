@@ -1,3 +1,4 @@
+#!/bin/bash
 while read value; do printf "$value\n" >> $(ls /dev/cu.usbserial-* | head -1); done <<< '\
 speedmin=0
 speedmax=1

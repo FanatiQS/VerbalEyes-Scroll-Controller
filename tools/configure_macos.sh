@@ -1,3 +1,4 @@
+#!/bin/bash
 echo "Select config item to update"
 echo "Navigate with up and down arrow keys, select with enter"
 echo "[ ] SSID"
