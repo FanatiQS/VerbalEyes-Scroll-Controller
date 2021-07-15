@@ -20,10 +20,7 @@ fi
 
 clearString() {
 	key=$1
-	len=$2
-	while [[ $len > 0 ]]
-	do
-		((len--))
+	for ((len = $2; len >= 0; len--)); do
 		printf $key= >> $path
 		for ((i = 0; i < len; i++)) {
 			printf x >> $path
