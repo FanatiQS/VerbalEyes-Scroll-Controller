@@ -15,3 +15,7 @@ test_clearConfig: lib/bearssl
 
 lib/bearssl/:
 	cd ./lib && make
+
+test_c99: lib/bearssl
+	gcc -S -Iempty_lib -std=c99 -pedantic ../verbalEyes_speed_controller.c test_c99.c
+	rm test_c99.s
