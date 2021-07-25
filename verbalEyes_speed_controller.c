@@ -599,8 +599,8 @@ int8_t ensureConnection() {
 			uint8_t hash[21];
 			br_sha1_out(&ctx, hash);
 			hash[20] = 0;
-			for (int i = 0; i < 21; i += 3) {
-				const int offset = i / 3;
+			for (uint8_t i = 0; i < 21; i += 3) {
+				const uint8_t offset = i / 3;
 				buf[i + 22 + offset] = table[hash[i] >> 2];
 				buf[i + 1 + 22 + offset] = table[((hash[i] & 0x03) << 4) | hash[i + 1] >> 4];
 				buf[i + 2 + 22 + offset] = table[(hash[i + 1] & 0x0f) << 2 | hash[i + 2] >> 6];
@@ -795,7 +795,7 @@ int8_t ensureConnection() {
 		case 11: {
 			// Reads entire WebSocket authentication response
 			while (resIndex) {
-				const signed short c = verbaleyes_socket_read();
+				const int16_t c = verbaleyes_socket_read();
 
 				// Handles timeout error
 				if (c == EOF) return socketHadNoData();
