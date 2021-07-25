@@ -1,7 +1,7 @@
 #include <stdbool.h> // bool
 #include <stdint.h> // int8_t uint8_t int16_t uint16_t uint32_t
 #include <string.h> // strlen, strcpy, memset, memcpy, size_t, NULL
-#include <time.h> // time, clock, size_t, NULL
+#include <time.h> // time, clock, time_t, size_t, NULL
 #include <ctype.h> // tolower
 #include <stdlib.h> // realloc, free, rand, srand, size_t, NULL
 #include <stdio.h> // sprintf, vsprintf, vsnprintf, EOF, size_t, NULL
@@ -32,7 +32,7 @@
 #endif
 
 static uint8_t state = 0;
-static size_t timeout = 0;
+static time_t timeout = 0;
 
 
 
@@ -61,8 +61,8 @@ static void logprintf(const char* format, ...) {
 
 // Prints progress bar every second to indicate a process is working and handle timeout errors
 static bool showProgressBar() {
-	static size_t previous;
-	const size_t current = time(NULL);
+	static time_t previous;
+	const time_t current = time(NULL);
 
 	// Handle timeout error
 	if (current > timeout) return 0;
