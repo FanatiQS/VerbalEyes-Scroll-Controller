@@ -38,24 +38,25 @@ static time_t timeout = 0;
 
 // Prints a string to the serial output with ability to format
 static void logprintf(const char* format, ...) {
+	// Initializes variadic function
 	va_list args;
-
-	// Format arguments to buffer
 	va_start(args, format);
+
+	// Formats arguments into buffer
 	char buffer[LOGBUFFERLEN];
 	const size_t len = vsnprintf(buffer, LOGBUFFERLEN, format, args);
-
-	// Retry with known length if buffer was too small
-	if (len >= LOGBUFFERLEN) {
+	if (len < LOGBUFFERLEN) {
+		verbaleyes_log(buffer, len);
+	}
+	// Retries with known length if buffer was too small
+	else {
 		va_start(args, format);
 		char buffer2[len + 1];
 		vsnprintf(buffer2, len + 1, format, args);
 		verbaleyes_log(buffer2, len);
 	}
-	else {
-		verbaleyes_log(buffer, len);
-	}
 
+	// Cleans up variadic function
 	va_end(args);
 }
 
@@ -64,7 +65,7 @@ static bool showProgressBar() {
 	static time_t previous;
 	const time_t current = time(NULL);
 
-	// Handle timeout error
+	// Handles timeout error
 	if (current > timeout) return 0;
 
 	// Prints progress bar every second
