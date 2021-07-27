@@ -117,7 +117,7 @@ static void matchStr(uint8_t* index, const char c, const char* match) {
 #define WS_MASKLEN 4
 
 // Inserts randomly generated mask and uses it to mask payload for WebSocket frame
-static void maskWebSocketFrame(uint8_t* frame, size_t len) {
+static void maskWebSocketFrame(uint8_t* frame, const size_t len) {
 	// Generates mask
 	frame[0] = rand() % 256;
 	frame[1] = rand() % 256;
@@ -176,10 +176,10 @@ static void writeWebSocketFrame(const char* format, ...) {
 // Structure used to read and write configurable data
 // Length of 0 indicates it is a 16bit unsigned integer, -1 indicates 16bit signed integer
 struct confItem {
-	char* name; // Name used for configuration
-	int8_t len; // Maxumum length for item
-	uint16_t addr; // Start address in percistent storage
-	uint8_t resetState; // State to go back to when item is updated
+	const char* name; // Name used for configuration
+	const int8_t len; // Maxumum length for item
+	const uint16_t addr; // Start address in percistent storage
+	const uint8_t resetState; // State to go back to when item is updated
 	bool nameMatchFailed; // Internally used by configuration parser
 };
 
@@ -201,7 +201,7 @@ static struct confItem conf_sensitivity =	{	"sensitivity",	0,  	267,	12	};
 
 
 // Reads a config value into a char array
-static void confGetStr(struct confItem item, char* str) {
+static void confGetStr(const struct confItem item, char* str) {
 	for (uint8_t i = 0; i < item.len; i++) {
 		str[i] = verbaleyes_conf_read(item.addr + i);
 		if (str[i] == '\0') return;
@@ -210,7 +210,7 @@ static void confGetStr(struct confItem item, char* str) {
 }
 
 // Reads a config value as a 2 byte int
-static uint16_t confGetInt(struct confItem item) {
+static uint16_t confGetInt(const struct confItem item) {
 	return (verbaleyes_conf_read(item.addr) << 8) | verbaleyes_conf_read(item.addr + 1);
 }
 
@@ -534,7 +534,7 @@ int8_t ensureConnection() {
 			buf = realloc(buf, conf_host.len + 1);
 			if (buf == NULL) logprintf("\r\nERROR: realloc failed\r\n");
 			confGetStr(conf_host, buf);
-			uint16_t port = confGetInt(conf_port);
+			const uint16_t port = confGetInt(conf_port);
 
 			// Prints
 			logprintf("\r\nConnecting to host: %s:%u...", buf, port);
