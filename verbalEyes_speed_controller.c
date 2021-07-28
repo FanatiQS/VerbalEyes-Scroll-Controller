@@ -332,7 +332,7 @@ bool updateConfig(const int16_t c) {
 
 					// Aborts handling input if it contained invalid characters
 					if (confIndex == 0) logprintf("0");
-					logprintf("\r\nInvalid input");
+					logprintf("\r\nInvalid input (%c)", c);
 					confIndex = CONFFAILED;
 					return 1;
 				}
