@@ -578,6 +578,9 @@ int8_t ensureConnection() {
 			key[23] = '=';
 			key[24] = '\0';
 
+			// Flushes any data existing in sockets read buffer
+			while (verbaleyes_socket_read() != EOF);
+
 			// Sends HTTP request to setup WebSocket connection with host
 			char req[4 + strlen(path) + 98 + 24 + 4 + 1];
 			uint8_t reqlen = sprintf(
