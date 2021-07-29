@@ -667,12 +667,9 @@ int8_t ensureConnection() {
 		}
 		// Validates HTTP headers
 		case 7: {
-			while (resIndex != 4) {
-				const int16_t c = verbaleyes_socket_read();
-
-				// Handles timeout and socket close error
-				if (c == EOF) return socketHadNoData();
-
+			// Validate headers until EOF
+			int16_t c;
+			while ((c = verbaleyes_socket_read()) != EOF) {
 				// Analyzes HTTP headers up to end of head
 				matchStr((uint8_t*)&resIndex, c, "\r\n\r\n");
 
@@ -692,6 +689,9 @@ int8_t ensureConnection() {
 				matchStr(&resMatchIndexes[3], lowerc, "sec-websocket-extensions: ");
 				matchStr(&resMatchIndexes[4], lowerc, "sec-webSocket-protocol: ");
 			}
+
+			// Handles timeout and socket close error if end of headers was not reached
+			if (resIndex != 4) return socketHadNoData();
 
 			// Frees up allocated buffer
 			free(buf);
