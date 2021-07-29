@@ -1,5 +1,5 @@
 #include <stdbool.h> // bool
-#include <stdint.h> // int8_t uint8_t int16_t uint16_t uint32_t
+#include <stdint.h> // int8_t uint8_t int16_t uint16_t int32_t uint32_t
 #include <string.h> // strlen, strcpy, memset, memcpy, size_t, NULL
 #include <time.h> // time, clock, time_t, size_t, NULL
 #include <ctype.h> // tolower
@@ -460,11 +460,11 @@ bool updateConfig(const int16_t c) {
 
 
 // Global variables for mapping analog scroll input
-int16_t speedMin;
-uint16_t speedCalLow;
-float speedMapper;
-float deadzoneSize;
-float jitterSize;
+int32_t speedSize;
+int16_t speedMapper;
+int32_t speedComp;
+int32_t deadzoneSize;
+int32_t jitterSize;
 
 #define RESINDEXFAILED 65535
 
@@ -826,20 +826,21 @@ int8_t ensureConnection() {
 		// Sets global values used for updating speed
 		case 12: {
 			// Gets deadzone an sensitivity percentage values from config
-			const float deadzone = confGetInt(conf_deadzone);
-			const float sensitivity = confGetInt(conf_sensitivity);
+			const uint8_t deadzone = confGetInt(conf_deadzone);
+			const uint8_t sensitivity = confGetInt(conf_sensitivity);
 
 			// Gets minimum and maximum speed from config
-			speedMin = confGetInt(conf_speedmin);
+			const int16_t speedMin = confGetInt(conf_speedmin);
 			const int16_t speedMax = confGetInt(conf_speedmax);
 
 			// Gets calibration start and end point to use on analog read value
-			speedCalLow = confGetInt(conf_callow);
+			const uint16_t speedCalLow = confGetInt(conf_callow);
 			const uint16_t speedCalHigh = confGetInt(conf_calhigh);
 
 			// Sets helper values to use when mapping analog read value to new range
-			const float speedSize = (speedMax - speedMin) / (1 - deadzone / 100);
-			speedMapper = speedSize / (speedCalHigh - speedCalLow);
+			speedSize = (speedMax - speedMin) * (100 + deadzone * 2);
+			speedMapper = speedCalHigh - speedCalLow;
+			speedComp = speedMin * 100;
 			deadzoneSize = speedSize * deadzone / 100;
 			jitterSize = speedSize * sensitivity / 100;
 
@@ -865,10 +866,10 @@ int8_t ensureConnection() {
 
 // Sends remapped analog speed reading to the server
 void updateSpeed(const uint16_t value) {
-	static float speed;
+	static int32_t speed;
 
 	// Maps analog input value to conf range
-	float mappedValue = (float)(value - speedCalLow) * speedMapper + speedMin;
+	int32_t mappedValue = value * speedSize / speedMapper + speedComp;
 
 	// Shifts mapped value above deadzone
 	if (mappedValue > deadzoneSize) {
@@ -885,10 +886,10 @@ void updateSpeed(const uint16_t value) {
 	speed = mappedValue;
 
 	// Sends new speed to the server
-	writeWebSocketFrame("{\"_core\": {\"doc\": {\"id\": \"test\", \"speed\": %.2f}}}", speed);
+	writeWebSocketFrame("{\"_core\": {\"doc\": {\"id\": \"test\", \"speed\": %.2f}}}", (float)speed / 100);
 
 	// Prints new speed
-	logprintf("\r\nSpeed has been updated to: %.2f", speed);
+	logprintf("\r\nSpeed has been updated to: %.2f", (float)speed / 100);
 }
 
 // Tells server to reset position to 0 when button is pressed
