@@ -21,3 +21,7 @@ test_c99: $(LIBBEARSSL)
 	gcc -S -I../lib -std=c99 -pedantic-errors ../verbalEyes_speed_controller.c
 	clang -S -I../lib -std=c99 -pedantic-errors ../verbalEyes_speed_controller.c
 	rm verbalEyes_speed_controller.s
+
+# Standard C++ is currently not supported since VLAs are used
+test_c++: $(LIBBEARSSL)
+	g++ -S -Ilib -std=c++11 -pedantic-errors ../verbalEyes_speed_controller.c
