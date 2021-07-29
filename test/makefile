@@ -19,4 +19,5 @@ $(LIBBEARSSL):
 
 test_c99: $(LIBBEARSSL)
 	gcc -S -I../lib -std=c99 -pedantic-errors ../verbalEyes_speed_controller.c
+	clang -S -I../lib -std=c99 -pedantic-errors ../verbalEyes_speed_controller.c
 	rm verbalEyes_speed_controller.s
