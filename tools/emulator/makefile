@@ -1,8 +1,8 @@
-main: ../../test/lib/bearssl
-	gcc main.c ../../verbalEyes_speed_controller.c ../../test/lib/bearssl/*.c -I../../test/lib -o emulator
+main: ../../lib/bearssl
+	gcc main.c ../../verbalEyes_speed_controller.c ../../lib/bearssl/*.c -I../../lib -o emulator
 
 clean:
 	rm emulator
 
-../../test/lib/bearssl:
-	cd ../../test/lib && make
+../../lib/bearssl:
+	cd ../../lib && make
