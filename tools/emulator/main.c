@@ -148,7 +148,34 @@ bool verbaleyes_socket_connected() {
 
 // Consumes a single character from the sockets response data buffer
 short verbaleyes_socket_read() {
-	return readFromSocket(sockfd);
+	// Creates set for select to use with only the socket connected to the host
+	fd_set set;
+	FD_ZERO(&set);
+	FD_SET(sockfd, &set);
+
+	// Creates timeout delay of 0 microseconds
+	struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+
+	// Checks if socket has data
+    switch(select(sockfd + 1, &set, NULL, NULL, &timeout)) {
+		// Exits on error
+		case -1: {
+			perror("ERROR: Select got an error :(");
+			exit(EXIT_FAILURE);
+		}
+		// Returns EOF if socket does not have data
+		case 0: {
+			return EOF;
+		}
+		// Reads data and returns it if socket has data
+		default: {
+			unsigned char c;
+			read(sockfd, &c, 1);
+			return c;
+		}
+	}
 }
 
 // Sends a packet to the endpoint the socket is connected to
@@ -256,10 +283,11 @@ int main(int argc, char** argv) {
 
 	// Main loop
 	while (1) {
-		if (updateConfig(readFromSocket(0))) continue;
+		if (updateConfig(readFromSocket(STDIN_FILENO))) continue;
 		if (ensureConnection()) continue;
 		updateSpeed(potSpeed);
 		// jumpToTop(digitalRead(0));
+		usleep(20000);
 	}
 	return 0;
 }
