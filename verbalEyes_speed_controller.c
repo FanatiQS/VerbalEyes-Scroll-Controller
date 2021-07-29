@@ -531,7 +531,7 @@ int8_t ensureConnection() {
 		// Initialize socket connection
 		case 2: {
 			// Gets host and port from config
-			buf = realloc(buf, conf_host.len + 1);
+			buf = (char*)realloc(buf, conf_host.len + 1);
 			if (buf == NULL) logprintf("\r\nERROR: realloc failed\r\n");
 			confGetStr(conf_host, buf);
 			const uint16_t port = confGetInt(conf_port);
@@ -590,7 +590,7 @@ int8_t ensureConnection() {
 			verbaleyes_socket_write((uint8_t*)req, reqlen);
 
 			// Creates websocket accept header to compare against
-			buf = realloc(buf, 22 + 28 + 2 + 1);
+			buf = (char*)realloc(buf, 22 + 28 + 2 + 1);
 			if (buf == NULL) logprintf("\r\nERROR: realloc failed\r\n");
 			strcpy(buf, "sec-websocket-accept: ");
 			br_sha1_context ctx;
