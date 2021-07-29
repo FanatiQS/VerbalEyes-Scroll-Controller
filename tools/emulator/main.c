@@ -70,21 +70,37 @@ int16_t readFromSocket(int fd) {
 
 
 
-// The virual EEPROM
-char EEPROM[CONFIGLEN];
+// Buffer for updated config data
+char confBuffer[CONFIGLEN];
 
-// Reads a character from the specified address in fake EEPROM
+// Reads a character from the specified address in config buffer
 unsigned char verbaleyes_conf_read(const unsigned short addr) {
-	return EEPROM[addr];
+	return confBuffer[addr];
 }
 
-// Writes a character to the specified address in fake EEPROM
+// Writes a character to the specified address in config buffer
 void verbaleyes_conf_write(const unsigned short addr, const char c) {
-	EEPROM[addr] = c;
+	confBuffer[addr] = c;
 }
 
-// Commits changes made in EEPROM, nothing to be done
-void verbaleyes_conf_commit() {}
+// Commits changes made to config buffer to file
+int confStartIndex;
+char* pathToSelf;
+void verbaleyes_conf_commit() {
+	// Opens self
+	FILE* file = fopen(pathToSelf, "r+");
+
+	// Gets to start index for configuration
+	fseek(file, confStartIndex, SEEK_SET);
+
+	// Writes configuration content
+	for (int i = 0; i < CONFIGLEN; i++) {
+		fputc(confBuffer[i], file);
+	}
+
+	// Closes file stream
+	fclose(file);
+}
 
 
 
@@ -143,7 +159,9 @@ void verbaleyes_socket_write(const uint8_t* packet, const size_t len) {
 
 
 // Prints the logs to standard out
+bool muteLogs = 0;
 void verbaleyes_log(const char* str, const size_t len) {
+	if (muteLogs) return;
 	printf("%s", str);
 	fflush(stdout);
 }
@@ -164,8 +182,65 @@ void updateConfig_str(char* str) {
 	}
 }
 
+// Initializes configuration buffer by reading concatenated config data from self
+void initConfStorage() {
+	FILE* file;
+	int c;
+	int i = 0;
+	int matchIndex = 0;
+	const char confMatchStr[] = "configStartsHere:";
+
+	// Opens self to extract concatenated configuration data
+	file = fopen(pathToSelf, "r+");
+
+	// Gets index where source code stops
+	while ((c = fgetc(file)) != EOF) {
+		if (c == confMatchStr[matchIndex]) {
+			if (matchIndex++ >= strlen(confMatchStr)) matchIndex = 0;
+		}
+		else if (matchIndex == strlen(confMatchStr)) {
+			break;
+		}
+		else {
+			matchIndex = 0;
+		}
+		i++;
+	}
+	confStartIndex = i + strlen(confMatchStr) + 1;
+
+	// Initializes configuration if not found
+	if (matchIndex == 0) {
+		// Insert marker to find start position next time
+		fputs(confMatchStr, file);
+		fputc(' ', file);
+
+		// Configure initial configuration
+		muteLogs = 1;
+		updateConfig_str("ssid=myWifi\n");
+		updateConfig_str("host=127.0.0.1\n");
+		updateConfig_str("port=8080\n");
+		updateConfig_str("path=/\n");
+		updateConfig_str("proj=myProject\n");
+		updateConfig_str("speedmin=-10\n");
+		updateConfig_str("speedmax=10\n");
+		confBuffer[266] = POTMAX;
+		updateConfig('\n');
+		muteLogs = 0;
+	}
+	// Copies configuration data from file to buffer
+	else {
+		for (i = 0; i < CONFIGLEN; i++) {
+			c = fgetc(file);
+			confBuffer[i] = c;
+		}
+	}
+	fclose(file);
+}
+
+
+
 //!!
-int main() {
+int main(int argc, char** argv) {
 	// Sets STDIN to be unbuffered
 	tcgetattr(STDIN_FILENO, &orig_termios);
     atexit(disableRawMode);
@@ -175,16 +250,9 @@ int main() {
     raw.c_cc[VTIME] = 1;
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 
-	// Configure initial configuration
-	updateConfig_str("ssid=myWiFi\n");
-	updateConfig_str("host=127.0.0.1\n");
-	updateConfig_str("port=8080\n");
-	updateConfig_str("path=/\n");
-	updateConfig_str("proj=myProject\n");
-	updateConfig_str("speedmin=-10\n");
-	updateConfig_str("speedmax=10\n");
-	EEPROM[266] = POTMAX;
-	updateConfig('\n');
+	// Gets previous configuration stored in this executable
+	pathToSelf = argv[0];
+	initConfStorage();
 
 	// Main loop
 	while (1) {
