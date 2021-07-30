@@ -396,7 +396,7 @@ bool updateConfig(const int16_t c) {
 			if (time(NULL) < timeout) return 1;
 		}
 		// Terminates updating configurable data
-		case '\e':
+		case 0x1B:
 		case '\n': {
 			// Handles termination of value
 			if (confFlags >= FLAGVALUE) {
