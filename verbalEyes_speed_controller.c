@@ -297,6 +297,12 @@ bool updateConfig(const int16_t c) {
 
 				// Initialize new configuration update
 				if (confIndex == 0) {
+					// Ignores everything until next LF if first char indicates comment
+					if (c == '#') {
+						confFlags |= FLAGFAILED;
+						return 1;
+					}
+
 					confFlags |= FLAGACTIVE;
 					logprintf("\r\n[ ");
 				}
