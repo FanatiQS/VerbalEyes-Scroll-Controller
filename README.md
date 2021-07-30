@@ -1,5 +1,7 @@
 # VerbalEyes SpeedController Core
-This is a C library to control scroll speed and scroll position for a VerbalEyes server with a micro controller. It works by connecting to Wi-Fi and sending the commands to the server over a WebSocket. Configuration of what network and server to use is done with a simple text based protocol.
+This is a C library to control scroll speed and scroll position for a VerbalEyes server with a micro controller.
+It works by connecting to Wi-Fi and sending the commands to the server over a WebSocket connection.
+Configuration of what network and server to use is done with a simple text based protocol.
 
 # Pre-built for Arduino/ESP
 This is an implementation or the library that works on Arduino supported boards.
@@ -8,7 +10,9 @@ This is an implementation or the library that works on Arduino supported boards.
 TODO: Add details on how the board should be wired
 
 # Core Library
-The core library should be able to run on anything supporting the standard C libraries. Because of this, the functions to access to Wi-Fi, persistent storage and logging are not defined. These have to be implemented to work on the micro controller that it is used on by defining all the required functions the library uses. These functions are prototyped in `verbalEyes-speed-controler.h`.
+The core library should be able to run on anything supporting C99 (note that VLA support is required).
+Because of this, the functions to access to Wi-Fi, persistent storage and logging are not defined.
+These have to be implemented to work on the micro controller that it is used on by defining all the required functions the library uses. These functions are prototyped in `verbalEyes-speed-controler.h`.
 
 ## Defining required functions
 ### Persistent Storage
@@ -46,24 +50,27 @@ TODO: Add details about how to implement updateSpeed and jumpToTop functions
 
 
 # Configuration
-Configuration of the device is done with a simple text based serial protocol consisting of a key-value pair structure like this `key=value\n` where `\n` has to be encoded as an actual LF character.
-* If the configuration system has not gotten a LF for a specified amount of time, it will automatically close the input with a LF to be able to continue. How long it waits is defined in `verbalEyes-scroll-controller.h`.
+* Configuration of the device is done with a simple text based serial protocol consisting of a key-value-pair structure like this `key=value\n` where `\n` has to be encoded as an actual LF character.
 * Spaces before or after the key or value are not trimmed out, so `key = value\n` would not be the same as `key=value\n`.
+* Multiple configurations can be chained like this `key1=value1\nkey2=value2\n`.
+* An empty line indicates configuration is done, so sending an extra `\n` at the end exits configuration mode.
+* If a LF is not sent to exit configuration mode, it will automatically exit after 5 seconds.
 * An alternative for the `=` delimiter is to use a tab instead.
-* If input value is longer than the max length for that key, the configuration system will not add the overflowing data but everything up until max length is reached will be written to persistent storage. This could result in incorrect data in storage if error occurred.
+* If input value is longer than the max length for that key, the configuration system will not add the overflowing data but everything up until max length is reached will be written to persistent storage. This will result in incorrect data in storage if error occurred.
+* Comments are supported if the first character is a `#` sign, everything up to next LF will be ignored.
+* Keys are case sensitive.
+
+## Configuration item types
+These are the types for configuration items
+| Type 				| Minimum Value | Maximum Value | Description |
+| ----------------- | ------------- | ------------- | -
+| string 			| n/a 			| n/a 			| A string is a just a plain string
+| unsigned short 	| 0 			| 65535 		| An unsigned short is a string representation of a 16 bit unsigned integer.
+| signed short 		| -32767 		| 32767 		| A signed short is a string representation of a 16 bit signed integer. A `-` character is used before the number to indicate it is negative.
+| percent 			| 0 			| 100 			| A percent value is a string representation of a percentage value not including the `%` sign. Values above 100 are technically possible but but have undefined behaviour.
 
 ## Configuration items
-* Keys are case sensitive
-* An empty line indicates configuration update is done, so sending an extra `\n` at the end leaves configuration mode
-* When calibrating the analog input with callow and calhigh, make sure to set sensitivity to 0 before to see fine details in the analog values
-
-| Type 				| Description |
-| ----------------- | -
-| string 			| A string is a just a plain string
-| unsigned short 	| An unsigned short is a string representation of a 16 bit unsigned integer with a minimum value of 0 and a maximum value of 65535.
-| signed short 		| A signed short is a string representation of a 16 bit signed integer with a minimum value of -32767 and a maximum value of 32767. A `-` character is used before the number to indicate it is negative.
-| percent 			| A percent value is a string representation of a value from 100% to 0% not including the `%` sign. It is technically possible to use any unsigned integer, but values above 100 are unsupported (and nonsensical)
-
+These are all the configurations that can be configured
 | Key			| Type 				| Max length 	| Description |
 | ------------- | ----------------- | ------------- | -
 | ssid 			| string			| 32			| The SSID (WiFi) to connect to.
@@ -83,27 +90,31 @@ Configuration of the device is done with a simple text based serial protocol con
 ## Errors
 If an error occurs after delimiter has been received, all further data is ignored until a LF is reached. This is by design.
 
-| Error 				| Description
+| Error message			| Description
 | --------------------- | -
 | [ ] Aborted 			| Key input was not completed before being canceled
 | [ ] No matching key 	| The received key did not match a config item
-| Invalid input 		| Numerical input received non-numerical character
+| Invalid input (%c) 	| Numerical input received non-numerical character
 | Value was too high and clamped down to maximum value xxxxx | Integer received a value higher than the maximum value for a 16 bit integer
 | Value was too low and clamped up to minimum value of -xxxxx | Signed integer received a value lower than the minimum value for a 16 bit integer
 | Maximum input length reached | The text input has exceeded the maximum length for the specified config item
 
+## Tips
+* When calibrating the analog input with callow and calhigh, make sure to set sensitivity to 0 before to see fine details in the analog values
+
 
 ## Examples
 * To configure the Wi-Fi SSID to `myWifi`, it would look like this `ssid=myWifi\n\n`
+* To configure the port to 80, it would look like this `port=80\n\n`
 * To configure minimum speed to -10, it would look like this `speedmin=-10\n\n`
-* To configure sensitivity to 5, it would look like this `sensitivity=5\n\n`
-* To configure both sensitivity to 5 and minimum speed to -10 on one go, it would look like this `sensitivity=5\nspeedmin=-10\n\n`
+* To configure both the port to 80 and minimum speed to -10 in one go, it would look like this `port=80\nspeedmin=-10\n\n`
 
 ## Serial communication
-For the pre-built example, configuration is done over the serial connection to the micro controller, most likely connected to a computer over USB. Communicating with the device over serial can be done with the command line.
+For the pre-built example, configuration is done over the serial connection to the micro controller, most likely connected to a computer over USB.
+Communicating with the device over serial can be done with the command line.
 
 ### Notes
-* The echo command might not like the `-e` argument depending on OS. (When character escape is done for config parser, `-e` won't be needed anymore)
+* The echo command might not like the `-e` argument depending on OS. If that is the case, try changing to printf without `-e` argument or something.
 
 ### Read:
 Reading logs from the device
@@ -134,7 +145,8 @@ echo -e 'key=value\n\n' > `ls /dev/ttyUSB* | head -1`
 * Windows: I dunno
 
 ### Interactive:
-Makes the command line interface interactive and lets you write your data to the device and see feedback from it right away in the same window. In this mode, tabs are especially nice to use as delimiter instead of the normal `=`.
+Makes the command line interface interactive and lets you write your data to the device and see feedback from it right away in the same window.
+In this mode, tabs are especially nice to use as delimiter instead of the normal `=`.
 * OSX: tested
 ```sh
 screen `ls /dev/cu.usbserial-* | head -1`
@@ -148,7 +160,8 @@ Note: screen command might need to be installed from the package manager
 * Windows: I dunno if its even possible :/
 
 ### Manually selecting device
-For the commands above, it communicates with the first serial device it finds, but sometimes that is not the correct one. This chapter describes how to list all serial devices and read or write to the one you want.
+For the commands above, it communicates with the first serial device it finds, but sometimes that is not the correct one.
+This chapter describes how to list all serial devices and read or write to the one you want.
 
 #### Listing serial devices
 * OSX:
@@ -162,7 +175,7 @@ ls /dev/ttyUSB*
 * Windows: ?
 
 #### Writing:
-Replace path with selected device port from [ls](####listing-serial-devices)
+Replace "path" with selected device port from [ls](####listing-serial-devices)
 
 * OSX:
 ```sh
@@ -175,7 +188,7 @@ echo -e 'key=value\n\n' > path
 * Windows: ?
 
 #### Reading:
-Replace path with selected device port from [ls](####listing-serial-devices)
+Replace "path" with selected device port from [ls](####listing-serial-devices)
 
 * OSX:
 ```sh
