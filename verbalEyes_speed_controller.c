@@ -235,16 +235,15 @@ static struct confItem *confItems[] = {
 
 #define CONFITEMSLEN sizeof confItems / sizeof confItems[0]
 
-#define CONFFAILED 255
-
-#define NOTHANDLING 0
-#define HANDLINGKEY 1
-#define HANDLINGVALUE 2
+#define FLAGACTIVE 1
+#define FLAGCOMMIT 2
+#define FLAGFAILED 4
+#define FLAGVALUE 8
 
 // Updates a configurable property from a stream of characters
 bool updateConfig(const int16_t c) {
 	static struct confItem* item;
-	static uint8_t confState = 0;
+	static uint8_t confFlags = 0;
 	static uint8_t confIndex = 0;
 	static uint16_t confBuffer = 0;
 	static bool confBufferSigned = 0;
@@ -254,19 +253,22 @@ bool updateConfig(const int16_t c) {
 		case '\t':
 		case '=': {
 			// Falls through to default if not true
-			if (confState != HANDLINGVALUE) {
+			if (confFlags < FLAGVALUE) {
+				// Prevents validating key if delimiter is first character
+				if (confFlags == 0) return 0;
+
 				// Prevents handling failed matches
-				if (confIndex == CONFFAILED) return 1;
+				if (confFlags & FLAGFAILED) return 1;
 
 				// Finish matching key and reset all items
 				for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
 					if (
-						confState == HANDLINGKEY &&
+						confFlags < FLAGVALUE &&
 						!confItems[i]->nameMatchFailed &&
 						confItems[i]->name[confIndex] == '\0'
 					) {
 						item = confItems[i];
-						confState = HANDLINGVALUE;
+						confFlags |= FLAGVALUE;
 						logprintf(" ] is now: ");
 					}
 
@@ -274,14 +276,10 @@ bool updateConfig(const int16_t c) {
 				}
 
 				// Prevents handling value for keys with no match
-				if (confState != HANDLINGVALUE) {
-					if (confIndex == 0) {
-						logprintf("\r\n[");
-						timeout = time(NULL) + CONFIGTIMEOUT;
-						confState = HANDLINGKEY;
-					}
+				if (confFlags < FLAGVALUE) {
+					if (confIndex == 0) logprintf("\r\n[");
 					logprintf(" ] No matching key");
-					confIndex = CONFFAILED;
+					confFlags |= FLAGFAILED;
 					return 1;
 				}
 
@@ -293,16 +291,14 @@ bool updateConfig(const int16_t c) {
 		// Updates configurable value
 		default: {
 			// Validates incomming key against valid configuration keys
-			if (confState != HANDLINGVALUE) {
+			if (confFlags < FLAGVALUE) {
+				// Key handling has failed and remaining characters should be ignored
+				if (confFlags & FLAGFAILED) return 1;
+
 				// Initialize new configuration update
 				if (confIndex == 0) {
-					timeout = time(NULL) + CONFIGTIMEOUT;
-					confState = HANDLINGKEY;
+					confFlags |= FLAGACTIVE;
 					logprintf("\r\n[ ");
-				}
-				// Key handling has failed and remaining characters should be ignored
-				else if (confIndex == CONFFAILED) {
-					return 1;
 				}
 
 				// Invalidates keys that does not match incomming string
@@ -320,7 +316,10 @@ bool updateConfig(const int16_t c) {
 				verbaleyes_conf_write(item->addr + confIndex, c);
 			}
 			// Handles integer input for matched key
-			else if (item->len <= 0 && confIndex != CONFFAILED) {
+			else if (item->len <= 0 ) {
+				// Integer value handling has failed and remaining characters should be ignored
+				if (confFlags & FLAGFAILED) return 1;
+
 				// Only accepts a valid numerical representation
 				if (c < '0' || c > '9') {
 					// Flags input as signed if position of sign and item allows
@@ -333,7 +332,7 @@ bool updateConfig(const int16_t c) {
 					// Aborts handling input if it contained invalid characters
 					if (confIndex == 0) logprintf("0");
 					logprintf("\r\nInvalid input (%c)", c);
-					confIndex = CONFFAILED;
+					confFlags |= FLAGFAILED;
 					return 1;
 				}
 
@@ -342,7 +341,7 @@ bool updateConfig(const int16_t c) {
 					// Clamps unsigned integers if it would overflow
 					if (item->len == 0) {
 						if (confBuffer > 6553 || (confBuffer == 6553 && c > '5')) {
-							confIndex = CONFFAILED;
+							confFlags |= FLAGFAILED;
 							confBuffer = 65535;
 							logprintf("%c\r\nValue was too high and clamped down to maximum value of 65535", c);
 							return 1;
@@ -350,7 +349,7 @@ bool updateConfig(const int16_t c) {
 					}
 					// Clamps signed integers if it would overflow
 					else if (confBuffer > 3276 || (confBuffer == 3276 && c > '7')) {
-						confIndex = CONFFAILED;
+						confFlags |= FLAGFAILED;
 						confBuffer = 32767;
 
 						if (confBufferSigned) {
@@ -369,8 +368,8 @@ bool updateConfig(const int16_t c) {
 			}
 			// Displays max value length warning message once
 			else {
-				if (confIndex == CONFFAILED) return 1;
-				confIndex = CONFFAILED;
+				if (confFlags & FLAGFAILED) return 1;
+				confFlags |= FLAGFAILED;
 				logprintf("\r\nMaximum input length reached");
 				return 1;
 			}
@@ -384,7 +383,8 @@ bool updateConfig(const int16_t c) {
 		case '\0':
 		case EOF: {
 			// Exit if configuration is not actively being updated
-			if (confState == NOTHANDLING) return 0;
+			if (confFlags == 0) return 0;
+			if (confFlags != FLAGCOMMIT) return 1;
 
 			// Continues waiting for new data until timeout is reached
 			if (time(NULL) < timeout) return 1;
@@ -393,7 +393,7 @@ bool updateConfig(const int16_t c) {
 		case '\e':
 		case '\n': {
 			// Handles termination of value
-			if (confState == HANDLINGVALUE) {
+			if (confFlags >= FLAGVALUE) {
 				// Terminates stored string
 				if (item->len > 0) {
 					if (confIndex < item->len) verbaleyes_conf_write(item->addr + confIndex, '\0');
@@ -416,29 +416,32 @@ bool updateConfig(const int16_t c) {
 				if (state > item->resetState) state = item->resetState;
 
 				// Resets to handle new keys
-				confState = HANDLINGKEY;
+				confFlags = FLAGCOMMIT;
+				timeout = time(NULL) + CONFIGTIMEOUT;
 				confIndex = 0;
 				return 1;
 			}
 			// Handles termination of key
-			else if (confState == HANDLINGKEY) {
-				// Commits all changed values and exits configuration handling
-				if (confIndex == 0) {
-					verbaleyes_conf_commit();
-					logprintf("\r\nDone\r\n");
-					confState = NOTHANDLING;
-				}
-				// Handles termination of value for key without a match
-				else if (confIndex == CONFFAILED) {
+			else if (confFlags != 0) {
+				// Handles termination for key without a match
+				if (confFlags & FLAGFAILED) {
 					confIndex = 0;
+					confFlags ^= (FLAGFAILED | FLAGACTIVE);
 				}
 				// Handles termination before key was validated
-				else {
+				else if (confIndex != 0) {
 					for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
 						confItems[i]->nameMatchFailed = 0;
 					}
 					logprintf(" ] Aborted");
 					confIndex = 0;
+					confFlags ^= FLAGACTIVE;
+				}
+				// Commits all changed values and exits configuration handling
+				else {
+					verbaleyes_conf_commit();
+					logprintf("\r\nDone\r\n");
+					confFlags = 0;
 				}
 
 				return 1;
@@ -452,7 +455,7 @@ bool updateConfig(const int16_t c) {
 		case '\f':
 		case '\v':
 		case '\r': {
-			return confState != NOTHANDLING;
+			return confFlags != 0;
 		}
 	}
 }
