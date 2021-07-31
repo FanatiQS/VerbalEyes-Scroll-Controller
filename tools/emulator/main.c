@@ -28,17 +28,17 @@ bool socketConnected = 0;
 uint16_t potSpeed = 0;
 
 // Reads one character from the standard in if it has anything
-int16_t readFromSocket(int fd) {
+int16_t readFromStdIn() {
 	unsigned char c = 0;
-	read(fd, &c, 1);
+	read(STDIN_FILENO, &c, 1);
 
 	// Returns character unless it is escape character
-	if (c != '\e') return c;
+	if (c != 0x1B) return c;
 
 	// Gets escaped sequence
-	read(fd, &c, 1);
+	read(STDIN_FILENO, &c, 1);
 	if (c != '[') return EOF;
-	read(fd, &c, 1);
+	read(STDIN_FILENO, &c, 1);
 	switch (c) {
 		// Up
 		case 'A': {
@@ -128,7 +128,7 @@ bool sockstatus = 0;
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 	if (sockfd != 0) close(sockfd);
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		printf("Unable to create socket\n");
+		perror("Unable to create socket\n");
 		exit(0);
 	}
 
@@ -283,7 +283,7 @@ int main(int argc, char** argv) {
 
 	// Main loop
 	while (1) {
-		if (updateConfig(readFromSocket(STDIN_FILENO))) continue;
+		if (updateConfig(readFromStdIn())) continue;
 		if (ensureConnection()) continue;
 		updateSpeed(potSpeed);
 		// jumpToTop(digitalRead(0));
