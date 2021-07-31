@@ -57,7 +57,7 @@ void verbaleyes_network_connect(const char* ssid, const char* key) {
 }
 
 // Gets the connection status of the WiFi connection
-bool verbaleyes_network_connected() {
+int8_t verbaleyes_network_connected() {
 	return WiFi.isConnected();
 }
 
@@ -77,7 +77,7 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 }
 
 // Gets the connection status of the socket connection
-bool verbaleyes_socket_connected() {
+int8_t verbaleyes_socket_connected() {
 	return client.connected();
 }
 

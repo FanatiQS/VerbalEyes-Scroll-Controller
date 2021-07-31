@@ -116,7 +116,7 @@ void verbaleyes_conf_commit() {
 void verbaleyes_network_connect(const char* ssid, const char* key) {}
 
 // Gets the fake connection status of the WiFi connection
-bool verbaleyes_network_connected() {
+int8_t verbaleyes_network_connected() {
 	return wifiConnected;
 }
 
@@ -150,7 +150,7 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 }
 
 // Gets the fake and real connection status of the socket connection
-bool verbaleyes_socket_connected() {
+int8_t verbaleyes_socket_connected() {
 	return sockstatus && socketConnected;
 }
 

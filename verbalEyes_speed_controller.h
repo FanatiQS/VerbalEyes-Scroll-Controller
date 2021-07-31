@@ -32,12 +32,12 @@ extern void verbaleyes_conf_commit();
 
 // Interacts with network interface
 extern void verbaleyes_network_connect(const char*, const char*);
-extern bool verbaleyes_network_connected();
+extern int8_t verbaleyes_network_connected();
 extern uint32_t verbaleyes_network_getip();
 
 // Interacts with the socket
 extern void verbaleyes_socket_connect(const char*, const uint16_t);
-extern bool verbaleyes_socket_connected();
+extern int8_t verbaleyes_socket_connected();
 extern int16_t verbaleyes_socket_read();
 extern void verbaleyes_socket_write(const uint8_t*, const size_t);
 

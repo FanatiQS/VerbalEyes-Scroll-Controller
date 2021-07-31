@@ -516,12 +516,15 @@ int8_t ensureConnection() {
 		// Completes network connection
 		case 1: {
 			// Awaits network connection established
-			if (!verbaleyes_network_connected()) {
+			switch (verbaleyes_network_connected()) {
 				// Shows progress bar until network is connected
-				if (showProgressBar()) return CONNECTING;
-
+				case 0: {
+					if (showProgressBar()) return CONNECTING;
+				}
 				// Handles timeout error
-				return connectionFailToState("\r\nFailed to connect to network", 0x80);
+				case CONNECTIONFAILED: {
+					return connectionFailToState("\r\nFailed to connect to network", 0x80);
+				}
 			}
 
 			// Prints devices IP address
@@ -557,12 +560,15 @@ int8_t ensureConnection() {
 		// Completes socket connection
 		case 3: {
 			// Awaits socket connectin established
-			if (!verbaleyes_socket_connected()) {
+			switch (verbaleyes_socket_connected()) {
 				// Shows progress bar until socket is connected
-				if (showProgressBar()) return CONNECTING;
-
+				case 0: {
+					if (showProgressBar()) return CONNECTING;
+				}
 				// Handles timeout error
-				return connectionFailToState("\r\nFailed to connect to host", 0x82);
+				case CONNECTIONFAILED: {
+					return connectionFailToState("\r\nFailed to connect to host", 0x82);
+				}
 			}
 		}
 		// Sends http request to use websocket protocol
