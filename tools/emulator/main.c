@@ -130,7 +130,7 @@ uint32_t verbaleyes_network_getip() {
 
 // The tcp socket and its connection status
 int sockfd = 0;
-bool sockstatus = 0;
+bool socketConnectionFailed = 0;
 
 // Connects the socket to the endpoint
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
@@ -146,12 +146,13 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 	servaddr.sin_addr.s_addr = inet_addr(host);
 	servaddr.sin_port = htons(port);
 
-	sockstatus = !connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
+	socketConnectionFailed = connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
 }
 
 // Gets the fake and real connection status of the socket connection
 int8_t verbaleyes_socket_connected() {
-	return sockstatus && socketConnected;
+	if (socketConnectionFailed) return CONNECTIONFAILED;
+	return socketConnected;
 }
 
 // Consumes a single character from the sockets response data buffer
