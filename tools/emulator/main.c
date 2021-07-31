@@ -211,42 +211,43 @@ void disableRawMode() {
 
 // Initializes configuration buffer by reading concatenated config data from self
 void initConfStorage() {
-	// Opens self
-	FILE* file = fopen(pathToSelf, "r+");
-
 	// Gets cached index of buffer in executable
 	confFileIndex = (confBuffer[CONFIGLEN + 0] << 24) | (confBuffer[CONFIGLEN + 1] << 16) | (confBuffer[CONFIGLEN + 2] << 8) | (confBuffer[CONFIGLEN + 3] << 0);
 
-	// Calculates index of confBuffer in executable if not cached
-	if (confFileIndex == 0) {
-		int i = 0;
-		while (i < CONFIGLEN) {
-			i = (fgetc(file) == confBuffer[i]) ? i + 1 : 0;
-			confFileIndex++;
-		}
+	// Exits early if conf is already defined
+	if (confFileIndex != 0) return;
 
-		// Sets index to start of buffer
-		confFileIndex -= CONFIGLEN;
+	// Opens self
+	FILE* file = fopen(pathToSelf, "r+");
 
-		// Write index to file
-		fseek(file, confFileIndex, SEEK_SET);
-		fputc(0, file);
-		fputc(0, file);
-		fputc((confFileIndex >> 8) & 0xff, file);
-		fputc((confFileIndex >> 0) & 0xff, file);
-
-		// Configure initial configuration
-		muteLogs = 1;
-		updateConfig_str("host=127.0.0.1\n");
-		updateConfig_str("port=8080\n");
-		updateConfig_str("path=/\n");
-		updateConfig_str("proj=myProject\n");
-		updateConfig_str("speedmin=-10\n");
-		updateConfig_str("speedmax=10\n");
-		confBuffer[266] = POTMAX;
-		updateConfig('\n');
-		muteLogs = 0;
+	// Gets index of end of buffer in executable
+	int i = 0;
+	while (i < CONFIGLEN) {
+		i = (fgetc(file) == confBuffer[i]) ? i + 1 : 0;
+		confFileIndex++;
 	}
+
+	// Goes back to start of buffer
+	fseek(file, confFileIndex, SEEK_SET);
+	confFileIndex -= CONFIGLEN;
+
+	// Write index to file
+	fputc((confFileIndex >> 24), file);
+	fputc((confFileIndex >> 16) & 0xff, file);
+	fputc((confFileIndex >> 8) & 0xff, file);
+	fputc((confFileIndex) & 0xff, file);
+
+	// Configure initial configuration
+	muteLogs = 1;
+	updateConfig_str("host=127.0.0.1\n");
+	updateConfig_str("port=8080\n");
+	updateConfig_str("path=/\n");
+	updateConfig_str("proj=myProject\n");
+	updateConfig_str("speedmin=-10\n");
+	updateConfig_str("speedmax=10\n");
+	confBuffer[266] = POTMAX;
+	updateConfig('\n');
+	muteLogs = 0;
 
 	// Closes file stream
 	fclose(file);
