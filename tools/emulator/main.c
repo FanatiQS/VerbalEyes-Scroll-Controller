@@ -68,10 +68,19 @@ int16_t readFromStdIn() {
 	return EOF;
 }
 
+// Sends a string to config instead of char by char
+void updateConfig_str(char* str) {
+	while (*str != '\0') {
+		updateConfig(*str);
+		str++;
+	}
+}
+
 
 
 // Buffer for updated config data
-char confBuffer[CONFIGLEN];
+int32_t confFileIndex;
+unsigned char confBuffer[CONFIGLEN + 4] = "myWifi";
 
 // Reads a character from the specified address in config buffer
 unsigned char verbaleyes_conf_read(const unsigned short addr) {
@@ -84,14 +93,13 @@ void verbaleyes_conf_write(const unsigned short addr, const char c) {
 }
 
 // Commits changes made to config buffer to file
-int confStartIndex;
 char* pathToSelf;
 void verbaleyes_conf_commit() {
 	// Opens self
 	FILE* file = fopen(pathToSelf, "r+");
 
 	// Gets to start index for configuration
-	fseek(file, confStartIndex, SEEK_SET);
+	fseek(file, confFileIndex, SEEK_SET);
 
 	// Writes configuration content
 	for (int i = 0; i < CONFIGLEN; i++) {
@@ -201,49 +209,31 @@ void disableRawMode() {
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
 }
 
-// Sends a string to config instead of char by char
-void updateConfig_str(char* str) {
-	while (*str != '\0') {
-		updateConfig(*str);
-		str++;
-	}
-}
-
 // Initializes configuration buffer by reading concatenated config data from self
 void initConfStorage() {
-	FILE* file;
-	int c;
-	int i = 0;
-	int matchIndex = 0;
-	const char confMatchStr[] = "configStartsHere:";
+	// Opens self
+	FILE* file = fopen(pathToSelf, "r+");
 
-	// Opens self to extract concatenated configuration data
-	file = fopen(pathToSelf, "r+");
+	// Gets cached index of buffer in executable
+	confFileIndex = (confBuffer[CONFIGLEN + 0] << 24) | (confBuffer[CONFIGLEN + 1] << 16) | (confBuffer[CONFIGLEN + 2] << 8) | (confBuffer[CONFIGLEN + 3] << 0);
 
-	// Gets index where source code stops
-	while ((c = fgetc(file)) != EOF) {
-		if (c == confMatchStr[matchIndex]) {
-			if (matchIndex++ >= strlen(confMatchStr)) matchIndex = 0;
+	// Calculates index of confBuffer in executable if not cached
+	if (confFileIndex == 0) {
+		int i = 0;
+		while (i < CONFIGLEN) {
+			i = (fgetc(file) == confBuffer[i]) ? i + 1 : 0;
+			confFileIndex++;
 		}
-		else if (matchIndex == strlen(confMatchStr)) {
-			break;
-		}
-		else {
-			matchIndex = 0;
-		}
-		i++;
-	}
-	confStartIndex = i + strlen(confMatchStr) + 1;
 
-	// Initializes configuration if not found
-	if (matchIndex == 0) {
-		// Insert marker to find start position next time
-		fputs(confMatchStr, file);
-		fputc(' ', file);
+		// Write index to file
+		fseek(file, confFileIndex, SEEK_SET);
+		fputc(0, file);
+		fputc(0, file);
+		fputc((confFileIndex >> 8) & 0xff, file);
+		fputc((confFileIndex >> 0) & 0xff, file);
 
 		// Configure initial configuration
 		muteLogs = 1;
-		updateConfig_str("ssid=myWifi\n");
 		updateConfig_str("host=127.0.0.1\n");
 		updateConfig_str("port=8080\n");
 		updateConfig_str("path=/\n");
@@ -253,14 +243,12 @@ void initConfStorage() {
 		confBuffer[266] = POTMAX;
 		updateConfig('\n');
 		muteLogs = 0;
+
+		// Sets index to start of buffer
+		confFileIndex -= CONFIGLEN;
 	}
-	// Copies configuration data from file to buffer
-	else {
-		for (i = 0; i < CONFIGLEN; i++) {
-			c = fgetc(file);
-			confBuffer[i] = c;
-		}
-	}
+
+	// Closes file stream
 	fclose(file);
 }
 
