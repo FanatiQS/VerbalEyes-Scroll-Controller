@@ -854,6 +854,9 @@ int8_t ensureConnection() {
 			deadzoneSize = speedSize * deadzone / 100;
 			jitterSize = speedSize * sensitivity / 100;
 
+			// Prevents divide by zero crash later when updating speed
+			if (speedMapper == 0) speedMapper = 1;
+
 			// Prints settings
 			logprintf(
 				"\r\nSetting up speed reader with:\r\n\tMinimum speed at: %i\r\n\tMaximum speed at: %i\r\n\tDeadzone at: %.0f%%\r\n\tSensitivity at: %.0f%%\r\n\tCalibration low at: %u\r\n\tCalibration high at: %u\r\n",
