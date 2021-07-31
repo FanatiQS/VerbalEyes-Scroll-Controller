@@ -225,15 +225,15 @@ void initConfStorage() {
 			confFileIndex++;
 		}
 
+		// Sets index to start of buffer
+		confFileIndex -= CONFIGLEN;
+
 		// Write index to file
 		fseek(file, confFileIndex, SEEK_SET);
 		fputc(0, file);
 		fputc(0, file);
 		fputc((confFileIndex >> 8) & 0xff, file);
 		fputc((confFileIndex >> 0) & 0xff, file);
-
-		// Sets index to start of buffer
-		confFileIndex -= CONFIGLEN;
 
 		// Configure initial configuration
 		muteLogs = 1;
