@@ -232,6 +232,9 @@ void initConfStorage() {
 		fputc((confFileIndex >> 8) & 0xff, file);
 		fputc((confFileIndex >> 0) & 0xff, file);
 
+		// Sets index to start of buffer
+		confFileIndex -= CONFIGLEN;
+
 		// Configure initial configuration
 		muteLogs = 1;
 		updateConfig_str("host=127.0.0.1\n");
@@ -243,9 +246,6 @@ void initConfStorage() {
 		confBuffer[266] = POTMAX;
 		updateConfig('\n');
 		muteLogs = 0;
-
-		// Sets index to start of buffer
-		confFileIndex -= CONFIGLEN;
 	}
 
 	// Closes file stream
