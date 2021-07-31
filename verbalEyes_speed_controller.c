@@ -429,7 +429,8 @@ bool updateConfig(const int16_t c) {
 				// Handles termination for key without a match
 				if (confFlags & FLAGFAILED) {
 					confIndex = 0;
-					confFlags ^= (FLAGFAILED | FLAGACTIVE);
+					confFlags &= ~(FLAGFAILED | FLAGACTIVE);
+					return 1;
 				}
 				// Handles termination before key was validated
 				else if (confIndex != 0) {
@@ -438,15 +439,21 @@ bool updateConfig(const int16_t c) {
 					}
 					logprintf(" ] Aborted");
 					confIndex = 0;
-					confFlags ^= FLAGACTIVE;
+					confFlags &= ~FLAGACTIVE;
+					return 1;
 				}
-				// Commits all changed values and exits configuration handling
-				else {
+				// Commits all changed values if commit is required
+				else if (confFlags & FLAGCOMMIT) {
 					verbaleyes_conf_commit();
 					logprintf("\r\nDone\r\n");
-					confFlags = 0;
+				}
+				// Moves log to next line if commit is not required
+				else {
+					logprintf("\r\n");
 				}
 
+				// Exits configuration handling
+				confFlags = 0;
 				return 1;
 			}
 
