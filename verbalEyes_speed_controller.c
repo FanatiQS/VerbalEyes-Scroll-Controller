@@ -238,7 +238,8 @@ static struct confItem *confItems[] = {
 #define FLAGACTIVE 1
 #define FLAGCOMMIT 2
 #define FLAGFAILED 4
-#define FLAGVALUE 8
+#define FLAGVALUE  8
+#define FLAGSIGNED 16
 
 // Updates a configurable property from a stream of characters
 bool updateConfig(const int16_t c) {
@@ -246,7 +247,6 @@ bool updateConfig(const int16_t c) {
 	static uint8_t confFlags = 0;
 	static uint8_t confIndex = 0;
 	static uint16_t confBuffer = 0;
-	static bool confBufferSigned = 0;
 
 	switch (c) {
 		// Finish matching key on delimiter input and setup to update value
@@ -326,8 +326,8 @@ bool updateConfig(const int16_t c) {
 				// Only accepts a valid numerical representation
 				if (c < '0' || c > '9') {
 					// Flags input as signed if position of sign and item allows
-					if (c == '-' && item->len == -1 && confIndex == 0 && !confBufferSigned) {
-						confBufferSigned = 1;
+					if (c == '-' && item->len == -1 && confIndex == 0 && !(confFlags & FLAGSIGNED)) {
+						confFlags |= FLAGSIGNED;
 						logprintf("-");
 						return 1;
 					}
@@ -355,7 +355,7 @@ bool updateConfig(const int16_t c) {
 						confFlags |= FLAGFAILED;
 						confBuffer = 32767;
 
-						if (confBufferSigned) {
+						if (confFlags & FLAGSIGNED) {
 							logprintf("%c\r\nValue was too low and clamped up to minimum value of -32767", c);
 						}
 						else {
@@ -404,10 +404,7 @@ bool updateConfig(const int16_t c) {
 				// Stores 16 bit integer value
 				else {
 					// Makes confBuffer negative if flag is set
-					if (confBufferSigned) {
-						confBufferSigned = 0;
-						confBuffer *= -1;
-					}
+					if (confFlags & FLAGSIGNED) confBuffer *= -1;
 
 					// Stores 16 bit integer for configuration item
 					verbaleyes_conf_write(item->addr, confBuffer >> 8);
