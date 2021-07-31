@@ -254,9 +254,6 @@ bool updateConfig(const int16_t c) {
 		case '=': {
 			// Falls through to default if not true
 			if (confFlags < FLAGVALUE) {
-				// Prevents validating key if delimiter is first character
-				if (confFlags == 0) return 0;
-
 				// Prevents handling failed matches
 				if (confFlags & FLAGFAILED) return 1;
 
