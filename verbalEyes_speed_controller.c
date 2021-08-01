@@ -848,7 +848,7 @@ int8_t ensureConnection() {
 			const uint16_t speedCalHigh = confGetInt(conf_calhigh);
 
 			// Gets sensitivity value based on calibration range
-			const uint8_t sensitivity = confGetInt(conf_sensitivity);
+			const uint16_t sensitivity = confGetInt(conf_sensitivity);
 
 			// Sets helper values to use when mapping analog read value to new range
 			speedSize = (speedMax - speedMin) * (100 + deadzone * 2);
