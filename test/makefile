@@ -24,4 +24,4 @@ test_c99: $(LIBBEARSSL)
 
 # Standard C++ is currently not supported since VLAs are used
 test_c++: $(LIBBEARSSL)
-	g++ -S -Ilib -std=c++11 -pedantic-errors ../verbalEyes_speed_controller.c
+	g++ -S -I../lib -std=c++11 -pedantic-errors ../verbalEyes_speed_controller.c
