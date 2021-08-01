@@ -593,7 +593,7 @@ int8_t ensureConnection() {
 			while (verbaleyes_socket_read() != EOF);
 
 			// Sends HTTP request to setup WebSocket connection with host
-			char req[4 + strlen(path) + 98 + 24 + 4 + 1];
+			char req[4 + strlen(path) + 17 + strlen(buf) + 89 + 24 + 4 + 1];
 			uint8_t reqlen = sprintf(
 				req,
 				"GET %s HTTP/1.1\r\nHost: %s\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: %s\r\n\r\n",
