@@ -18,7 +18,7 @@
 
 // Number of seconds before unfinished configuration input times out
 #ifndef CONFIGTIMEOUT
-#define CONFIGTIMEOUT 5
+#define CONFIGTIMEOUT 60
 #endif
 
 // Number of seconds before unsuccessful connection times out
@@ -292,14 +292,18 @@ bool updateConfig(const int16_t c) {
 				// Key handling has failed and remaining characters should be ignored
 				if (confFlags & FLAGFAILED) return 1;
 
-				// Initialize new configuration update
+				// Special handling for first character in key
 				if (confIndex == 0) {
+					// Sets timeout for automatically exiting configuration mode
+					timeout = time(NULL) + CONFIGTIMEOUT;
+
 					// Ignores everything until next LF if first char indicates comment
 					if (c == '#') {
 						confFlags |= FLAGFAILED;
 						return 1;
 					}
 
+					// Initializes new configuration update
 					confFlags |= FLAGACTIVE;
 					logprintf("\r\n[ ");
 				}
@@ -387,7 +391,6 @@ bool updateConfig(const int16_t c) {
 		case EOF: {
 			// Exit if configuration is not actively being updated
 			if (confFlags == 0) return 0;
-			if (confFlags != FLAGCOMMIT) return 1;
 
 			// Continues waiting for new data until timeout is reached
 			if (time(NULL) < timeout) return 1;
@@ -418,13 +421,15 @@ bool updateConfig(const int16_t c) {
 				// Resets to handle new keys
 				confFlags = FLAGCOMMIT;
 				confIndex = 0;
+				return 1;
 			}
 			// Handles termination of key
 			else if (confFlags != 0) {
 				// Handles termination for key without a match
 				if (confFlags & FLAGFAILED) {
 					confIndex = 0;
-					confFlags &= ~(FLAGFAILED | FLAGACTIVE);
+					confFlags &= ~FLAGFAILED;
+					return 1;
 				}
 				// Handles termination before key was validated
 				else if (confIndex != 0) {
@@ -433,30 +438,18 @@ bool updateConfig(const int16_t c) {
 					}
 					logprintf(" ] Aborted");
 					confIndex = 0;
-					confFlags &= ~FLAGACTIVE;
+					return 1;
 				}
 				// Commits all changed values if commit is required
-				else if (confFlags & FLAGCOMMIT) {
-					verbaleyes_conf_commit();
+				else {
+					if (confFlags & FLAGCOMMIT) verbaleyes_conf_commit();
 					logprintf("\r\nDone\r\n");
 					confFlags = 0;
-					return 1;
 				}
-				// Moves log to next line if commit is not required
-				else {
-					logprintf("\r\n");
-					confFlags = 0;
-					return 1;
-				}
-			}
-			// Exits configuration mode
-			else {
-				return 0;
 			}
 
-			// Sets timeout for automatically exiting configuration mode if no input is received
-			timeout = time(NULL) + CONFIGTIMEOUT;
-			return  1;
+			// Exits configuration mode
+			return 0;
 		}
 		// Ignores these characters
 		case 0x7F:
