@@ -1,4 +1,4 @@
-main:
+bearssl:
 	git clone https://www.bearssl.org/git/BearSSL
 	mv BearSSL tmp
 	mv tmp bearssl
