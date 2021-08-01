@@ -54,7 +54,7 @@ TODO: Add details about how to implement updateSpeed and jumpToTop functions
 * Spaces before or after the key or value are not trimmed out, so `key = value\n` would not be the same as `key=value\n`.
 * Multiple configurations can be chained like this `key1=value1\nkey2=value2\n`.
 * An empty line indicates configuration is done, so sending an extra `\n` at the end exits configuration mode.
-* If a LF is not sent to exit configuration mode, it will automatically exit after 5 seconds.
+* After 60 seconds, configuration mode will automatically exit. This timeout can be configured at compile-time with a C macro.
 * An alternative for the `=` delimiter is to use a tab instead.
 * If input value is longer than the max length for that key, the configuration system will not add the overflowing data but everything up until max length is reached will be written to persistent storage. This will result in incorrect data in storage if error occurred.
 * Comments are supported if the first character is a `#` sign, everything up to next LF will be ignored.
