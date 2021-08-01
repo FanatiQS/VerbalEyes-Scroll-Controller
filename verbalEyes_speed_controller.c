@@ -857,13 +857,10 @@ int8_t ensureConnection() {
 
 			// Sets helper values to use when mapping analog read value to new range
 			speedSize = (speedMax - speedMin) * (100 + deadzone * 2);
-			speedMapper = speedCalHigh - speedCalLow;
+			speedMapper = (speedCalHigh - speedCalLow) ? speedCalHigh - speedCalLow : 1;
 			speedComp = (speedMin * 100) - (speedCalLow * speedSize / speedMapper);
 			deadzoneSize = speedSize * deadzone / 100;
 			jitterSize = sensitivity * speedSize / speedMapper;
-
-			// Prevents divide by zero crash later when updating speed
-			if (speedMapper == 0) speedMapper = 1;
 
 			// Prints settings
 			logprintf(
