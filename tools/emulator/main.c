@@ -260,12 +260,12 @@ void initConfStorage() {
 int main(int argc, char** argv) {
 	// Sets STDIN to be unbuffered
 	tcgetattr(STDIN_FILENO, &orig_termios);
-    atexit(disableRawMode);
-    struct termios raw = orig_termios;
-    raw.c_lflag &= ~(ECHO | ICANON);
+	atexit(disableRawMode);
+	struct termios raw = orig_termios;
+	raw.c_lflag &= ~(ECHO | ICANON);
 	raw.c_cc[VMIN] = 0;
-    raw.c_cc[VTIME] = 1;
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+	raw.c_cc[VTIME] = 1;
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 
 	// Gets previous configuration stored in this executable
 	pathToSelf = argv[0];
