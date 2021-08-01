@@ -25,10 +25,10 @@
 
 bool wifiConnected = 0;
 bool socketConnected = 0;
-uint16_t potSpeed = 0;
+int potSpeed = 0;
 
 // Reads one character from the standard in if it has anything
-int16_t readFromStdIn() {
+int readFromStdIn() {
 	unsigned char c = 0;
 	read(STDIN_FILENO, &c, 1);
 
