@@ -2,7 +2,7 @@ EXE=./test
 LIBBEARSSL=../lib/bearssl
 A=gcc ../verbalEyes_speed_controller.c $(LIBBEARSSL)/*.c -I../lib -o $(EXE)
 
-all: test_config test_clearConfig
+all: test_c99 test_config test_clearConfig
 
 $(LIBBEARSSL):
 	cd ../lib && make
