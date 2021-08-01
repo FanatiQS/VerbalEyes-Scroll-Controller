@@ -1,13 +1,13 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <string.h>
-#include <stdlib.h>
-#include <netdb.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <termios.h>
+#include <stdio.h> // FILE, fseek, SEEK_SET, fputc, fgetc, fclose, EOF, printf, fflush, stdout, perror, size_t
+#include <stdbool.h> // bool
+#include <stdlib.h> // exit, EXIT_FAILURE, atexit, size_t
+#include <string.h> // bzero
+
+#include <unistd.h> // read, STDIN_FILENO, close, write, usleep
+#include <sys/select.h> // select, fd_set, FD_ZERO, FD_SET, timeval
+#include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, connect
+#include <arpa/inet.h> // htons, inet_addr, sockaddr_in
+#include <termios.h> // termios, tcgetattr, tcsetattr, TCSAFLUSH, ECHO, ICANON, VMIN, VTIME
 
 #include "../../verbalEyes_speed_controller.h"
 
