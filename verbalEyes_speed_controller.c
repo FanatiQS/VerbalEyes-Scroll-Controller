@@ -841,9 +841,8 @@ int8_t ensureConnection() {
 		}
 		// Sets global values used for updating speed
 		case 12: {
-			// Gets deadzone an sensitivity percentage values from config
+			// Gets deadzone percentage value from config
 			const uint8_t deadzone = confGetInt(conf_deadzone);
-			const uint8_t sensitivity = confGetInt(conf_sensitivity);
 
 			// Gets minimum and maximum speed from config
 			const int16_t speedMin = confGetInt(conf_speedmin);
@@ -853,19 +852,22 @@ int8_t ensureConnection() {
 			const uint16_t speedCalLow = confGetInt(conf_callow);
 			const uint16_t speedCalHigh = confGetInt(conf_calhigh);
 
+			// Gets sensitivity value based on calibration range
+			const uint8_t sensitivity = confGetInt(conf_sensitivity);
+
 			// Sets helper values to use when mapping analog read value to new range
 			speedSize = (speedMax - speedMin) * (100 + deadzone * 2);
 			speedMapper = speedCalHigh - speedCalLow;
-			speedComp = speedMin * 100;
+			speedComp = (speedMin * 100) - (speedCalLow * speedSize / speedMapper);
 			deadzoneSize = speedSize * deadzone / 100;
-			jitterSize = speedSize * sensitivity / 100;
+			jitterSize = sensitivity * speedSize / speedMapper;
 
 			// Prevents divide by zero crash later when updating speed
 			if (speedMapper == 0) speedMapper = 1;
 
 			// Prints settings
 			logprintf(
-				"\r\nSetting up speed reader with:\r\n\tMinimum speed at: %i\r\n\tMaximum speed at: %i\r\n\tDeadzone at: %.0f%%\r\n\tSensitivity at: %.0f%%\r\n\tCalibration low at: %u\r\n\tCalibration high at: %u\r\n",
+				"\r\nSetting up speed reader with:\r\n\tMinimum speed at: %i\r\n\tMaximum speed at: %i\r\n\tDeadzone at: %d%%\r\n\tSensitivity at: %d%%\r\n\tCalibration low at: %u\r\n\tCalibration high at: %u\r\n",
 				speedMin,
 				speedMax,
 				deadzone,

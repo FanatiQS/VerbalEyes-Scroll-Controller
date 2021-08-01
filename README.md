@@ -85,7 +85,7 @@ These are all the configurations that can be configured
 | deadzone 		| percent 			| n/a 			| The size of the deadzone around the speed value 0. Used to make 0 mark bigger on the potentiometer.
 | callow 		| unsigned short 	| n/a 			| The minimum value from the analog read. Used for calibrating potentimeter when it does not give 0 at the limit.
 | calhigh 		| unsigned short 	| n/a 			| The maximum value from the analog read. Used for calibrating the maximum value from the potentiometer. Depends on quality of potentiometer and resolution of ADC on micro controller.
-| sensitivity 	| percent 			| n/a 			| Defines the step size for analog read. Used to remove analog jitter.
+| sensitivity 	| unsigned short	| n/a 			| Defines the step size for analog read. Used to remove analog jitter.
 
 ## Errors
 If an error occurs after delimiter has been received, all further data is ignored until a LF is reached. This is by design.
