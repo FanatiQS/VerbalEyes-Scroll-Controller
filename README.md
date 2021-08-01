@@ -67,7 +67,7 @@ These are the types for configuration items
 | string 			| n/a 			| n/a 			| A string is a just a plain string
 | unsigned short 	| 0 			| 65535 		| An unsigned short is a string representation of a 16 bit unsigned integer.
 | signed short 		| -32767 		| 32767 		| A signed short is a string representation of a 16 bit signed integer. A `-` character is used before the number to indicate it is negative.
-| percent 			| 0 			| 100 			| A percent value is a string representation of a percentage value not including the `%` sign. Values above 100 are technically possible but but have undefined behaviour.
+| percent 			| 0 			| 100 			| A percent value is a string representation of a percentage value not including the `%` sign. Values above 100 are technically possible but have undefined behaviour.
 
 ## Configuration items
 These are all the configurations that can be configured
