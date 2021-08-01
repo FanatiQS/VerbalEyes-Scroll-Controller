@@ -1,6 +1,6 @@
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
+#include <stdbool.h> // bool
+#include <stdint.h> // int8_t, uint8_t, int16_t, uint16_t, uint32_t
+#include <stdlib.h> // size_t
 
 // Include Guard
 #ifndef VERBALEYES_SPEED_CONTROLLER_H
