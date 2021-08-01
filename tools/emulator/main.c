@@ -120,10 +120,9 @@ int8_t verbaleyes_network_connected() {
 	return wifiConnected;
 }
 
-// Gets random 32bit value to represent fake ip address
+// Gets local ip address
 uint32_t verbaleyes_network_getip() {
-	srand(clock() * clock());
-	return rand();
+	return 127 | 0 | 0 | 1 << 24;
 }
 
 
