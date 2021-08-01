@@ -44,9 +44,6 @@ Important todos: HTTPS, documentation, ssid logs, led indication
 
 * Continue working on HTTP POST configuration with captive portals and softAP. Maybe it should be its own branch?
 
-* Find a way to add logs like "invalid ssid" or "invalid ssid key" into verbaleyes_network_connected.
-	Should there be a code for [ connecting, connected, failed ] and not just connected or not?
-
 * LED to indicate what is going on using the built in led during initialisation and during setting config data
 
 
