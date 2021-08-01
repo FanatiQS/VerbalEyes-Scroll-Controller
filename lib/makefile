@@ -9,3 +9,6 @@ main:
 	mv bearssl/src/codec/enc32be.c bearssl
 	mv bearssl/src/inner.h bearssl
 	mv bearssl/src/config.h bearssl
+
+clean:
+	rm -rf ./bearssl
