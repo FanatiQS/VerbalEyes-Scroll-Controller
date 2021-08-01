@@ -79,7 +79,7 @@ void updateConfig_str(char* str) {
 
 
 // Buffer for updated config data
-int32_t confFileIndex;
+long int confFileIndex;
 unsigned char confBuffer[CONFIGLEN + 4] = "myWifi";
 
 // Reads a character from the specified address in config buffer
