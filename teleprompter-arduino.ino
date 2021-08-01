@@ -58,7 +58,18 @@ void verbaleyes_network_connect(const char* ssid, const char* key) {
 
 // Gets the connection status of the WiFi connection
 int8_t verbaleyes_network_connected() {
-	return WiFi.isConnected();
+	switch (WiFi.status()) {
+		default: return 0;
+		case WL_CONNECTED: return 1;
+		case WL_NO_SSID_AVAIL: {
+			Serial.print("\nNo network found with that name");
+			return -1;
+		}
+		case WL_CONNECT_FAILED: {
+			Serial.print("\nThe password was incorrect");
+			return -1;
+		}
+	}
 }
 
 // Gets the local ip address for printing
