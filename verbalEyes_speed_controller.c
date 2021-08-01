@@ -417,9 +417,7 @@ bool updateConfig(const int16_t c) {
 
 				// Resets to handle new keys
 				confFlags = FLAGCOMMIT;
-				timeout = time(NULL) + CONFIGTIMEOUT;
 				confIndex = 0;
-				return 1;
 			}
 			// Handles termination of key
 			else if (confFlags != 0) {
@@ -427,7 +425,6 @@ bool updateConfig(const int16_t c) {
 				if (confFlags & FLAGFAILED) {
 					confIndex = 0;
 					confFlags &= ~(FLAGFAILED | FLAGACTIVE);
-					return 1;
 				}
 				// Handles termination before key was validated
 				else if (confIndex != 0) {
@@ -437,24 +434,29 @@ bool updateConfig(const int16_t c) {
 					logprintf(" ] Aborted");
 					confIndex = 0;
 					confFlags &= ~FLAGACTIVE;
-					return 1;
 				}
 				// Commits all changed values if commit is required
 				else if (confFlags & FLAGCOMMIT) {
 					verbaleyes_conf_commit();
 					logprintf("\r\nDone\r\n");
+					confFlags = 0;
+					return 1;
 				}
 				// Moves log to next line if commit is not required
 				else {
 					logprintf("\r\n");
+					confFlags = 0;
+					return 1;
 				}
-
-				// Exits configuration handling
-				confFlags = 0;
-				return 1;
+			}
+			// Exits configuration mode
+			else {
+				return 0;
 			}
 
-			return 0;
+			// Sets timeout for automatically exiting configuration mode if no input is received
+			timeout = time(NULL) + CONFIGTIMEOUT;
+			return  1;
 		}
 		// Ignores these characters
 		case 0x7F:
