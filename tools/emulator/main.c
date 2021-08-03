@@ -68,14 +68,6 @@ int readFromStdIn() {
 	return EOF;
 }
 
-// Sends a string to config instead of char by char
-void updateConfig_str(char* str) {
-	while (*str != '\0') {
-		updateConfig(*str);
-		str++;
-	}
-}
-
 
 
 // Buffer for updated config data
@@ -239,12 +231,10 @@ void initConfStorage() {
 
 	// Configure initial configuration
 	muteLogs = 1;
-	updateConfig_str("host=127.0.0.1\n");
-	updateConfig_str("port=8080\n");
-	updateConfig_str("path=/\n");
-	updateConfig_str("proj=myProject\n");
-	updateConfig_str("speedmin=-10\n");
-	updateConfig_str("speedmax=10\n");
+	char confStr[] = "host=127.0.0.1\nport=8080\npath=/\nproj=myProject\nspeedmin=-10\nspeedmax=10\n";
+	for (int i = 0; i < strlen(confStr); i++) {
+		updateConfig(confStr[i]);
+	}
 	confBuffer[266] = POTMAX;
 	updateConfig('\n');
 	muteLogs = 0;
