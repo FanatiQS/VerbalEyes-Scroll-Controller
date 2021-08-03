@@ -179,7 +179,7 @@ short verbaleyes_socket_read() {
 		}
 		// Reads data and returns it if socket has data
 		default: {
-			unsigned char c;
+			short c = -1;
 			read(sockfd, &c, 1);
 			return c;
 		}
