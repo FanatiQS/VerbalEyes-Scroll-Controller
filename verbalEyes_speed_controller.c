@@ -638,7 +638,7 @@ int8_t ensureConnection() {
 
 			// Validates first character for status-line and moves on to validate the rest
 			logprintf("\r\n\t%c", c);
-			resIndex = (tolower(c) == 'h') ? 1 : RESINDEXFAILED;
+			resIndex = (toupper(c) == 'H') ? 1 : RESINDEXFAILED;
 			state = 6;
 		}
 		// Validates HTTP status-line
@@ -666,7 +666,7 @@ int8_t ensureConnection() {
 				if (resIndex == RESINDEXFAILED) continue;
 
 				// Validates incoming data for http status-line
-				if (tolower(c) == "http/1.1 101"[resIndex]) {
+				if (toupper(c) == "HTTP/1.1 101"[resIndex]) {
 					resIndex++;
 				}
 				// Failed to validate http status-line, abort after printing entire request
