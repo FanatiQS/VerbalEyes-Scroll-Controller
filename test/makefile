@@ -1,11 +1,13 @@
-EXE=./test
-LIBBEARSSL=../lib/bearssl
-A=gcc ../verbalEyes_speed_controller.c $(LIBBEARSSL)/*.c -I../lib -o $(EXE)
+EXE = ./tmp
+LIB = ../lib
+LIBBEARSSL = $(LIB)/bearssl
+SRC = ../verbalEyes_speed_controller.c
+A = gcc $(SRC) $(LIBBEARSSL)/*.c -I$(LIB) -o $(EXE)
 
 all: test_c99 test_config test_clearConfig
 
 $(LIBBEARSSL):
-	cd ../lib && make
+	cd $(LIB) && make
 
 test_config: $(LIBBEARSSL)
 	$(A) test_config.c log.c eeprom.c -DCONFIGTIMEOUT=0
@@ -18,10 +20,11 @@ test_clearConfig: $(LIBBEARSSL)
 	rm $(EXE)
 
 test_c99: $(LIBBEARSSL)
-	gcc -S -I../lib -std=c99 -pedantic-errors ../verbalEyes_speed_controller.c
-	clang -S -I../lib -std=c99 -pedantic-errors ../verbalEyes_speed_controller.c
-	rm verbalEyes_speed_controller.s
+	gcc -S -I$(LIB) -std=c99 -pedantic-errors $(SRC) -o $(EXE)
+	clang -S -I$(LIB) -std=c99 -pedantic-errors $(SRC) -o $(EXE)
+	rm $(EXE)
 
 # Standard C++ is currently not supported since VLAs are used
 test_c++: $(LIBBEARSSL)
-	g++ -S -I../lib -std=c++11 -pedantic-errors ../verbalEyes_speed_controller.c
+	g++ -S -I$(LIB) -std=c++11 -pedantic-errors $(SRC) -o $(EXE)
+	rm $(EXE)
