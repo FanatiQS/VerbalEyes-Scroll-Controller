@@ -14,7 +14,7 @@
 
 
 // Initial buffer size for logging
-#define LOGBUFFERLEN 45
+#define LOGBUFFERLEN 196
 
 // Number of seconds before unfinished configuration input times out
 #ifndef CONFIGTIMEOUT
@@ -45,16 +45,7 @@ static void logprintf(const char* format, ...) {
 	// Formats arguments into buffer
 	char buffer[LOGBUFFERLEN];
 	const size_t len = vsnprintf(buffer, LOGBUFFERLEN, format, args);
-	if (len < LOGBUFFERLEN) {
-		verbaleyes_log(buffer, len);
-	}
-	// Retries with known length if buffer was too small
-	else {
-		va_start(args, format);
-		char buffer2[len + 1];
-		vsnprintf(buffer2, len + 1, format, args);
-		verbaleyes_log(buffer2, len);
-	}
+	verbaleyes_log(buffer, len);
 
 	// Cleans up variadic function
 	va_end(args);
@@ -136,36 +127,16 @@ static void writeWebSocketFrame(const char* format, ...) {
 	va_list args;
 	va_start(args, format);
 
-	// Creates WebSocket frame for non extended frame
-	uint8_t frame[2 + WS_MASKLEN + WS_PAYLOADLEN_EXTENDED];
+	// Creates WebSocket frame for non extended lengt frame with initialized fin bit, rsv bits and opcode
+	uint8_t frame[2 + WS_MASKLEN + WS_PAYLOADLEN_EXTENDED] = { 0x81 };
+
+	// Sets payload length for websocket frame
 	const size_t payloadLen = vsnprintf((char*)frame + 2 + WS_MASKLEN, WS_PAYLOADLEN_EXTENDED, format, args);
+	frame[1] = 0x80 | payloadLen;
 
-	// Handles non extended frame
-	if (payloadLen < WS_PAYLOADLEN_EXTENDED) {
-		// Sets fin bit, reserved buts, opcode and payload length for websocket frame
-		frame[0] = 0x81;
-		frame[1] = 0x80 | payloadLen;
-
-		// Generates mask, masks payload and sends frame
-		maskWebSocketFrame(frame + 2, payloadLen + WS_MASKLEN);
-		verbaleyes_socket_write(frame, 2 + WS_MASKLEN + payloadLen);
-	}
-	// Handles extended WebSocket frames
-	else {
-		// Creates separate buffer for extended frame
-		uint8_t frame2[4 + WS_MASKLEN + payloadLen + 1];
-		vsnprintf((char*)frame2 + 4 + WS_MASKLEN, payloadLen + 1, format, args);
-
-		// Sets fin bit, reserved bits, opcode and payload length for websocket frame
-		frame2[0] = 0x81;
-		frame2[1] = 0x80 | WS_PAYLOADLEN_EXTENDED;
-		frame2[2] = payloadLen >> 8;
-		frame2[3] = payloadLen;
-
-		// Generates mask, masks payload and sends frame
-		maskWebSocketFrame(frame2 + 4, payloadLen + WS_MASKLEN);
-		verbaleyes_socket_write(frame2, 4 + WS_MASKLEN + payloadLen);
-	}
+	// Generates mask, masks payload and sends frame
+	maskWebSocketFrame(frame + 2, payloadLen + WS_MASKLEN);
+	verbaleyes_socket_write(frame, 2 + WS_MASKLEN + payloadLen);
 
 	// Cleans up variadic function
 	va_end(args);
@@ -183,54 +154,62 @@ struct confItem {
 	bool nameMatchFailed; // Internally used by configuration parser
 };
 
-// All configurable properties
-static struct confItem conf_ssid =       	{	"ssid",       	32, 	0,  	0 	};
-static struct confItem conf_ssidkey =    	{	"ssidkey",    	63, 	32, 	0 	};
-static struct confItem conf_host =       	{	"host",       	64, 	95, 	2 	};
-static struct confItem conf_port =       	{	"port",       	0,  	159,	2 	};
-static struct confItem conf_path =       	{	"path",       	32, 	161,	2 	};
-static struct confItem conf_proj =       	{	"proj",       	32, 	193,	2 	};
-static struct confItem conf_projkey =    	{	"projkey",    	32, 	225,	2 	};
-static struct confItem conf_speedmin =   	{	"speedmin",   	-1, 	257,	12	};
-static struct confItem conf_speedmax =   	{	"speedmax",   	-1, 	259,	12	};
-static struct confItem conf_deadzone =   	{	"deadzone",   	0,  	261,	12	};
-static struct confItem conf_callow =     	{	"callow",     	0,  	263,	12	};
-static struct confItem conf_calhigh =    	{	"calhigh",    	0,  	265,	12	};
-static struct confItem conf_sensitivity =	{	"sensitivity",	0,  	267,	12	};
+// All configurable strings lengths
+#define CONF_LEN_SSID           32
+#define CONF_LEN_SSIDKEY        63
+#define CONF_LEN_HOST           64
+#define CONF_LEN_PATH           32
+#define CONF_LEN_PROJ           32
+#define CONF_LEN_PROJKEY        32
+
+// All configurable items addesses
+#define CONF_ADDR_SSID          0
+#define CONF_ADDR_SSIDKEY       (CONF_ADDR_SSID + CONF_LEN_SSID)
+#define CONF_ADDR_HOST          (CONF_ADDR_SSIDKEY + CONF_LEN_SSIDKEY)
+#define CONF_ADDR_PORT          (CONF_ADDR_HOST + CONF_LEN_HOST)
+#define CONF_ADDR_PATH          (CONF_ADDR_PORT + 2)
+#define CONF_ADDR_PROJ          (CONF_ADDR_PATH + CONF_LEN_PATH)
+#define CONF_ADDR_PROJKEY       (CONF_ADDR_PROJ + CONF_LEN_PROJ)
+#define CONF_ADDR_SPEEDMIN      (CONF_ADDR_PROJKEY + CONF_LEN_PROJKEY)
+#define CONF_ADDR_SPEEDMAX      (CONF_ADDR_SPEEDMIN + 2)
+#define CONF_ADDR_DEADZONE      (CONF_ADDR_SPEEDMAX + 2)
+#define CONF_ADDR_CALLOW        (CONF_ADDR_DEADZONE + 2)
+#define CONF_ADDR_CALHIGH       (CONF_ADDR_CALLOW + 2)
+#define CONF_ADDR_SENS          (CONF_ADDR_CALHIGH + 2)
 
 
 
 // Reads a config value into a char array
-static void confGetStr(const struct confItem item, char* str) {
-	for (uint8_t i = 0; i < item.len; i++) {
-		str[i] = verbaleyes_conf_read(item.addr + i);
+static void confGetStr(const uint16_t addr, const uint16_t len, char* str) {
+	for (uint8_t i = 0; i < len; i++) {
+		str[i] = verbaleyes_conf_read(addr + i);
 		if (str[i] == '\0') return;
 	}
-	str[item.len] = '\0';
+	str[len] = '\0';
 }
 
 // Reads a config value as a 2 byte int
-static uint16_t confGetInt(const struct confItem item) {
-	return (verbaleyes_conf_read(item.addr) << 8) | verbaleyes_conf_read(item.addr + 1);
+static uint16_t confGetInt(const uint16_t addr) {
+	return (verbaleyes_conf_read(addr) << 8) | verbaleyes_conf_read(addr + 1);
 }
 
 
 
 // Array of all configurable properties
-static struct confItem *confItems[] = {
-	&conf_ssid,
-	&conf_ssidkey,
-	&conf_host,
-	&conf_port,
-	&conf_path,
-	&conf_proj,
-	&conf_projkey,
-	&conf_speedmin,
-	&conf_speedmax,
-	&conf_deadzone,
-	&conf_callow,
-	&conf_calhigh,
-	&conf_sensitivity
+static struct confItem confItems[] = {
+	{ "ssid",           CONF_LEN_SSID,        CONF_ADDR_SSID,         0  },
+	{ "ssidkey",        CONF_LEN_SSIDKEY,     CONF_ADDR_SSIDKEY,      0  },
+	{ "host",           CONF_LEN_HOST,        CONF_ADDR_HOST,         2  },
+	{ "port",           0,                    CONF_ADDR_PORT,         2  },
+	{ "path",           CONF_LEN_PATH,        CONF_ADDR_PATH,         2  },
+	{ "proj",           CONF_LEN_PROJ,        CONF_ADDR_PROJ,         2  },
+	{ "projkey",        CONF_LEN_PROJKEY,     CONF_ADDR_PROJKEY,      2  },
+	{ "speedmin",       -1,                   CONF_ADDR_SPEEDMIN,     12 },
+	{ "speedmax",       -1,                   CONF_ADDR_SPEEDMAX,     12 },
+	{ "deadzone",       0,                    CONF_ADDR_DEADZONE,     12 },
+	{ "callow",         0,                    CONF_ADDR_CALLOW,       12 },
+	{ "calhigh",        0,                    CONF_ADDR_CALHIGH,      12 },
+	{ "sensitivity",    0,                    CONF_ADDR_SENS,         12 }
 };
 
 #define CONFITEMSLEN sizeof confItems / sizeof confItems[0]
@@ -243,7 +222,7 @@ static struct confItem *confItems[] = {
 
 // Updates a configurable property from a stream of characters
 bool updateConfig(const int16_t c) {
-	static struct confItem* item;
+	static uint8_t confMatchIndex;
 	static uint8_t confFlags = 0;
 	static uint8_t confIndex = 0;
 	static uint16_t confBuffer = 0;
@@ -261,15 +240,15 @@ bool updateConfig(const int16_t c) {
 				for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
 					if (
 						confFlags < FLAGVALUE &&
-						!confItems[i]->nameMatchFailed &&
-						confItems[i]->name[confIndex] == '\0'
+						!confItems[i].nameMatchFailed &&
+						confItems[i].name[confIndex] == '\0'
 					) {
-						item = confItems[i];
+						confMatchIndex = i;
 						confFlags |= FLAGVALUE;
 						logprintf(" ] is now: ");
 					}
 
-					confItems[i]->nameMatchFailed = 0;
+					confItems[i].nameMatchFailed = 0;
 				}
 
 				// Prevents handling value for keys with no match
@@ -311,26 +290,26 @@ bool updateConfig(const int16_t c) {
 				// Invalidates keys that does not match incomming string
 				for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
 					if (
-						!confItems[i]->nameMatchFailed &&
-						c != confItems[i]->name[confIndex]
+						!confItems[i].nameMatchFailed &&
+						c != confItems[i].name[confIndex]
 					) {
-						confItems[i]->nameMatchFailed = 1;
+						confItems[i].nameMatchFailed = 1;
 					}
 				}
 			}
 			// Updates string value for matched key
-			else if (confIndex < item->len) {
-				verbaleyes_conf_write(item->addr + confIndex, c);
+			else if (confIndex < confItems[confMatchIndex].len) {
+				verbaleyes_conf_write(confItems[confMatchIndex].addr + confIndex, c);
 			}
 			// Handles integer input for matched key
-			else if (item->len <= 0 ) {
+			else if (confItems[confMatchIndex].len <= 0 ) {
 				// Integer value handling has failed and remaining characters should be ignored
 				if (confFlags & FLAGFAILED) return 1;
 
 				// Only accepts a valid numerical representation
 				if (c < '0' || c > '9') {
 					// Flags input as signed if position of sign and item allows
-					if (c == '-' && item->len == -1 && confIndex == 0 && !(confFlags & FLAGSIGNED)) {
+					if (c == '-' && confItems[confMatchIndex].len == -1 && confIndex == 0 && !(confFlags & FLAGSIGNED)) {
 						confFlags |= FLAGSIGNED;
 						logprintf("-");
 						return 1;
@@ -346,7 +325,7 @@ bool updateConfig(const int16_t c) {
 				// Handles integer overflow, it can only occur with four or more character
 				if (confIndex >= 4) {
 					// Clamps unsigned integers if it would overflow
-					if (item->len == 0) {
+					if (confItems[confMatchIndex].len == 0) {
 						if (confBuffer > 6553 || (confBuffer == 6553 && c > '5')) {
 							confFlags |= FLAGFAILED;
 							confBuffer = 65535;
@@ -401,8 +380,10 @@ bool updateConfig(const int16_t c) {
 			// Handles termination of value
 			if (confFlags >= FLAGVALUE) {
 				// Terminates stored string
-				if (item->len > 0) {
-					if (confIndex < item->len) verbaleyes_conf_write(item->addr + confIndex, '\0');
+				if (confItems[confMatchIndex].len > 0) {
+					if (confIndex < confItems[confMatchIndex].len) {
+						verbaleyes_conf_write(confItems[confMatchIndex].addr + confIndex, '\0');
+					}
 				}
 				// Stores 16 bit integer value
 				else {
@@ -410,13 +391,15 @@ bool updateConfig(const int16_t c) {
 					if (confFlags & FLAGSIGNED) confBuffer *= -1;
 
 					// Stores 16 bit integer for configuration item
-					verbaleyes_conf_write(item->addr, confBuffer >> 8);
-					verbaleyes_conf_write(item->addr + 1, confBuffer);
+					verbaleyes_conf_write(confItems[confMatchIndex].addr, confBuffer >> 8);
+					verbaleyes_conf_write(confItems[confMatchIndex].addr + 1, confBuffer);
 					confBuffer = 0;
 				}
 
 				// Pulls back state to handle updated value
-				if (state > item->resetState) state = item->resetState;
+				if (state > confItems[confMatchIndex].resetState) {
+					state = confItems[confMatchIndex].resetState;
+				}
 
 				// Resets to handle new keys
 				confFlags = FLAGCOMMIT;
@@ -434,7 +417,7 @@ bool updateConfig(const int16_t c) {
 				// Handles termination before key was validated
 				else if (confIndex != 0) {
 					for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
-						confItems[i]->nameMatchFailed = 0;
+						confItems[i].nameMatchFailed = 0;
 					}
 					logprintf(" ] Aborted");
 					confIndex = 0;
@@ -495,10 +478,10 @@ int8_t ensureConnection() {
 		// Initialize network connection
 		case 0: {
 			// Gets network ssid and key from config
-			char ssid[conf_ssid.len + 1];
-			confGetStr(conf_ssid, ssid);
-			char ssidkey[conf_ssidkey.len + 1];
-			confGetStr(conf_ssidkey, ssidkey);
+			char ssid[CONF_LEN_SSID + 1];
+			confGetStr(CONF_ADDR_SSID, CONF_LEN_SSID, ssid);
+			char ssidkey[CONF_LEN_SSIDKEY + 1];
+			confGetStr(CONF_ADDR_SSIDKEY, CONF_LEN_SSIDKEY, ssidkey);
 
 			// Prints
 			logprintf("\r\nConnecting to SSID: %s...", ssid);
@@ -539,10 +522,10 @@ int8_t ensureConnection() {
 		// Initialize socket connection
 		case 2: {
 			// Gets host and port from config
-			buf = (char*)realloc(buf, conf_host.len + 1);
+			buf = (char*)realloc(buf, CONF_LEN_HOST + 1);
 			if (buf == NULL) logprintf("\r\nERROR: realloc failed\r\n");
-			confGetStr(conf_host, buf);
-			const uint16_t port = confGetInt(conf_port);
+			confGetStr(CONF_ADDR_HOST, CONF_LEN_HOST, buf);
+			const uint16_t port = confGetInt(CONF_ADDR_PORT);
 
 			// Prints
 			logprintf("\r\nConnecting to host: %s:%u...", buf, port);
@@ -569,8 +552,8 @@ int8_t ensureConnection() {
 		// Sends http request to use websocket protocol
 		case 4: {
 			// Gets path to use on host
-			char path[conf_path.len + 1];
-			confGetStr(conf_path, path);
+			char path[CONF_LEN_PATH + 1];
+			confGetStr(CONF_ADDR_PATH, CONF_LEN_PATH, path);
 
 			// Prints
 			logprintf("\r\nAccessing WebSocket server at %s...", path);
@@ -593,7 +576,7 @@ int8_t ensureConnection() {
 			while (verbaleyes_socket_read() != EOF);
 
 			// Sends HTTP request to setup WebSocket connection with host
-			char req[4 + strlen(path) + 17 + strlen(buf) + 89 + 24 + 4 + 1];
+			char req[4 + CONF_LEN_PATH + 17 + CONF_LEN_HOST + 89 + 24 + 4 + 1];
 			uint8_t reqlen = sprintf(
 				req,
 				"GET %s HTTP/1.1\r\nHost: %s\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: %s\r\n\r\n",
@@ -734,10 +717,10 @@ int8_t ensureConnection() {
 		// Connect to verbalEyes project
 		case 8: {
 			// Gets project and project key from config
-			char proj[conf_proj.len + 1];
-			confGetStr(conf_proj, proj);
-			char projkey[conf_projkey.len + 1];
-			confGetStr(conf_projkey, projkey);
+			char proj[CONF_LEN_PROJ + 1];
+			confGetStr(CONF_ADDR_PROJ, CONF_LEN_PROJ, proj);
+			char projkey[CONF_LEN_PROJKEY + 1];
+			confGetStr(CONF_ADDR_PROJKEY, CONF_LEN_PROJKEY, projkey);
 
 			// Prints
 			logprintf("\r\nConnecting to project: %s...", proj);
@@ -837,18 +820,18 @@ int8_t ensureConnection() {
 		// Sets global values used for updating speed
 		case 12: {
 			// Gets deadzone percentage value from config
-			const uint8_t deadzone = confGetInt(conf_deadzone);
+			const uint8_t deadzone = confGetInt(CONF_ADDR_DEADZONE);
 
 			// Gets minimum and maximum speed from config
-			const int16_t speedMin = confGetInt(conf_speedmin);
-			const int16_t speedMax = confGetInt(conf_speedmax);
+			const int16_t speedMin = confGetInt(CONF_ADDR_SPEEDMIN);
+			const int16_t speedMax = confGetInt(CONF_ADDR_SPEEDMAX);
 
 			// Gets calibration start and end point to use on analog read value
-			const uint16_t speedCalLow = confGetInt(conf_callow);
-			const uint16_t speedCalHigh = confGetInt(conf_calhigh);
+			const uint16_t speedCalLow = confGetInt(CONF_ADDR_CALLOW);
+			const uint16_t speedCalHigh = confGetInt(CONF_ADDR_CALHIGH);
 
 			// Gets sensitivity value based on calibration range
-			const uint16_t sensitivity = confGetInt(conf_sensitivity);
+			const uint16_t sensitivity = confGetInt(CONF_ADDR_SENS);
 
 			// Sets helper values to use when mapping analog read value to new range
 			speedSize = (speedMax - speedMin) * (100 + deadzone * 2);
