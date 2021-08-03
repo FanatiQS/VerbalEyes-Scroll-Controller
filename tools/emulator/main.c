@@ -187,9 +187,13 @@ void verbaleyes_socket_write(const uint8_t* packet, const size_t len) {
 
 // Prints the logs to standard out
 bool muteLogs = 0;
-void verbaleyes_log(const char* str, const size_t len) {
+void verbaleyes_log(const char* msg, const size_t len) {
 	if (muteLogs) return;
-	printf("%s", str);
+	if (strlen(msg) != len) {
+		fprintf(stderr, "\nLog lengths did not match %zu %zu\n", strlen(msg) + 1, len);
+		exit(EXIT_FAILURE);
+	}
+	printf("%s", msg);
 	fflush(stdout);
 }
 
