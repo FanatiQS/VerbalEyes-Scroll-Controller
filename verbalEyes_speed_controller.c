@@ -190,7 +190,7 @@ static void confGetStr(const uint16_t addr, const uint16_t len, char* str) {
 
 // Reads a config value as a 2 byte int
 static uint16_t confGetInt(const uint16_t addr) {
-	return (verbaleyes_conf_read(addr) << 8) | verbaleyes_conf_read(addr + 1);
+	return (verbaleyes_conf_read(addr) << 8) | (uint8_t)verbaleyes_conf_read(addr + 1);
 }
 
 

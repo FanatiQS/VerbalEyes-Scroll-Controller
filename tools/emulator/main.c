@@ -75,7 +75,7 @@ long int confFileIndex;
 unsigned char confBuffer[CONFIGLEN + 4] = "myWifi";
 
 // Reads a character from the specified address in config buffer
-unsigned char verbaleyes_conf_read(const unsigned short addr) {
+char verbaleyes_conf_read(const unsigned short addr) {
 	return confBuffer[addr];
 }
 

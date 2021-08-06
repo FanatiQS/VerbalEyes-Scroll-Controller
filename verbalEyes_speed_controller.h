@@ -26,7 +26,7 @@ void updateSpeed(const uint16_t);
 void jumpToTop(const bool);
 
 // Access to persistent storage
-extern unsigned char verbaleyes_conf_read(const uint16_t);
+extern char verbaleyes_conf_read(const uint16_t);
 extern void verbaleyes_conf_write(const uint16_t, const char);
 extern void verbaleyes_conf_commit();
 
