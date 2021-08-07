@@ -144,16 +144,6 @@ static void writeWebSocketFrame(const char* format, ...) {
 
 
 
-// Structure used to read and write configurable data
-// Length of 0 indicates it is a 16bit unsigned integer, -1 indicates 16bit signed integer
-struct confItem {
-	const char* name; // Name used for configuration
-	const int8_t len; // Maxumum length for item
-	const uint16_t addr; // Start address in percistent storage
-	const uint8_t resetState; // State to go back to when item is updated
-	bool nameMatchFailed; // Internally used by configuration parser
-};
-
 // All configurable strings lengths
 #define CONF_LEN_SSID           32
 #define CONF_LEN_SSIDKEY        63
@@ -194,6 +184,16 @@ static uint16_t confGetInt(const uint16_t addr) {
 }
 
 
+
+// Structure used to read and write configurable data
+// Length of 0 indicates it is a 16bit unsigned integer, -1 indicates 16bit signed integer
+struct confItem {
+	const char* name; // Name used for configuration
+	const int8_t len; // Maxumum length for item
+	const uint16_t addr; // Start address in percistent storage
+	const uint8_t resetState; // State to go back to when item is updated
+	bool nameMatchFailed; // Internally used by configuration parser
+};
 
 // Array of all configurable properties
 static struct confItem confItems[] = {
