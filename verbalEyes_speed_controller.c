@@ -237,7 +237,7 @@ bool updateConfig(const int16_t c) {
 				if (confFlags & FLAGFAILED) return 1;
 
 				// Finish matching key and reset all items
-				for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
+				for (int8_t i = 0; i < CONFITEMSLEN - 1; i++) {
 					if (
 						confFlags < FLAGVALUE &&
 						!confItems[i].nameMatchFailed &&
@@ -288,7 +288,7 @@ bool updateConfig(const int16_t c) {
 				}
 
 				// Invalidates keys that does not match incomming string
-				for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
+				for (int8_t i = 0; i < CONFITEMSLEN - 1; i++) {
 					if (
 						!confItems[i].nameMatchFailed &&
 						c != confItems[i].name[confIndex]
@@ -416,7 +416,7 @@ bool updateConfig(const int16_t c) {
 				}
 				// Handles termination before key was validated
 				else if (confIndex != 0) {
-					for (int8_t i = CONFITEMSLEN - 1; i >= 0; i--) {
+					for (int8_t i = 0; i < CONFITEMSLEN - 1; i++) {
 						confItems[i].nameMatchFailed = 0;
 					}
 					logprintf(" ] Aborted");
