@@ -255,7 +255,7 @@ bool updateConfig(const int16_t c) {
 				if (confFlags < FLAGVALUE) {
 					if (confIndex == 0) logprintf("\r\n[");
 					logprintf(" ] No matching key");
-					confFlags |= FLAGFAILED;
+					confFlags |= FLAGFAILED | FLAGACTIVE;
 					return 1;
 				}
 
