@@ -79,6 +79,8 @@ Important todos: HTTPS, documentation, ssid logs, led indication
 
 
 ## LED INDICATION Notes:
+   * Test return state of ensureConnection for led. Should return failed state longer?
+   * Add return state for button and pot to indicate if it send anything or not
    * writing to conf
 
    * network connecting
