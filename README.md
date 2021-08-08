@@ -4,7 +4,7 @@ It works by connecting to Wi-Fi and sending the commands to the server over a We
 Configuration of what network and server to use is done with a simple text based protocol.
 
 # Pre-built for Arduino/ESP
-This is an implementation or the library that works on Arduino supported boards.
+This is an implementation of the library that works on Arduino supported boards.
 
 ## Wiring
 TODO: Add details on how the board should be wired
