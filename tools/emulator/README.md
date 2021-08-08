@@ -18,11 +18,11 @@ Launch the executable `./emulator`.
 ## Interaction
 The 4 arrow keys are used to interact with the emulator.
 
-#### Right arrow key
+### Right arrow key
 Toggles the network state on or off.
 It doesn't matter what ssid and ssidkey you give it.
 
-#### Left arrow key
+### Left arrow key
 Toggles that socket state on or off.
 The emulator connects to an actual VerbalEyes server, so toggling the socket can result in a connection fail if the socket failed to connect to the server.
 
