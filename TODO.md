@@ -2,8 +2,6 @@
 Important todos: HTTPS, documentation, ssid logs, led indication
 
 # Should be fairly easy
-* Replace all calls to logprintf not using variadic function with verbaleyes_log. verbaleyes_log needs to know the length as well, so it would need another function in between to get the length first.
-
 * Replace "Done" message in updateConfig to something better that indicates changes have been saved
 
 * Use int_least8_t instead of int8_t to work on systems with smallest sizes larger than 8bits. It has overflow issues though :( int_fast8_t could be used to make it faster maybe. Both these should be safe for number that never go up to 255, aka low repetition loops
