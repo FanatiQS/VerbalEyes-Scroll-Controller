@@ -9,44 +9,13 @@ This is an implementation or the library that works on Arduino supported boards.
 ## Wiring
 TODO: Add details on how the board should be wired
 
+
+
 # Core Library
-The core library should be able to run on anything supporting C99 (note that VLA support is required).
-Because of this, the functions to access to Wi-Fi, persistent storage and logging are not defined.
-These have to be implemented to work on the micro controller that it is used on by defining all the required functions the library uses. These functions are prototyped in `verbalEyes-speed-controler.h`.
+The core library should be able to run on anything supporting C99 or C++.
+Because of this, the functions to access to Wi-Fi, sockets, persistent storage and logging are not defined.
+These have to be implemented to work on the micro controller that it is used on by defining all the required functions the library uses. These functions are prototyped in `verbalEyes-speed-controler.h` and documented together with the available API functions in [doc/implementing.md](../doc/implementing.md).
 
-## Defining required functions
-### Persistent Storage
-#### char verbaleyes_conf_read(const uint16_t addr)
-Required by: ensureConnection
-This function reads configuration data, character by character. The function is called with a specified address and the function should return the character at that address in the persistent storage.
-
-#### void verbaleyes_conf_write(const uint16_t addr, const char value)
-Required by: updateConfig
-This function writes new configuration data to the persistent storage. The function is called with a specified address and a one byte integer. The function should write that integer to the specified address in the persistent storage.
-
-#### void verbaleyes_conf_commit()
-Required by: updateConfig
-This function commits the updated configuration to persistent storage if micro controller requires it. Writing to EEPROM does not require this function to do anything, but writing to flash storage should be done in one go instead of writing each character as they come in.
-
-### Network
-
-TODO: Add documentation for all network functions
-
-### Logging
-
-#### void verbaleyes_log(const char* str, const size_t len)
-Required by: ensureConnection
-This function gets a string that should be passed to the logging function. A length argument is also defined but not not always required.
-
-## Update Configuration
-TODO: Add details on how to implement updateConfig
-More details on how the input data should be structured can be found in the [configuration](#configuration) chapter.
-
-## Connection
-TODO: Add details about how to implement ensureConnection function
-
-## Scroll Control
-TODO: Add details about how to implement updateSpeed and jumpToTop functions
 
 
 # Configuration
