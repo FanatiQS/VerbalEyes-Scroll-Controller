@@ -18,15 +18,6 @@
 
 
 
-# WebSocket opcodes
-* Replace static timeout after fail with exponential backoff (retry quicker at first, but do not spam server forever). Should retry be configurable in config?
-
-* Handle something other than auth response as first message (server would only send ping frame before getting any data)
-
-* Handle close and ping after auth
-
-
-
 # Tests
 * Continue working on tests for the API
 
@@ -34,7 +25,13 @@
 
 
 
-# Hard / Don't know how to implement
+# Actual features
+* Replace static timeout after fail with exponential backoff (retry quicker at first, but do not spam server forever). Should retry be configurable in config?
+
+* Handle something other than auth response as first message (server would only send ping frame before getting any data)
+
+* Handle close and ping after auth
+
 * Get HTTPS to work
 	* HTTPS is working, but there is currently no way to distinguish between HTTP and HTTPS hosts.
 	* A big issue with HTTPS is fingerprints. They don't lookup Certificate Authority things in ESP code.
