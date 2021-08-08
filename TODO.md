@@ -1,5 +1,4 @@
 ## TODO:
-Important todos: HTTPS, documentation, ssid logs, led indication
 
 # Should be fairly easy
 * Replace "Done" message in updateConfig to something better that indicates changes have been saved
