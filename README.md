@@ -5,6 +5,7 @@ Configuration of what network and server to use is done with a simple text based
 
 # Pre-built for Arduino/ESP
 This is an implementation of the library that works on Arduino supported boards.
+Configuration is done over the USB connection with more details further down in this readme.
 
 ## Wiring
 TODO: Add details on how the board should be wired
