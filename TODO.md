@@ -5,6 +5,12 @@
 
 * Use int_least8_t instead of int8_t to work on systems with smallest sizes larger than 8bits. It has overflow issues though :( int_fast8_t could be used to make it faster maybe. Both these should be safe for number that never go up to 255, aka low repetition loops
 
+* Maybe redefine CONNECTED, CONNECTING and CONNECTIONFAILED as an ENUM and use it for ensureConnection, updateConfig, network_connected and socket_connected. Then return that ENUM to make it clearer that it only allows those 3 states.
+
+* Maybe rename ensureConnection to verbaleyes_initialize and updateConfig to verbaleyes_configure?
+
+* Fix broken links in readmes
+
 
 
 # Markdown
