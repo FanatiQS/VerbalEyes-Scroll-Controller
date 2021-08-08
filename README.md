@@ -28,6 +28,7 @@ These have to be implemented to work on the micro controller that it is used on 
 * If input value is longer than the max length for that key, the configuration system will not add the overflowing data but everything up until max length is reached will be written to persistent storage. This will result in incorrect data in storage if error occurred.
 * Comments are supported if the first character is a `#` sign, everything up to next LF will be ignored.
 * Keys are case sensitive.
+* Configuration system is meant to be used by sending in an entire configuration string at once. Even though it works sending it characters as they are typed, the user experience is sub par with, no indication that a configuration value has been null terminated until the next key starts being processed or configuration mode is exited, and no support for backspace other than aborting and starting over.
 
 ## Configuration item types
 These are the types for configuration items
@@ -115,6 +116,7 @@ echo -e 'key=value\n\n' > `ls /dev/ttyUSB* | head -1`
 
 ### Interactive:
 Makes the command line interface interactive and lets you write your data to the device and see feedback from it right away in the same window.
+This is not a recommended way of working as it is not a great experience, explained in more detailed earlier.
 In this mode, tabs are especially nice to use as delimiter instead of the normal `=`.
 * OSX: tested
 ```sh
