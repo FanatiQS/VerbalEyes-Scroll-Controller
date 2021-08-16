@@ -29,16 +29,17 @@ int potSpeed = 0;
 
 // Reads one character from the standard in if it has anything
 int readFromStdIn() {
-	unsigned char c = 0;
-	read(STDIN_FILENO, &c, 1);
+	// Clears EOF error from raw mode
+	clearerr(stdin);
 
-	// Returns character unless it is escape character
+	// Returns character unless it is the start of an escape sequence
+	short c = getchar();
 	if (c != 0x1B) return c;
 
 	// Gets escaped sequence
-	read(STDIN_FILENO, &c, 1);
+	c = getchar();
 	if (c != '[') return EOF;
-	read(STDIN_FILENO, &c, 1);
+	c = getchar();
 	switch (c) {
 		// Up
 		case 'A': {
