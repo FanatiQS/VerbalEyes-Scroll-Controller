@@ -172,7 +172,7 @@ short verbaleyes_socket_read() {
 		// Reads data and returns it if socket has data
 		default: {
 			unsigned char c = 0;
-			read(sockfd, &c, 1);
+			recv(sockfd, &c, 1, 0);
 			return c;
 		}
 	}
@@ -180,7 +180,7 @@ short verbaleyes_socket_read() {
 
 // Sends a packet to the endpoint the socket is connected to
 void verbaleyes_socket_write(const uint8_t* packet, const size_t len) {
-	write(sockfd, packet, len);
+	send(sockfd, packet, len, 0);
 }
 
 
