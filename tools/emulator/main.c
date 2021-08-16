@@ -127,8 +127,8 @@ bool socketConnectionFailed = 0;
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 	if (sockfd != 0) close(sockfd);
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("Unable to create socket\n");
-		exit(0);
+		perror("ERROR: Unable to create socket\n");
+		exit(EXIT_FAILURE);
 	}
 
 	struct sockaddr_in servaddr;
@@ -162,7 +162,7 @@ short verbaleyes_socket_read() {
     switch(select(sockfd + 1, &set, NULL, NULL, &timeout)) {
 		// Exits on error
 		case -1: {
-			perror("ERROR: Select got an error :(");
+			perror("ERROR: Select got an error\n");
 			exit(EXIT_FAILURE);
 		}
 		// Returns EOF if socket does not have data
