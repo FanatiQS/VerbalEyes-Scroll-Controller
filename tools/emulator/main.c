@@ -207,12 +207,6 @@ void verbaleyes_log(const char* msg, const size_t len) {
 
 
 
-// Some kind of raw mode reset
-struct termios orig_termios;
-void disableRawMode() {
-  tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
-}
-
 // Initializes configuration buffer by reading concatenated config data from self
 void initConfStorage() {
 	// Gets cached index of buffer in executable
@@ -259,6 +253,12 @@ void initConfStorage() {
 	fclose(file);
 }
 
+// Some kind of raw mode reset
+struct termios orig_termios;
+void disableRawMode() {
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+}
+
 
 
 //!!
@@ -269,7 +269,7 @@ int main(int argc, char** argv) {
 	struct termios raw = orig_termios;
 	raw.c_lflag &= ~(ECHO | ICANON);
 	raw.c_cc[VMIN] = 0;
-	raw.c_cc[VTIME] = 1;
+	raw.c_cc[VTIME] = 0;
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 
 	// Gets previous configuration stored in this executable
