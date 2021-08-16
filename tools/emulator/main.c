@@ -155,11 +155,11 @@ short verbaleyes_socket_read() {
 
 	// Creates timeout delay of 0 microseconds
 	struct timeval timeout;
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 0;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
 
 	// Checks if socket has data
-    switch(select(sockfd + 1, &set, NULL, NULL, &timeout)) {
+	switch(select(sockfd + 1, &set, NULL, NULL, &timeout)) {
 		// Exits on error
 		case -1: {
 			perror("ERROR: Select got an error\n");
