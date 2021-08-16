@@ -89,6 +89,10 @@ char* pathToSelf;
 void verbaleyes_conf_commit() {
 	// Opens self
 	FILE* file = fopen(pathToSelf, "r+");
+	if (file == NULL) {
+		perror("\nERROR: Unable to open self for writing config\n");
+		exit(EXIT_FAILURE);
+	}
 
 	// Gets to start index for configuration
 	fseek(file, confFileIndex, SEEK_SET);
@@ -162,7 +166,7 @@ short verbaleyes_socket_read() {
 	switch(select(sockfd + 1, &set, NULL, NULL, &timeout)) {
 		// Exits on error
 		case -1: {
-			perror("ERROR: Select got an error\n");
+			perror("\nERROR: Select failed\n");
 			exit(EXIT_FAILURE);
 		}
 		// Returns EOF if socket does not have data
@@ -180,7 +184,10 @@ short verbaleyes_socket_read() {
 
 // Sends a packet to the endpoint the socket is connected to
 void verbaleyes_socket_write(const uint8_t* packet, const size_t len) {
-	send(sockfd, packet, len, 0);
+	if (send(sockfd, packet, len, 0) != len) {
+		perror("\nERROR: Sending data to socket failed\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 
@@ -190,7 +197,7 @@ bool muteLogs = 0;
 void verbaleyes_log(const char* msg, const size_t len) {
 	if (muteLogs) return;
 	if (strlen(msg) != len) {
-		fprintf(stderr, "\nLog lengths did not match %zu %zu\n", strlen(msg) + 1, len);
+		fprintf(stderr, "\nERROR: Log lengths did not match %zu %zu\n", strlen(msg) + 1, len);
 		exit(EXIT_FAILURE);
 	}
 	printf("%s", msg);
@@ -215,6 +222,10 @@ void initConfStorage() {
 
 	// Opens self
 	FILE* file = fopen(pathToSelf, "r+");
+	if (file == NULL) {
+		perror("\nERROR: Unable to open self for setting config index\n");
+		exit(EXIT_FAILURE);
+	}
 
 	// Gets index of end of buffer in executable
 	int i = 0;
