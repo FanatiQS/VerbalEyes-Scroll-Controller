@@ -1,11 +1,11 @@
-#include <stdio.h> // FILE, fseek, SEEK_SET, fputc, fgetc, fclose, EOF, printf, fflush, stdout, perror, size_t
+#include <stdio.h> // FILE, fseek, SEEK_SET, fputc, fgetc, fclose, EOF, printf, fflush, stdout, perror, size_t, getchar, clearerr
 #include <stdbool.h> // bool
 #include <stdlib.h> // exit, EXIT_FAILURE, atexit, size_t
 #include <string.h> // bzero
 
-#include <unistd.h> // read, STDIN_FILENO, close, write, usleep
+#include <unistd.h> // STDIN_FILENO, close, usleep
 #include <sys/select.h> // select, fd_set, FD_ZERO, FD_SET, timeval
-#include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, connect
+#include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, connect, send, recv
 #include <arpa/inet.h> // htons, inet_addr, sockaddr_in
 #include <termios.h> // termios, tcgetattr, tcsetattr, TCSAFLUSH, ECHO, ICANON, VMIN, VTIME
 
