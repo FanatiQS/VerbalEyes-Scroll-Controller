@@ -22,11 +22,11 @@ It handles an input string one character at a time.
 int8_t ensureConnection()
 ```
 * The return value is one of three states:
-	* CONNECTED: Everything is connected and working.
-	* CONNECTING: It is not connected but is working on it.
-	* CONNECTIONFAILED: Connecting has failed somehow.
-* The return values CONNECTIONFAILED and CONNECTING does not need to be handled separately and is only available to allow indicating a fail to the outside. This way, CONNECTED can be treated as false(as 0) and both the other values as true(as not 0).
-* If it is not CONNECTED, the functions `updateSpeed` and `jumpToTop` are not allowed to be called. The function `updateConfig` is allowed to be called though.
+	* 0: Everything is connected and working.
+	* 1: It is not connected but is working on it.
+	* -1: Connecting has failed somehow.
+* The return values -1 and 1 does not need to be handled separately and is only available to detect when a fail has occurred. This way, they can both be treated as a truthy values.
+* If it does not return 0, the functions `updateSpeed` and `jumpToTop` are not allowed to be called. The function `updateConfig` is allowed to be called though.
 
 ### updateSpeed
 ```c

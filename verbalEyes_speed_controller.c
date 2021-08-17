@@ -71,20 +71,20 @@ static int8_t connectionFailToState(const char* msg, const uint8_t backToState) 
 	logprintf(msg);
 	timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 	state = backToState;
-	return CONNECTIONFAILED;
+	return -1;
 }
 
 // Reconnects to socket if unable to get data before timeout
 static int8_t socketHadNoData() {
 	if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
-	if (time(NULL) < timeout) return CONNECTING;
+	if (time(NULL) < timeout) return 1;
 	return connectionFailToState("\r\nResponse from server ended prematurely", 0x82);
 }
 
 // Prints progress bar until timeing out if unable to get data
 static int8_t socketHadNoDataProgressBar() {
 	if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
-	if (showProgressBar()) return CONNECTING;
+	if (showProgressBar()) return 1;
 	return connectionFailToState("\r\nDid not get a response from the server", 0x82);
 }
 
@@ -464,7 +464,7 @@ int8_t ensureConnection() {
 		case 0x80:
 		case 0x82: {
 			if (time(NULL) >= timeout) state &= 0x7F;
-			return CONNECTING;
+			return 1;
 		}
 		// Reconnects to network if connection is lost
 		default: {
@@ -493,10 +493,10 @@ int8_t ensureConnection() {
 			switch (verbaleyes_network_connected()) {
 				// Shows progress bar until network is connected
 				case 0: {
-					if (showProgressBar()) return CONNECTING;
+					if (showProgressBar()) return 1;
 				}
 				// Handles timeout error
-				case CONNECTIONFAILED: {
+				case -1: {
 					return connectionFailToState("\r\nFailed to connect to network", 0x80);
 				}
 			}
@@ -537,10 +537,10 @@ int8_t ensureConnection() {
 			switch (verbaleyes_socket_connected()) {
 				// Shows progress bar until socket is connected
 				case 0: {
-					if (showProgressBar()) return CONNECTING;
+					if (showProgressBar()) return 1;
 				}
 				// Handles timeout error
-				case CONNECTIONFAILED: {
+				case -1: {
 					return connectionFailToState("\r\nFailed to connect to host", 0x82);
 				}
 			}
@@ -853,7 +853,7 @@ int8_t ensureConnection() {
 	}
 
 	// Allows caller function to continue past this function
-	return CONNECTED;
+	return 0;
 }
 
 // Sends remapped analog speed reading to the server

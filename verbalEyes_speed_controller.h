@@ -9,11 +9,6 @@
 // Number of characters required for configuration
 #define CONFIGLEN 269 // Needs to be updated manually
 
-// Returing states of ensureConnection
-#define CONNECTIONFAILED -1
-#define CONNECTING 1
-#define CONNECTED 0
-
 // Makes functions work in C++
 #ifdef __cplusplus
 extern "C" {

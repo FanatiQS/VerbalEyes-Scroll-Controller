@@ -147,7 +147,7 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 
 // Gets the fake and real connection status of the socket connection
 int8_t verbaleyes_socket_connected() {
-	if (socketConnectionFailed) return CONNECTIONFAILED;
+	if (socketConnectionFailed) return -1;
 	return socketConnected;
 }
 
