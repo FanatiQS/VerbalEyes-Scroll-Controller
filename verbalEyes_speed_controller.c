@@ -107,20 +107,6 @@ static void matchStr(uint8_t* index, const char c, const char* match) {
 #define WS_PAYLOADLEN_EXTENDED 126
 #define WS_MASKLEN 4
 
-// Inserts randomly generated mask and uses it to mask payload for WebSocket frame
-static void maskWebSocketFrame(uint8_t* frame, const size_t len) {
-	// Generates mask
-	frame[0] = rand() % 256;
-	frame[1] = rand() % 256;
-	frame[2] = rand() % 256;
-	frame[3] = rand() % 256;
-
-	// Masks payload
-	for (size_t i = WS_MASKLEN; i < len; i++) {
-		frame[i] = frame[i] ^ frame[i - WS_MASKLEN & 3];
-	}
-}
-
 // Sends a string in a WebSocket frame to the server
 static void writeWebSocketFrame(const char* format, ...) {
 	// Initializes variadic function
@@ -134,8 +120,18 @@ static void writeWebSocketFrame(const char* format, ...) {
 	const size_t payloadLen = vsnprintf((char*)frame + 2 + WS_MASKLEN, WS_PAYLOADLEN_EXTENDED, format, args);
 	frame[1] = 0x80 | payloadLen;
 
-	// Generates mask, masks payload and sends frame
-	maskWebSocketFrame(frame + 2, payloadLen + WS_MASKLEN);
+	// Generates mask
+	frame[2] = rand() % 256;
+	frame[3] = rand() % 256;
+	frame[4] = rand() % 256;
+	frame[5] = rand() % 256;
+
+	// Masks payload
+	for (size_t i = WS_MASKLEN; i < payloadLen + WS_MASKLEN; i++) {
+		frame[i] = frame[i] ^ frame[i - WS_MASKLEN & 3];
+	}
+
+	// Sends websocket frame
 	verbaleyes_socket_write(frame, 2 + WS_MASKLEN + payloadLen);
 
 	// Cleans up variadic function
