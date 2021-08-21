@@ -127,8 +127,8 @@ static void writeWebSocketFrame(const char* format, ...) {
 	frame[5] = rand() % 256;
 
 	// Masks payload
-	for (size_t i = WS_MASKLEN; i < payloadLen + WS_MASKLEN; i++) {
-		frame[i] = frame[i] ^ frame[i - WS_MASKLEN & 3];
+	for (size_t i = 0; i < payloadLen; i++) {
+		frame[i + 2 + WS_MASKLEN] = frame[i + 2 + WS_MASKLEN] ^ frame[(i & 3) + 2];
 	}
 
 	// Sends websocket frame
