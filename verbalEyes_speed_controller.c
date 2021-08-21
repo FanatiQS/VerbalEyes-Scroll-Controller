@@ -450,6 +450,9 @@ int32_t speedComp;
 int32_t deadzoneSize;
 int32_t jitterSize;
 
+// Global variable for projID to connect to
+char projID[CONF_LEN_PROJ + 1];
+
 #define RESINDEXFAILED 65535
 
 // Ensures everything is connected to be able to transmit speed changes to the server
@@ -713,16 +716,15 @@ int8_t ensureConnection() {
 		// Connect to verbalEyes project
 		case 8: {
 			// Gets project and project key from config
-			char proj[CONF_LEN_PROJ + 1];
-			confGetStr(CONF_ADDR_PROJ, CONF_LEN_PROJ, proj);
+			confGetStr(CONF_ADDR_PROJ, CONF_LEN_PROJ, projID);
 			char projkey[CONF_LEN_PROJKEY + 1];
 			confGetStr(CONF_ADDR_PROJKEY, CONF_LEN_PROJKEY, projkey);
 
 			// Prints
-			logprintf("\r\nConnecting to project: %s...", proj);
+			logprintf("\r\nConnecting to project: %s...", projID);
 
 			// Sends VerbalEyes project authentication request
-			writeWebSocketFrame("{\"_core\": {\"auth\": {\"id\": \"%s\", \"key\": \"%s\"}}}", proj, projkey);
+			writeWebSocketFrame("[{\"id\": \"%s\", \"auth\": \"%s\"}]", projID, projkey);
 
 			// Sets timeout value for awaiting websocket response
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
@@ -803,7 +805,7 @@ int8_t ensureConnection() {
 				}
 
 				// Makes sure authentication was successful
-				if (resMatchIndexes[0] != SUCCESSFULMATCH) matchStr(&resMatchIndexes[0], c, "authed");
+				if (resMatchIndexes[0] != SUCCESSFULMATCH) matchStr(&resMatchIndexes[0], c, "\"auth\":true");
 				resIndex--;
 			}
 
@@ -878,7 +880,7 @@ void updateSpeed(const uint16_t value) {
 	speed = mappedValue;
 
 	// Sends new speed to the server
-	writeWebSocketFrame("{\"_core\": {\"doc\": {\"id\": \"test\", \"speed\": %.2f}}}", (float)speed / 100);
+	writeWebSocketFrame("[{\"id\": \"%s\", \"scroll\": {\"speed\": %.2f}}]", projID, (float)speed / 100);
 
 	// Prints new speed
 	logprintf("\r\nSpeed has been updated to: %.2f", (float)speed / 100);
@@ -894,7 +896,7 @@ void jumpToTop(const bool value) {
 	if (value == 0) return;
 
 	// Sends message to server
-	writeWebSocketFrame("{\"_core\": {\"doc\": {\"id\": \"test\", \"offset\": 0}}}");
+	writeWebSocketFrame("[{\"id\": \"%s\", \"scroll\": {\"offset\": 0}}]", projID);
 
 	// Prints
 	logprintf("\r\nScroll position has been set to: 0");
