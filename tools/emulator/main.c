@@ -3,11 +3,16 @@
 #include <stdlib.h> // exit, EXIT_FAILURE, atexit, size_t
 #include <string.h> // bzero
 
+#ifdef _WIN32
+#include <winsock2.h> // select, fd_set, FD_ZERO, FD_SET, timeval, socket, AF_INET, SOCK_STREAM, connect, htons, inet_addr, sockaddr_in, send, recv
+#include <windows.h>
+#else
 #include <unistd.h> // STDIN_FILENO, close, usleep
 #include <sys/select.h> // select, fd_set, FD_ZERO, FD_SET, timeval
 #include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, connect, send, recv
 #include <arpa/inet.h> // htons, inet_addr, sockaddr_in
 #include <termios.h> // termios, tcgetattr, tcsetattr, TCSAFLUSH, ECHO, ICANON, VMIN, VTIME
+#endif
 
 #include "../../verbalEyes_speed_controller.h"
 
