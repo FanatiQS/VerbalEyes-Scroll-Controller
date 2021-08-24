@@ -4,7 +4,7 @@ LIBBEARSSL = $(LIB)/bearssl
 SRC = ../verbalEyes_speed_controller.c
 A = gcc $(SRC) $(LIBBEARSSL)/*.c -I$(LIB) -o $(EXE) ./helpers/*.c
 
-all: test_c99 test_configure test_clearConfig
+all: test_c99 test_c++ test_configure test_clearConfig test_perf
 
 $(LIBBEARSSL):
 	cd $(LIB) && make
