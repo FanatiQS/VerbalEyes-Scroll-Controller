@@ -5,6 +5,8 @@ This file documents ideas on how configuration over HTTP could work.
 
 * An approach could be to only enable a softAP without password if button is held down during boot and then, either the softAP is closed in no one connects for 10 seconds or it closes softAP when button is released if no one has connected.
 
+* A way to do it would be to set up a softAP but when receiving HTTP POST requests on softAP or connected network, it would check if button is pressed before handling HTTP data.
+
 ## Security for HTTP configuration
 * It is very important to be able to lock down access to configuring the device over HTTP.
 * The best way is probably to have some kind of signin, like there is for routers, teradek vidu and so on.
