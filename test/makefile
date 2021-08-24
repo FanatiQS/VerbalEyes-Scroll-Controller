@@ -28,3 +28,8 @@ test_c99: $(LIBBEARSSL)
 test_c++: $(LIBBEARSSL)
 	g++ -S -I$(LIB) -std=c++11 -pedantic-errors $(SRC) -o $(EXE)
 	rm $(EXE)
+
+test_perf:
+	gcc $(SRC) $(LIBBEARSSL)/*.c -I$(LIB) -o $(EXE) test_perf.c
+	$(EXE)
+	rm $(EXE)
