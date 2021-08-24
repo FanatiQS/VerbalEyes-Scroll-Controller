@@ -27,7 +27,7 @@ int main() {
 	// Runs through clearConfig script data
 	char c;
 	while ((c = getc(stdin)) != EOF) {
-		updateConfig(c);
+		verbaleyes_configures(c);
 	}
 
 	// Verifies it cleared entire EEPROM

@@ -120,9 +120,22 @@ void setup() {
 }
 
 void loop() {
-	while (updateConfig(Serial.read())) yield(); // Updates config data from serial input
-	if (ensureConnection()) return; // Ensure network and socket are setup and connected. Restart loop if setup is not done
-	updateSpeed(analogRead(A0)); // Update server speed based on potentiometer at A0
-	jumpToTop(digitalRead(0)); // Jump to top of document if button at pin 0 is pulled high
-	delay(1000 / 25); // Only read pins 25 times per second
+	// Updates config data from serial input. Restarts loop if handling serial data
+	if (verbaleyes_configure(Serial.read())) {
+		return;
+	}
+
+	// Ensure network and socket are setup and connected. Restarts loop if setup is not done
+	if (verbaleyes_initialize()) {
+		return;
+	}
+
+	// Update server speed based on potentiometer at A0
+	verbaleyes_setspeed(analogRead(A0));
+
+	// Jump to top of document if button at pin 0 is pulled high
+	verbaleyes_resetoffset(digitalRead(0));
+
+	// Only reads pins 25 times per second
+	delay(1000 / 25);
 }

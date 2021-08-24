@@ -15,10 +15,10 @@ extern "C" {
 #endif
 
 // Prototypes for functions used to interact with the system
-int8_t ensureConnection();
-bool updateConfig(const int16_t);
-void updateSpeed(const uint16_t);
-void jumpToTop(const bool);
+int8_t verbaleyes_initialize();
+bool verbaleyes_configure(const int16_t);
+void verbaleyes_setspeed(const uint16_t);
+void verbaleyes_resetoffset(const bool);
 
 // Access to persistent storage
 extern char verbaleyes_conf_read(const uint16_t);

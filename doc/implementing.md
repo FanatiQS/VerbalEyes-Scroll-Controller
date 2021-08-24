@@ -5,37 +5,37 @@
 ## Functions
 The API is built in a way so that the functions only allow the next function to be called if it returns false but is always allowed to move back to any previous function.
 
-### updateConfig
+### verbaleyes_configure
 ```c
-bool updateConfig(const uint16_t input)
+bool verbaleyes_configure(const uint16_t input)
 ```
 This is the way to change the configuration from the outside.
 It handles an input string one character at a time.
 * The argument `input` is any 8-bit character or EOF if there is input / data to read.
 * The return value is a boolean indicating if it is currently in configuration mode and handling data.
-* If it is in configuration mode, it is not allowed to call `ensureConnection`, `updateSpeed` or `jumpToTop` until all data is handled and the configuration mode has been exited and the function returns false / 0.
+* If it is in configuration mode, it is not allowed to call `verbaleyes_initialize`, `verbaleyes_setspeed` or `verbaleyes_resetoffset` until all data is handled and the configuration mode has been exited and the function returns false / 0.
 * If all data is handled and the function is still in configuration mode, the data was not a complete or a valid configuration instruction. Configuration mode will automatically exit if being open without a successful update for a specified amount of time. This time can be customised by defining the macro `CONFIGTIMEOUT` for the file `verbaleEyes_speed_controller.c`.
 * Information about the structure of the input data can be found in the [README](../readme.md).
 
-### ensureConnection
+### verbaleyes_initialize
 ```c
-int8_t ensureConnection()
+int8_t verbaleyes_initialize()
 ```
 * The return value is one of three states:
 	* 0: Everything is connected and working.
 	* 1: It is not connected but is working on it.
 	* -1: Connecting has failed somehow.
 * The return values -1 and 1 does not need to be handled separately and is only available to detect when a fail has occurred. This way, they can both be treated as a truthy values.
-* If it does not return 0, the functions `updateSpeed` and `jumpToTop` are not allowed to be called. The function `updateConfig` is allowed to be called though.
+* If it does not return 0, the functions `verbaleyes_setspeed` and `verbaleyes_resetoffset` are not allowed to be called. The function `verbaleyes_configure` is allowed to be called though.
 
-### updateSpeed
+### verbaleyes_setspeed
 ```c
-void updateSpeed(const uint16_t input)
+void verbaleyes_setspeed(const uint16_t input)
 ```
 
-### jumpToTop
+### verbaleyes_resetoffset
 ```c
-void jumpToTop(const bool input)
+void verbaleyes_resetoffset(const bool input)
 ```
 
 
@@ -90,7 +90,7 @@ void verbaleyes_network_connect(const char* ssid, const char* ssidkey)
 * This function does not have a return value, instead, the function `verbaleyes_network_connected` is continuously polled to get network status. This allows it to handle configuration while trying to connect to a network and detect when network disconnects.
 * If connecting to network is a sync function, `verbaleyes_network_connected` should return 1 for success and -1 for fail since -1 will fail right away while 0 continues waiting for network to be connected.
 * If there is already an active network connection, that one should be disconnected and a new one should be established.
-* Both `ssid` and `ssidkey` are null terminated character arrays that can include any character sent to the configuration through the `updateConfig` function.
+* Both `ssid` and `ssidkey` are null terminated character arrays that can include any character sent to the configuration through the `verbaleyes_configure` function.
 * Maximum lengths for `ssid` and `ssidkey` can be found in [readme](should include link here).
 
 ##### Connected
@@ -126,7 +126,7 @@ void verbaleyes_socket_connect(const char* host, const uint16_t port)
 * If connecting to socket is a sync function, `verbaleyes_socket_connected` should return 1 for success and -1 for fail since -1 will fail right away while 0 continues waiting for socket to be connected.
 * If there is already an active socket connection, that one should be disconnected and a new one should be established.
 * If there is still buffered data from a previous socket, that data will automatically be flushed before establishing the WebSocket connection.
-* The `host` argument is a null terminated character array that can include any character sent to the configuration through the `updateConfig` function.
+* The `host` argument is a null terminated character array that can include any character sent to the configuration through the `verbaleyes_configure` function.
 * Maximum lengths for `host` can be found in [readme](should include link here).
 * The `port` can be any unsigned 16-bit number.
 
@@ -168,6 +168,6 @@ void verbaleyes_socket_write(const uint8_t* data, const size_t len)
 void verbaleyes_log(const char* msg, size_t len)
 ```
 * Logs messages about what is going on and is the only way to know that is going wrong when something happens.
-* The message is a null terminated character array that can include any character sent to the configuration through the `updateConfig` function.
+* The message is a null terminated character array that can include any character sent to the configuration through the `verbaleyes_configure` function.
 * The `len` arguments is not required to be used.
 * Messages do not always end with newline, so if something like printf is used that buffers messages up to newlines, it needs to be flushed for some messages to not be very delayed, like progress bars and configuration.

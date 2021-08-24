@@ -217,7 +217,7 @@ static struct confItem confItems[] = {
 #define FLAGSIGNED 16
 
 // Updates a configurable property from a stream of characters
-bool updateConfig(const int16_t c) {
+bool verbaleyes_configure(const int16_t c) {
 	static uint8_t confMatchIndex;
 	static uint8_t confFlags = 0;
 	static uint8_t confIndex = 0;
@@ -456,7 +456,7 @@ char projID[CONF_LEN_PROJ + 1];
 #define RESINDEXFAILED 65535
 
 // Ensures everything is connected to be able to transmit speed changes to the server
-int8_t ensureConnection() {
+int8_t verbaleyes_initialize() {
 	static uint16_t resIndex = 0;
 	static uint8_t resMatchIndexes[5];
 	static char* buf;
@@ -858,7 +858,7 @@ int8_t ensureConnection() {
 }
 
 // Sends remapped analog speed reading to the server
-void updateSpeed(const uint16_t value) {
+void verbaleyes_setspeed(const uint16_t value) {
 	static int32_t speed;
 
 	// Maps analog input value to conf range
@@ -886,7 +886,7 @@ void updateSpeed(const uint16_t value) {
 }
 
 // Tells server to reset position to 0 when button is pressed
-void jumpToTop(const bool value) {
+void verbaleyes_resetoffset(const bool value) {
 	static bool buttonState = 1;
 
 	// Only sends data on button down event

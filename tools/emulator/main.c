@@ -243,10 +243,10 @@ void initConfStorage() {
 	muteLogs = 1;
 	char confStr[] = "host=127.0.0.1\nport=8080\npath=/\nproj=myProject\nspeedmin=-10\nspeedmax=10\n";
 	for (int i = 0; i < strlen(confStr); i++) {
-		updateConfig(confStr[i]);
+		verbaleyes_configure(confStr[i]);
 	}
 	confBuffer[266] = POTMAX;
-	updateConfig('\n');
+	verbaleyes_configure('\n');
 	muteLogs = 0;
 
 	// Closes file stream
@@ -278,10 +278,10 @@ int main(int argc, char** argv) {
 
 	// Main loop
 	while (1) {
-		if (updateConfig(readFromStdIn())) continue;
-		if (ensureConnection()) continue;
-		updateSpeed(potSpeed);
-		// jumpToTop(digitalRead(0));
+		if (verbaleyes_configure(readFromStdIn())) continue;
+		if (verbaleyes_initialize()) continue;
+		verbaleyes_setspeed(potSpeed);
+		// verbaleyes_resetoffset(digitalRead(0));
 		usleep(20000);
 	}
 	return 0;
