@@ -11,7 +11,6 @@
 // Only defined to not throw compilation errors
 void verbaleyes_network_connect(const char* ssid, const char* key) {}
 int8_t verbaleyes_network_connected() { return 0; }
-uint32_t verbaleyes_network_getip() { return 0; }
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {}
 int8_t verbaleyes_socket_connected() { return 0; }
 short verbaleyes_socket_read() { return 0; }
