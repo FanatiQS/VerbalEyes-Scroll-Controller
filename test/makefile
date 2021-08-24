@@ -24,7 +24,6 @@ test_c99: $(LIBBEARSSL)
 	clang -S -I$(LIB) -std=c99 -pedantic-errors $(SRC) -o $(EXE)
 	rm $(EXE)
 
-# Standard C++ is currently not supported since VLAs are used
 test_c++: $(LIBBEARSSL)
 	g++ -S -I$(LIB) -std=c++11 -pedantic-errors $(SRC) -o $(EXE)
 	rm $(EXE)
