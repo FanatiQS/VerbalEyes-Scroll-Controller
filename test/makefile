@@ -2,21 +2,21 @@ EXE = ./tmp
 LIB = ../lib
 LIBBEARSSL = $(LIB)/bearssl
 SRC = ../verbalEyes_speed_controller.c
-A = gcc $(SRC) $(LIBBEARSSL)/*.c -I$(LIB) -o $(EXE)
+A = gcc $(SRC) $(LIBBEARSSL)/*.c -I$(LIB) -o $(EXE) ./helpers/*.c
 
-all: test_c99 test_config test_clearConfig
+all: test_c99 test_configure test_clearConfig
 
 $(LIBBEARSSL):
 	cd $(LIB) && make
 
-test_config: $(LIBBEARSSL)
-	$(A) test_config.c log.c eeprom.c -DCONFIGTIMEOUT=0
+test_configure: $(LIBBEARSSL)
+	$(A) test_configure.c -DCONFIGTIMEOUT=1
 	$(EXE)
 	rm $(EXE)
 
 test_clearConfig: $(LIBBEARSSL)
-	$(A) test_clearConfig.c log.c eeprom.c
-	bash ../tools/clearConfig.sh /dev/stdout 1 | $(EXE)
+	$(A) test_clearConfig.c
+	bash ../tools/clearConfig.sh /dev/stdout 0 | $(EXE)
 	rm $(EXE)
 
 test_c99: $(LIBBEARSSL)
