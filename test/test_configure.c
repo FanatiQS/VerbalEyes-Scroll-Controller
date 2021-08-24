@@ -216,12 +216,12 @@ void runTests() {
 	test_end(ENDCOMMIT);
 
 	// Tests that ignored characters returns the correct value
-	test_start("Ignored characters", "a\v\b\f\r\n", "\r\n[ a ] Aborted");
-	if (verbaleyes_configure('\r')) {
+	test_start("Ignored characters", "", "");
+	if (verbaleyes_configure('\r') == autoReset) {
 		fprintf(stderr, "" COLOR_RED "Ignored characters did not return false\n" COLOR_NORMAL);
 		numberOfErrors++;
 	}
-	test_end(ENDDONE);
+	test_end(ENDNOTHING);
 
 	// Tests if macro CONFIGLEN is correct length
 	test_start("Config Macro", "sensitivity=65535\n", "\r\n[ sensitivity ] is now: 65535");
