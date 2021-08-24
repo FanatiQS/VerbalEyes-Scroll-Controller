@@ -72,11 +72,6 @@ int8_t verbaleyes_network_connected() {
 	}
 }
 
-// Gets the local ip address for printing
-uint32_t verbaleyes_network_getip() {
-	return WiFi.localIP();
-}
-
 // Creates a network socket to use for WebSocket communication with the server
 WiFiClient client;
 // WiFiClientSecure client; // Enable this line when using HTTPS

@@ -122,11 +122,6 @@ int8_t verbaleyes_network_connected() {
 	return wifiConnected;
 }
 
-// Gets local ip address
-uint32_t verbaleyes_network_getip() {
-	return 127 | 0 | 0 | 1 << 24;
-}
-
 
 
 // The tcp socket and its connection status

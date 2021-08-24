@@ -1,5 +1,5 @@
 #include <stdbool.h> // bool
-#include <stdint.h> // int8_t, uint8_t, int16_t, uint16_t, uint32_t
+#include <stdint.h> // int8_t, uint8_t, int16_t, uint16_t
 #include <stdlib.h> // size_t
 
 // Include Guard
@@ -28,7 +28,6 @@ extern void verbaleyes_conf_commit();
 // Interacts with network interface
 extern void verbaleyes_network_connect(const char*, const char*);
 extern int8_t verbaleyes_network_connected();
-extern uint32_t verbaleyes_network_getip();
 
 // Interacts with the socket
 extern void verbaleyes_socket_connect(const char*, const uint16_t);

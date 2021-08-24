@@ -1,6 +1,6 @@
 #include <stdbool.h> // bool
-#include <stdint.h> // int8_t uint8_t int16_t uint16_t int32_t uint32_t
 #include <string.h> // strlen, strcpy, memset, memcpy, size_t, NULL
+#include <stdint.h> // int8_t, uint8_t, int16_t, uint16_t, int32_t
 #include <time.h> // time, clock, time_t, size_t, NULL
 #include <ctype.h> // tolower
 #include <stdlib.h> // realloc, free, rand, srand, size_t, NULL
@@ -505,8 +505,7 @@ int8_t ensureConnection() {
 			}
 
 			// Prints devices IP address
-			const uint32_t ip = verbaleyes_network_getip();
-			logprintf("\r\nIP address: %u.%u.%u.%u", (uint8_t)(ip), (uint8_t)(ip >> 8), (uint8_t)(ip >> 16), (uint8_t)(ip >> 24));
+			logprintf("\r\nNetwork connection established");
 			state = 2;
 		}
 	}
