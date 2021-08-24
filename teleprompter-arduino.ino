@@ -62,11 +62,11 @@ int8_t verbaleyes_network_connected() {
 		default: return 0;
 		case WL_CONNECTED: return 1;
 		case WL_NO_SSID_AVAIL: {
-			Serial.print("\nNo network found with that name");
+			Serial.print("\r\nNo network found with that name");
 			return -1;
 		}
 		case WL_CONNECT_FAILED: {
-			Serial.print("\nThe password was incorrect");
+			Serial.print("\r\nThe password was incorrect");
 			return -1;
 		}
 	}
