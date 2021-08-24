@@ -3,29 +3,28 @@
 # Should be fairly easy
 * Replace "Done" message in updateConfig to something better that indicates changes have been saved
 
-* Use int_least8_t instead of int8_t to work on systems with smallest sizes larger than 8bits. It has overflow issues though :( int_fast8_t could be used to make it faster maybe. Both these should be safe for number that never go up to 255, aka low repetition loops
-
-* Maybe redefine CONNECTED, CONNECTING and CONNECTIONFAILED as an ENUM and use it for ensureConnection, updateConfig, network_connected and socket_connected. Then return that ENUM to make it clearer that it only allows those 3 states.
-
-* Maybe rename ensureConnection to verbaleyes_initialize and updateConfig to verbaleyes_configure?
-
-* Fix broken links in readmes
+* int_fast8_t could be used to make it faster maybe. Both these should be safe for number that never go up to 255, aka low repetition loops
 
 
 
 # Markdown
-* Make separate file for implementation instructions
-
-* Add documentation about only supporting ipv4 and not ipv6. Implementing ipv6 could be done with a buffer argument since returning 128bit ints does not sound like a good way. That could also be an indication if it is using ipv4 or ipv6. If it is returning a value, it should use ipv4, if it is returning 0, it should use ipv6 from the buffer.
+* Improve implementation instructions
 
 * Update unfinished documentation
 
 * Add readmes for tools and test
 
+* Fix broken links in readmes
+
 
 
 # Tests
 * Continue working on tests for the API
+
+* Needed tests:
+	* A test to make sure writing max length configuration updates does not exceed its bounds.
+	* Make sure that max length path and host does not exceed the bounds for http request.
+	* Make sure that whatever the configuration is, the websocket packets does not exceed their bounds.
 
 * Create a file for testing verbalEyes-speed-controller implementation. First updateConfig should be called and it should require a string to be sent in over serial or whatever is used.
 
