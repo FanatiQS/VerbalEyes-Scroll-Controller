@@ -45,17 +45,17 @@ These are all the configurations that can be configured
 | Key			| Type 				| Max length 	| Description |
 | ------------- | ----------------- | ------------- | -
 | ssid 			| string			| 32			| The SSID (WiFi) to connect to.
-| ssidkey 		| string 			| 64			| The passphrase to the SSID.
+| ssidkey 		| string 			| 63			| The passphrase to the SSID.
 | host 			| string 			| 64			| The host (server) to connect to. Can be an IP address or a DNS name.
-| port 			| unsigned short 	| n/a			| The port to use when connecting to the host.
-| path 			| string 			| 32			| The path to connect to on the host.
+| port 			| unsigned short 	| n/a			| The port to use when connecting to the host. Usually 80 for HTTP and 443 for HTTPs.
+| path 			| string 			| 32			| The path to use on the host. Requires a `/` for root.
 | proj 			| string 			| 32 			| The VerbalEyes project to connect to.
-| projkey 		| string 			| 32 			| The key to the VerbalEyes project.
-| speedmin 		| signed short 		| n/a 			| The speed to send when potentiometer is all the way in one direction.
-| speedmax 		| signed short 		| n/a 			| The speed to send when potentiometer is all the way in the other direction.
-| deadzone 		| percent 			| n/a 			| The size of the deadzone around the speed value 0. Used to make 0 mark bigger on the potentiometer.
-| callow 		| unsigned short 	| n/a 			| The minimum value from the analog read. Used for calibrating potentimeter when it does not give 0 at the limit.
-| calhigh 		| unsigned short 	| n/a 			| The maximum value from the analog read. Used for calibrating the maximum value from the potentiometer. Depends on quality of potentiometer and resolution of ADC on micro controller.
+| projkey 		| string 			| 32 			| The password to the VerbalEyes project.
+| speedmin 		| signed short 		| n/a 			| The speed to send when the potentiometer is turned all the way in one direction.
+| speedmax 		| signed short 		| n/a 			| The speed to send when the potentiometer is turned all the way in the other direction.
+| deadzone 		| percent 			| n/a 			| The size of the deadzone around the speed value 0 in percentage of entire range. Used to make 0 mark bigger on the potentiometer.
+| callow 		| unsigned short 	| n/a 			| The minimum value from the analog read. Used for calibrating potentiometer when it does not give 0 at the limit.
+| calhigh 		| unsigned short 	| n/a 			| The maximum value from the analog read. Used for calibrating the maximum value from the potentiometer. Depends on resolution of ADC on micro controller and used for calibrating potentiometer when it does not give max ADC value at the limit.
 | sensitivity 	| unsigned short	| n/a 			| Defines the step size for analog read. Used to remove analog jitter.
 
 ## Errors
