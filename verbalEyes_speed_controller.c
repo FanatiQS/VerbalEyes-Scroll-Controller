@@ -1,6 +1,6 @@
 #include <stdbool.h> // bool
-#include <string.h> // strlen, strcpy, memset, memcpy, size_t, NULL
 #include <stdint.h> // int8_t, uint8_t, int16_t, uint16_t, int32_t
+#include <string.h> // strcpy, memset, size_t, NULL
 #include <time.h> // time, clock, time_t, size_t, NULL
 #include <ctype.h> // tolower
 #include <stdlib.h> // realloc, free, rand, srand, size_t, NULL
