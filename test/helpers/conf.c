@@ -14,10 +14,10 @@ static int confFlags = 0;
 
 
 
-// VerbalEyes function to write data to eeprom
+// VerbalEyes function to write data to conf buffer
 void verbaleyes_conf_write(const unsigned short addr, const char c) {
 	// Ensures address is not outside max config length
-	if (addr >= CONFIGLEN || addr < 0) {
+	if (addr >= CONFIGLEN) {
 		fprintf(stderr, "" COLOR_RED "Configuration tried to write outide address range: %d\n" COLOR_NORMAL, addr);
 		numberOfErrors++;
 		exit(EXIT_FAILURE);
@@ -32,7 +32,7 @@ void verbaleyes_conf_write(const unsigned short addr, const char c) {
 	confBuffer[addr] = c;
 }
 
-// VerbalEyes function to commit data to eeprom
+// VerbalEyes function to commit data to conf buffer
 void verbaleyes_conf_commit() {
 	confCommited = 1;
 }
