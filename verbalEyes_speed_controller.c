@@ -233,7 +233,7 @@ bool verbaleyes_configure(const int16_t c) {
 				if (confFlags & FLAGFAILED) return 1;
 
 				// Finish matching key and reset all items
-				for (int8_t i = 0; i < CONFITEMSLEN - 1; i++) {
+				for (int8_t i = 0; i < CONFITEMSLEN; i++) {
 					if (
 						confFlags < FLAGVALUE &&
 						!confItems[i].nameMatchFailed &&
@@ -284,7 +284,7 @@ bool verbaleyes_configure(const int16_t c) {
 				}
 
 				// Invalidates keys that does not match incomming string
-				for (int8_t i = 0; i < CONFITEMSLEN - 1; i++) {
+				for (int8_t i = 0; i < CONFITEMSLEN; i++) {
 					if (
 						!confItems[i].nameMatchFailed &&
 						c != confItems[i].name[confIndex]
@@ -412,7 +412,7 @@ bool verbaleyes_configure(const int16_t c) {
 				}
 				// Handles termination before key was validated
 				else if (confIndex != 0) {
-					for (int8_t i = 0; i < CONFITEMSLEN - 1; i++) {
+					for (int8_t i = 0; i < CONFITEMSLEN; i++) {
 						confItems[i].nameMatchFailed = 0;
 					}
 					logprintf(" ] Aborted");
