@@ -21,7 +21,9 @@ function serializeConfig(lf) {
 // Logs a messsage to the on-screen TTY
 const tty = document.querySelector('.config-console')
 function log(msg) {
+	const atBottom = (tty.parentNode.scrollTop >= tty.scrollHeight - tty.parentNode.clientHeight);
 	tty.textContent += msg;
+	if (atBottom) tty.parentNode.scrollTop = tty.scrollHeight;
 }
 
 //!! clear tty
@@ -67,7 +69,7 @@ document.querySelector("#gen-conf").onclick = function () {
 			break;
 		}
 		case "windows": {
-			log("Windows is currently not supported");
+			log("Windows is currently not supported\n");
 			return;
 		}
 	}
