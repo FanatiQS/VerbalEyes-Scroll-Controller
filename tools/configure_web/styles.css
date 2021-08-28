@@ -1,15 +1,15 @@
 .config-container {
 	display: inline-block;
-	border: 1px solid lightgray;
+	border: 0.1ch solid lightgray;
 	padding: 0.2em 1ch;
 	border-radius: 0.4em;
-	font-size: 1.2em;
+	font-size: 1.5em;
 	margin: 0.5ch 0.25ch;
 	outline: none;
 }
 .config-name {
 	line-height: 1.5;
-	font-size: 0.55em;
+	font-size: 0.5em;
 }
 .config-textbox {
 	display: block;
@@ -28,28 +28,37 @@
 }
 .config-textbox[type=number] {
 	width: 100%;
-	width: calc((32ch - 1ch - 0.5px - 4ch + 1px - 4px) / 3);
+	width: 8.866ch;
 }
 .config-textbox:placeholder-shown:not(:focus) {
 	height: 0;
 	opacity: 0;
 }
 
-.config-console {
-	height: 100px;
-	width: 85ch;
-	border: 1px solid gray;
+.config-console-container {
+	height: 256px;
+	width: 68.7ch;
+	border: 0.1ch solid gray;
 	white-space: pre-wrap;
 	overflow: scroll;
-	padding: 0 0.75em;
+	font-family: monospace;
+	font-size: 1.5em;
+}
+.config-console {
 	box-sizing: border-box;
+	margin: 0;
+	padding: 0.5em 0.75em;
+	font-size: 0.6em;
 }
 
 form {
 	display: table;
 	box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
 	background: white;
-	padding: 0 1em 2em;
+	padding: 1em 1em 2em;
+}
+form > :not(label) {
+	margin: 0 0.25em;
 }
 body {
 	display: flex;
@@ -57,6 +66,7 @@ body {
 	justify-content: center;
 	align-items: center;
 	background: #eee;
+	margin: 0;
 }
 html,body {
 	height: 100%;
