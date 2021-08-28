@@ -2,15 +2,13 @@
 document.querySelectorAll('.config-container').forEach((node) => {
 	node.onclick = function (event) {
 		if (event.target === this.lastElementChild) return;
-		if (!this.lastElementChild.clientHeight) return;
-		event.preventDefault();
-		this.lastElementChild.value = "";
+		this.classList.toggle("config-container-open");
 	};
 });
 
 // Function to convert form to a configuration string
 function serializeConfig(lf) {
-	const textboxes = document.querySelectorAll(".config-textbox");
+	const textboxes = document.querySelectorAll(".config-container-open .config-textbox");
 	let output = '';
 	for (const textbox of textboxes) {
 		if (!textbox.value) continue;

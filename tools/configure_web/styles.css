@@ -13,7 +13,8 @@
 }
 .config-textbox {
 	display: block;
-	height: 1.5em;
+	height: 0;
+	opacity: 0;
 	border: 0;
 	outline: none;
 	background: none;
@@ -30,9 +31,9 @@
 	width: 100%;
 	width: 8.866ch;
 }
-.config-textbox:placeholder-shown:not(:focus) {
-	height: 0;
-	opacity: 0;
+.config-container-open > .config-textbox {
+	height: 1.5em;
+	opacity: 1;
 }
 
 .config-console-container {
