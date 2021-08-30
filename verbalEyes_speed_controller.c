@@ -879,7 +879,7 @@ void verbaleyes_setspeed(const uint16_t value) {
 	speed = mappedValue;
 
 	// Sends new speed to the server
-	writeWebSocketFrame("[{\"id\": \"%s\", \"scroll\": {\"speed\": %.2f}}]", projID, (float)speed / 100);
+	writeWebSocketFrame("[{\"id\": \"%s\", \"scrollSpeed\": %.2f}]", projID, (float)speed / 100);
 
 	// Prints new speed
 	logprintf("\r\nSpeed has been updated to: %.2f", (float)speed / 100);
@@ -895,7 +895,7 @@ void verbaleyes_resetoffset(const bool value) {
 	if (value == 0) return;
 
 	// Sends message to server
-	writeWebSocketFrame("[{\"id\": \"%s\", \"scroll\": {\"offset\": 0}}]", projID);
+	writeWebSocketFrame("[{\"id\": \"%s\", \"scrollOffset\": 0}]", projID);
 
 	// Prints
 	logprintf("\r\nScroll position has been set to: 0");
