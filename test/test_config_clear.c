@@ -14,7 +14,6 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {}
 int8_t verbaleyes_socket_connected() { return 0; }
 short verbaleyes_socket_read() { return 0; }
 void verbaleyes_socket_write(const uint8_t* str, const size_t len) {}
-char verbaleyes_conf_read(const unsigned short addr) { return 0; }
 
 
 
@@ -25,15 +24,27 @@ int main() {
 	// Clears conf buffer
 	conf_clear();
 
-	// Runs through clearConfig script data
+	// Prints logs
+	log_setflags(LOGFLAGPRINT);
+
+	// Opens configuration file to test
+	FILE* file = fopen("../tools/clearConfig.sh", "r");
+
+	// Throws on file unable to be opened
+	if (file == NULL) {
+		fprintf(stderr, "Unable to read file\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Runs through file data
 	char c;
-	while ((c = getc(stdin)) != EOF) {
+	while ((c = fgetc(file)) != EOF) {
 		verbaleyes_configure(c);
 	}
 
 	// Verifies it cleared entire EEPROM
 	for (int i = 0; i < CONFIGLEN; i++) {
-		if (confBuffer[i] != 0) {
+		if (confBuffer[i] != '0') {
 			for (int i = 0; i < CONFIGLEN; i++) {
 				printf("%i\t%i\n", i, confBuffer[i]);
 			}
