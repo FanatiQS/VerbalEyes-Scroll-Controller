@@ -2,7 +2,6 @@
 function SerialDevice() {
 	// Make sure Web Serial is supported
 	if (!navigator.serial) {
-		alert("Web Serial is not supported");
 		throw new Error("Web Serial is not supported");
 	}
 
