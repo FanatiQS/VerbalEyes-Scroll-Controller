@@ -1,15 +1,15 @@
-#!/bin/bash
-while read value; do printf "$value\n" >> $(ls /dev/cu.usbserial-* | head -1); done <<< '\
+#!/bin/bash configure -r
+
 speedmin=0
 speedmax=1
 deadzone=0
 callow=0
 calhigh=1
 sensitivity=0
-'
 
 # Usage:
-# Make sure the device can connect to a wifi network and a server
+# Connect device to the computer
+# Make sure the device can connect to a wifi network and a VerbalEyes server
 # Run this script to configure speed for calibration
 # Turn potentiometer all the way in one direction so it shows the smallest value
 # If the value jumps back and forth between two values, pick the higher value
