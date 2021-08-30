@@ -40,12 +40,12 @@
 	height: 256px;
 	width: 68.7ch;
 	border: 0.1ch solid gray;
-	white-space: pre-wrap;
 	overflow: scroll;
 	font-family: monospace;
 	font-size: 1.5em;
 }
 .config-console {
+	white-space: pre-wrap;
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0.5em 0.75em;
