@@ -25,7 +25,10 @@ function log(msg) {
 	if (atBottom) tty.parentNode.scrollTop = tty.scrollHeight;
 }
 
-//!! clear tty
+// Clears log
+document.querySelector('.config-console-clear').onclick = function () {
+	tty.textContent = '';
+};
 
 // Uploads configuration over web-serial
 document.querySelector('#webserial-upload').onclick = async function () {
