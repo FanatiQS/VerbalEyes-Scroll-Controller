@@ -16,7 +16,7 @@ test_configure: $(LIBBEARSSL)
 
 test_clearConfig: $(LIBBEARSSL)
 	$(A) test_clearConfig.c
-	bash ../tools/clearConfig.sh /dev/stdout 0 | $(EXE)
+	$(EXE)
 	rm $(EXE)
 
 test_c99: $(LIBBEARSSL)
