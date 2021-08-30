@@ -11,7 +11,6 @@ function serializeConfig(lf) {
 	const textboxes = document.querySelectorAll(".config-container-open .config-textbox");
 	let output = '';
 	for (const textbox of textboxes) {
-		if (!textbox.value) continue;
 		output += `${textbox.name}=${textbox.value}${lf}`;
 	}
 	output += lf;
@@ -19,7 +18,7 @@ function serializeConfig(lf) {
 }
 
 // Logs a messsage to the on-screen TTY
-const tty = document.querySelector('.config-console')
+const tty = document.querySelector('.config-console');
 function log(msg) {
 	const atBottom = (tty.parentNode.scrollTop >= tty.scrollHeight - tty.parentNode.clientHeight);
 	tty.textContent += msg;
