@@ -29,6 +29,10 @@ function log(msg) {
 
 // Uploads configuration over web-serial
 document.querySelector('#webserial-upload').onclick = async function () {
+	if (!document.querySelectorAll(".config-container-open").length) {
+		log("No configuration to send\n");
+		return;
+	}
 	try {
 		// Connects to device and sends serialized data
 		let serialDevice = await new SerialDevice();
