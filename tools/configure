@@ -78,7 +78,6 @@ if [[ -z $path ]]; then
 fi
 
 # Only reads if no data is defined
-echo $bufferState $gotRead
 if [[ $bufferState -eq 0 && $gotRead -eq 1 ]]; then
 	cat < $path
 	exit
