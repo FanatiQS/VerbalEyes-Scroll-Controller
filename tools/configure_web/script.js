@@ -28,16 +28,40 @@ function log(msg) {
 //!! clear tty
 
 // Uploads configuration over web-serial
-let serialDevice = null;
 document.querySelector('#webserial-upload').onclick = async function () {
-	if (!serialDevice) {
-		serialDevice = await new SerialDevice();
-		document.querySelector('#webserial-disconnect').disabled = false;
-		log("Connected\n");
+	try {
+		// Connects to device and sends serialized data
+		let serialDevice = await new SerialDevice();
+		serialDevice.write(serializeConfig('\n'));
+		log("Configuration sent\n");
+
+		// Sets disconnect button
+		const disconnectBtn = document.querySelector('#webserial-disconnect');
+		disconnectBtn.disabled = false;
+		disconnectBtn.onclick = function () {
+			serialDevice.close();
+			this.disabled = true;
+		};
+
+		// Reads response data up to configuration is done
+		let firstMsg = true;
+		for await (const msg of serialDevice) {
+			const index = msg.indexOf("\r\nDone\r\n");
+			if (index !== -1) {
+				log(msg.slice(0, index + 8));
+				serialDevice.close();
+				disconnectBtn.disabled = true;
+				return;
+			}
+			if (firstMsg) {
+				if (!msg.startsWith('[')) continue;
+				firstMsg = false;
+			}
+			log(msg);
+		}
 	}
-	serialDevice.write(serializeConfig('\n'));
-	for await (const msg of serialDevice) {
-		log(msg);
+	catch (err) {
+		log("Error: " + err.message);
 	}
 };
 
