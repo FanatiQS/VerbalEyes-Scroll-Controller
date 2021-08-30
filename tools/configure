@@ -207,7 +207,7 @@ if [[ $useForm -eq 1 || $bufferState -eq 0 ]]; then
 	fi
 
 	# Adds shebang
-	buffer="#!/bin/bash configure\n"$buffer
+	buffer="#!/bin/bash $0\n$buffer"
 fi
 
 # Ensures buffer will exit configuration mode
