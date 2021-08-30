@@ -7,6 +7,7 @@ callow=0
 calhigh=1
 sensitivity=0
 
+
 # Usage:
 # Connect device to the computer
 # Make sure the device can connect to a wifi network and a VerbalEyes server
