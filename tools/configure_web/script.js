@@ -85,11 +85,11 @@ document.querySelector("#gen-conf").onclick = function () {
 	let output = "Copy and paste this command into you command line tool:\n";
 	switch (os) {
 		case "macos": {
-			output += `echo -e '${serializeConfig('\\n')}' > \`ls /dev/cu.usbserial-* | head -1\` & cat < \`ls /dev/cu.usbserial-* | head -1\``;
+			output += `printf '${serializeConfig('\\n')}' > \`ls /dev/cu.usbserial-* | head -1\`; cat < \`ls /dev/cu.usbserial-* | head -1\``;
 			break;
 		}
 		case "linux": {
-			output += `echo -e '${serializeConfig('\\n')}' > \`ls /dev/ttyUSB* | head -1\` & cat < \`ls /dev/ttyUSB* | head -1\``;
+			output += `printf '${serializeConfig('\\n')}' > \`ls /dev/ttyUSB* | head -1\`; cat < \`ls /dev/ttyUSB* | head -1\``;
 			break;
 		}
 		case "windows": {
