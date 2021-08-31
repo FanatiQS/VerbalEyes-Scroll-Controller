@@ -28,7 +28,7 @@ int main() {
 	log_setflags(LOGFLAGPRINT);
 
 	// Opens configuration file to test
-	FILE* file = fopen("../tools/config_clear", "r");
+	FILE* file = fopen("../tools/configure_bash/config_clear", "r");
 
 	// Throws on file unable to be opened
 	if (file == NULL) {
