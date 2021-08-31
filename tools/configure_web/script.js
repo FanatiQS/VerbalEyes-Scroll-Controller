@@ -31,6 +31,7 @@ document.querySelector('.config-console-clear').onclick = function () {
 };
 
 // Uploads configuration over web-serial
+let serialDevice = null;
 document.querySelector('#webserial-upload').onclick = async function () {
 	if (!document.querySelectorAll(".config-container-open").length) {
 		log("No configuration to send\n");
@@ -38,17 +39,9 @@ document.querySelector('#webserial-upload').onclick = async function () {
 	}
 	try {
 		// Connects to device and sends serialized data
-		let serialDevice = await new SerialDevice();
+		if (!serialDevice) serialDevice = await new SerialDevice();
 		serialDevice.write(serializeConfig('\n'));
 		log("Configuration sent\n");
-
-		// Sets disconnect button
-		const disconnectBtn = document.querySelector('#webserial-disconnect');
-		disconnectBtn.disabled = false;
-		disconnectBtn.onclick = function () {
-			serialDevice.close();
-			this.disabled = true;
-		};
 
 		// Reads response data up to configuration is done
 		let firstMsg = true;
@@ -57,6 +50,7 @@ document.querySelector('#webserial-upload').onclick = async function () {
 			if (index !== -1) {
 				log(msg.slice(0, index + 8));
 				serialDevice.close();
+				serialDevice = null;
 				disconnectBtn.disabled = true;
 				return;
 			}
