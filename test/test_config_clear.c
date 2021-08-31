@@ -42,17 +42,14 @@ int main() {
 		verbaleyes_configure(c);
 	}
 
-	// Verifies it cleared entire EEPROM
-	for (int i = 0; i < CONFIGLEN; i++) {
-		if (confBuffer[i] != '0') {
-			for (int i = 0; i < CONFIGLEN; i++) {
-				printf("%i\t%i\n", i, confBuffer[i]);
-			}
-			return 0;
-		}
-	}
-
-	printf("" COLOR_GREEN "\nTest successful: Entire EEPROM can be cleared correctly\n\n" COLOR_NORMAL);
+	// Verifies it cleared entire conf buffer and commited it
+	printf("\n");
+	printf("" COLOR_BLUE "Testing config_clear script:\n" COLOR_NORMAL);
+	char buf[CONFIGLEN];
+	memset(buf, '0', CONFIGLEN);
+	conf_cmp(0, buf, CONFIGLEN);
+	conf_matchcommit(1);
+	printf("" COLOR_GREEN "Test successful: Entire configuration can be cleared correctly\n\n" COLOR_NORMAL);
 
 	return 0;
 }
