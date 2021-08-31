@@ -27,7 +27,7 @@ bool autoReset = 0;
 // Starts a new test
 void test_start(const char* title, const char* input, const char* log) {
 	// Prints test start message
-	printf("" COLOR_BLUE "Running test: %s\n" COLOR_NORMAL, title);
+	printf("" COLOR_BLUE "Testing configuring: %s\n" COLOR_NORMAL, title);
 	fflush(stdout);
 	log_clear();
 
