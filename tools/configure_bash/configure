@@ -44,9 +44,9 @@ while [[ $# -gt 0 ]]; do
 			;;
 		# Uses argument strings as is instead of as path
 		-e|--eval)
+			hasBuffer=1
 			buffer+="$2\n"
 			shift
-			hasBuffer=1
 			;;
 		# Rejects invalid commands
 		-*)
@@ -55,8 +55,8 @@ while [[ $# -gt 0 ]]; do
 			;;
 		# Gets buffer from argument path or uses it as is after eval
 		*)
-			buffer+="$(cat $1)\n"
 			hasBuffer=1
+			buffer+="$(cat $1)\n"
 			;;
 	esac
 	shift
