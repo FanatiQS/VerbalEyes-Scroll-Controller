@@ -34,6 +34,13 @@
 	height: 1.5em;
 	opacity: 1;
 }
+.config-textbox::-webkit-inner-spin-button {
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+}
+.config-container-open > .config-textbox::-webkit-inner-spin-button {
+	opacity: 1;
+}
 
 .config-console-container {
 	height: 256px;
