@@ -202,9 +202,6 @@ if [[ $useForm -eq 1 || $hasBuffer -eq 0 ]]; then
 		echo "No data to write"
 		exit
 	fi
-
-	# Adds shebang
-	buffer="#!/bin/bash $0\n$buffer"
 fi
 
 # Ensures buffer will exit configuration mode
