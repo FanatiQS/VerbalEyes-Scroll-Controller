@@ -1,10 +1,10 @@
 .config-container {
 	display: inline-block;
-	border: 0.1ch solid lightgray;
+	border: 1px solid lightgray;
 	padding: 0.2em 1ch;
 	border-radius: 0.4em;
 	font-size: 1.5em;
-	margin: 0.5ch 0.25ch;
+	margin: 0.5ch 4px;
 	outline: none;
 }
 .config-name {
@@ -28,8 +28,7 @@
 	width: 32ch;
 }
 .config-textbox[type=number] {
-	width: 100%;
-	width: 8.866ch;
+	width: calc((32ch - 4ch - 16px - 4px) / 3);
 }
 .config-container-open > .config-textbox {
 	height: 1.5em;
