@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#include "../verbalEyes_speed_controller.h"
+#include "../src/scroll_controller.h"
 
 #include "./helpers/print_colors.h"
 

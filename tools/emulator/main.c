@@ -14,7 +14,7 @@
 #include <termios.h> // termios, tcgetattr, tcsetattr, TCSAFLUSH, ECHO, ICANON, VMIN, VTIME
 #endif
 
-#include "../../verbalEyes_speed_controller.h"
+#include "../../src/scroll_controller.h"
 
 /*
  * Hotkeys:

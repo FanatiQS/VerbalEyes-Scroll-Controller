@@ -30,7 +30,7 @@ CONNECTIONS:
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
 // #include <WiFiClientSecure.h>
-#include "./verbalEyes_speed_controller.h"
+#include "./src/scroll_controller.h"
 
 
 

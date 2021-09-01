@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../verbalEyes_speed_controller.h"
+#include "../src/scroll_controller.h"
 
 #include "./helpers/conf.h"
 #include "./helpers/log.h"

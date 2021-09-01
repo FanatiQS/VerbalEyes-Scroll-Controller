@@ -14,7 +14,7 @@ It handles an input string one character at a time.
 * The argument `input` is any 8-bit character or EOF if there is input / data to read.
 * The return value is a boolean indicating if it is currently in configuration mode and handling data.
 * If it is in configuration mode, it is not allowed to call `verbaleyes_initialize`, `verbaleyes_setspeed` or `verbaleyes_resetoffset` until all data is handled and the configuration mode has been exited and the function returns false / 0.
-* If all data is handled and the function is still in configuration mode, the data was not a complete or a valid configuration instruction. Configuration mode will automatically exit if being open without a successful update for a specified amount of time. This time can be customised by defining the macro `CONFIGTIMEOUT` for the file `verbaleEyes_speed_controller.c`.
+* If all data is handled and the function is still in configuration mode, the data was not a complete or a valid configuration instruction. Configuration mode will automatically exit if being open without a successful update for a specified amount of time. This time can be customised by defining the macro `CONFIGTIMEOUT` for the file `./src/scroll_controller.c`.
 * Information about the structure of the input data can be found in the [README](../readme.md).
 
 ### verbaleyes_initialize
@@ -102,7 +102,7 @@ int8_t verbaleyes_network_connected();
 	* 1: Connected. The network is connected.
 	* 0: Connecting. The network has not connected or failed yet.
 	* -1: Error. The network failed to connect.
-* If the network is in a `connecting` state for too long (10 seconds), it automatically rejects the network connection and retries. This time can be customised by defining the macro `CONNECTINGTIMEOUT` for the file `verbaleEyes_speed_controller.c`.
+* If the network is in a `connecting` state for too long (10 seconds), it automatically rejects the network connection and retries. This time can be customised by defining the macro `CONNECTINGTIMEOUT` for the file `./src/scroll_controller.c`.
 * Type `int8_t` is the same as `signed char` on most systems.
 
 ### Socket
@@ -130,7 +130,7 @@ int8_t verbaleyes_socket_connected()
 	* 1: Connected. The socket is connected.
 	* 0: Connecting. The socket has not connected or failed yet.
 	* -1: Error. The socket failed to connect.
-* If the socket is in a `connecting` state for too long (10 seconds), it automatically rejects the socket connection and retries. This time can be customised by defining the macro `CONNECTINGTIMEOUT` for the file `verbaleEyes_speed_controller.c`.
+* If the socket is in a `connecting` state for too long (10 seconds), it automatically rejects the socket connection and retries. This time can be customised by defining the macro `CONNECTINGTIMEOUT` for the file `./src/scroll_controller.c`.
 * Type `int8_t` is the same as `signed char` on most systems.
 
 ##### Read

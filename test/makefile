@@ -1,7 +1,7 @@
 EXE = ./tmp
 LIB = ../lib
 LIBBEARSSL = $(LIB)/bearssl
-SRC = ../verbalEyes_speed_controller.c
+SRC = ../src/scroll_controller.c
 A = gcc $(SRC) $(LIBBEARSSL)/*.c -I$(LIB) -o $(EXE) ./helpers/*.c
 
 all: test_c99 test_c++ test_configure test_config_clear test_perf
