@@ -74,7 +74,7 @@ int8_t verbaleyes_network_connected() {
 
 // Creates a network socket to use for WebSocket communication with the server
 WiFiClient client;
-// WiFiClientSecure client; // Enable this line when using HTTPS
+// WiFiClientSecure client; // Switch to this line when using HTTPS
 
 // Connects the socket to an endpoint
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
