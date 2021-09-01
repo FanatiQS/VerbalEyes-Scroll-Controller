@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <../src/scroll_controller.h>
+#include "../../src/scroll_controller.h"
 #include "./print_colors.h"
 #include "./conf.h"
 
