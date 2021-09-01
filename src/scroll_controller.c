@@ -9,7 +9,7 @@
 
 #include <bearssl/bearssl_hash.h> // sha1
 
-#include "./src/scroll_controller.h"
+#include "./scroll_controller.h"
 
 
 
