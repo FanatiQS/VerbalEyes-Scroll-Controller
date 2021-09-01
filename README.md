@@ -15,7 +15,7 @@ TODO: Add details on how the board should be wired
 # Core Library
 The core library should be able to run on anything supporting C99 or C++.
 Because of this, the functions to access to Wi-Fi, sockets, persistent storage and logging are not defined.
-These have to be implemented to work on the micro controller that it is used on by defining all the required functions the library uses. These functions are prototyped in `verbalEyes-speed-controler.h` and documented together with the available API functions in [doc/implementing.md](../doc/implementing.md).
+These have to be implemented to work on the micro controller that it is used on by defining all the required functions the library uses. These functions are prototyped in `./src/scroll-controller.h` and documented together with the available API functions in [./src/README.md](../src/README.md).
 
 
 
