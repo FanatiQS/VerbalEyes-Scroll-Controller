@@ -29,13 +29,17 @@ while [[ $# -gt 0 ]]; do
 			;;
 		# Prints help/usage message
 		-h|--help)
-			#!! implement help message
-			#!! -f, -h -r has no arguments
-			#!! -o and -s has one argument
-			#!! -e is variadic and continues unil next command
-			#!! non command is treated as a path
-			#!! issue with starting with -e and wanting to add a file since -e is vairadic
-			echo "no help implemented yet"
+			echo "Usage: ./configure [ options ] [ filepath ]"
+			echo "	Multiple filepaths and/or options are concatenated"
+			echo "	Unless -o is used, first usb serial device found will be used"
+			echo "	All options but -h can be combined and it is order agnostic"
+			echo "OPTIONS:"
+			echo "	-h, --help    Prints help information"
+			echo "	-r, --read    Reads logs from device until terminated"
+			echo "	-o, --out     Sets the output file/device to use, requires 1 argument"
+			echo "	-f, --form    Displays a form for sending configurations to the output"
+			echo "	-e, --eval    Sends configuration key-value pair to the output, requires 1 argument"
+			echo "	-s, --sleep   Sets the delay in seconds before writing data, requires 1 argument"
 			exit
 			;;
 		# Use generator
