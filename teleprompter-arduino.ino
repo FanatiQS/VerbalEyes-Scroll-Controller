@@ -28,8 +28,8 @@ CONNECTIONS:
 */
 
 #include <ESP8266WiFi.h>
-#include <EEPROM.h>
 // #include <WiFiClientSecure.h>
+#include <EEPROM.h>
 #include "./src/scroll_controller.h"
 
 
