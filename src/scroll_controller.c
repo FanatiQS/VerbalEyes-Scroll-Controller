@@ -305,7 +305,12 @@ bool verbaleyes_configure(const int16_t c) {
 				// Only accepts a valid numerical representation
 				if (c < '0' || c > '9') {
 					// Flags input as signed if position of sign and item allows
-					if (c == '-' && confItems[confMatchIndex].len == -1 && confIndex == 0 && !(confFlags & FLAGSIGNED)) {
+					if (
+						c == '-' &&
+						confItems[confMatchIndex].len == -1 &&
+						confIndex == 0 &&
+						!(confFlags & FLAGSIGNED)
+					) {
 						confFlags |= FLAGSIGNED;
 						logprintf("-");
 						return 1;
