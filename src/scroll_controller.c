@@ -208,7 +208,7 @@ static struct confItem confItems[] = {
 	{ "sensitivity",    0,                    CONF_ADDR_SENS,         12 }
 };
 
-#define CONFITEMSLEN sizeof confItems / sizeof confItems[0]
+#define CONFITEMSLEN (sizeof confItems / sizeof confItems[0])
 
 #define FLAGACTIVE 1
 #define FLAGCOMMIT 2
