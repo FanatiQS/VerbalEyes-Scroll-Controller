@@ -691,10 +691,6 @@ int8_t verbaleyes_initialize() {
 			// Handles timeout and socket close error if end of headers was not reached
 			if (resIndex != 4) return socketHadNoData();
 
-			// Frees up allocated buffer
-			free(buf);
-			buf = NULL;
-
 			// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
 			if (!resMatchIndexes[0] || !resMatchIndexes[1]) {
 				return connectionFailToState("\r\nHTTP response is not an upgrade to the WebSockets protocol", 0x82);
@@ -711,6 +707,10 @@ int8_t verbaleyes_initialize() {
 			else if (resMatchIndexes[4]) {
 				return connectionFailToState("\r\nUnexpected WebSocket Protocol header", 0x82);
 			}
+
+			// Frees up allocated buffer
+			free(buf);
+			buf = NULL;
 
 			// Successfully validated http headers
 			logprintf("\r\nWebSocket connection established");
