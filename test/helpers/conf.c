@@ -19,14 +19,12 @@ void verbaleyes_conf_write(const unsigned short addr, const char c) {
 	// Ensures address is not outside max config length
 	if (addr >= CONFIGLEN) {
 		fprintf(stderr, "" COLOR_RED "Configuration tried to write outide address range: %d\n" COLOR_NORMAL, addr);
-		numberOfErrors++;
 		exit(EXIT_FAILURE);
 	}
 
 	//!!
 	if (confFlags & CONFFLAGCOMMITED && confBuffer[addr] != CLEARBYTE) {
 		fprintf(stderr, "" COLOR_RED "Attempt to overwrite conf addr that has already been written to: %d\n" COLOR_NORMAL, addr);
-		numberOfErrors++;
 		exit(EXIT_FAILURE);
 	}
 	confBuffer[addr] = c;
