@@ -232,6 +232,48 @@ void runTests() {
 
 
 
+// Writes max configuration
+void fillConf(char* key, bool isStr) {
+	int i;
+
+	// Processes key and delimiter
+	for (i = 0; i < strlen(key); i++) verbaleyes_configure(key[i]);
+	verbaleyes_configure('=');
+
+	// Processes string value
+	if (isStr) {
+		for (i = 0; i < CONFIGLEN; i++) verbaleyes_configure('0');
+	}
+	// Processes integer value
+	else {
+		char buf[] = "12336";
+		for (i = 0; buf[i] != '\0'; i++) verbaleyes_configure(buf[i]);
+	}
+}
+
+// Tests that every configuration only writes data where it should
+void testConfAddr(char* key, int len, int offset) {
+	// Prints test start message
+	printf("" COLOR_BLUE "Testing configuration address: %s\n" COLOR_NORMAL, key);
+
+	// Clears conf buffer before writing new data
+	conf_clear();
+
+	// Writes max length configuration
+	fillConf(key, len > 0);
+
+	// Exits configuration mode
+	verbaleyes_configure('\n');
+
+	// Compares conf buffer
+	char buf[CONFIGLEN];
+	memset(buf, '0', (len) ? len : 2);
+	conf_cmp(offset, buf, (len) ? len : 2);
+	printf("\n");
+}
+
+
+
 //!!
 int main(void) {
 	// Setup
@@ -246,7 +288,7 @@ int main(void) {
 	// Run tests again exiting configuration mode between every tests
 	printf("\n\n");
 	autoReset = 1;
-	conf_setflags(CONFFLAGCOMMITED);
+	conf_setflags(CONFFLAGCOMMITED | CONFFLAGOUTSIDESTR);
 	verbaleyes_configure('\n');
 	runTests();
 
@@ -270,11 +312,108 @@ int main(void) {
 	log_cmp("\r\nDone\r\n");
 	time_t t2 = time(NULL);
 	if (t2 - t1 < 2) {
-		fprintf(stderr, "" COLOR_RED "Timeout did not delay\n" COLOR_NORMAL);
+		fprintf(stderr, "" COLOR_RED "Timeout did not delay\n\n" COLOR_NORMAL);
+		numberOfErrors++;
 	}
 	else {
-		printf("" COLOR_GREEN "Timeout delayed correctly\n" COLOR_NORMAL);
+		printf("" COLOR_GREEN "Timeout delayed correctly\n\n" COLOR_NORMAL);
 	}
 
+	// Tests configuration item addresses
+	printf("\n\n");
+	log_setflags(0);
+	conf_setflags(CONFFLAGOUTSIDESTR);
+	testConfAddr("ssid", 32, 0);
+	testConfAddr("ssidkey", 63, 32);
+	testConfAddr("host", 64, 32 + 63);
+	testConfAddr("port", 0, 32 + 63 + 64);
+	testConfAddr("path", 32, 32 + 63 + 64 + 2);
+	testConfAddr("proj", 32, 32 + 63 + 64 + 2 + 32);
+	testConfAddr("projkey", 32, 32 + 63 + 64 + 2 + 32 + 32);
+	testConfAddr("speedmin", 0, 32 + 63 + 64 + 2 + 32 + 32 + 32);
+	testConfAddr("speedmax", 0, 32 + 63 + 64 + 2 + 32 + 32 + 32 + 2);
+	testConfAddr("deadzone", 0, 32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2);
+	testConfAddr("callow", 0, 32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2);
+	testConfAddr("calhigh", 0, 32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2 + 2);
+	testConfAddr("sensitivity", 0, 32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2 + 2 + 2);
+
+	// Tests configuration buffer for gaps
+	printf("\n\n");
+	printf("" COLOR_BLUE "Testing configuration address: Looking for gaps\n" COLOR_NORMAL);
+	conf_clear();
+	fillConf("ssid", 1);
+	verbaleyes_configure('\n');
+	fillConf("ssidkey", 1);
+	verbaleyes_configure('\n');
+	fillConf("host", 1);
+	verbaleyes_configure('\n');
+	fillConf("port", 0);
+	verbaleyes_configure('\n');
+	fillConf("path", 1);
+	verbaleyes_configure('\n');
+	fillConf("proj", 1);
+	verbaleyes_configure('\n');
+	fillConf("projkey", 1);
+	verbaleyes_configure('\n');
+	fillConf("speedmin", 0);
+	verbaleyes_configure('\n');
+	fillConf("speedmax", 0);
+	verbaleyes_configure('\n');
+	fillConf("deadzone", 0);
+	verbaleyes_configure('\n');
+	fillConf("callow", 0);
+	verbaleyes_configure('\n');
+	fillConf("calhigh", 0);
+	verbaleyes_configure('\n');
+	fillConf("sensitivity", 0);
+	verbaleyes_configure('\n');
+	bool foundGaps = 0;
+	for (int i = 0; i < CONFIGLEN; i++) {
+		if (confBuffer[i] != '0') {
+			fprintf(stderr, "" COLOR_RED "Gap was left at address: %d\n" COLOR_NORMAL, i);
+			foundGaps = 1;
+		}
+	}
+	if (foundGaps) {
+		fprintf(stderr, "" COLOR_RED "Gaps were found in conf buffer\n" COLOR_NORMAL);
+		numberOfErrors++;
+	}
+	else {
+		printf("" COLOR_GREEN "Entire conf buffer was filled correctly\n" COLOR_NORMAL);
+	}
+
+	// Tests overwriting shorter messages
+	printf("\n\n");
+	printf("" COLOR_BLUE "Testing configuration address: Overwriting shorter\n" COLOR_NORMAL);
+	conf_setflags(0);
+	updateConfig("ssid=abc\n");
+	conf_cmp(0, "abc", 4);
+	updateConfig("ssidkey=abc\n");
+	conf_cmp(32, "abc", 4);
+	updateConfig("host=abc\n");
+	conf_cmp(32 + 63, "abc", 4);
+	updateConfig("port=100\n");
+	conf_cmp(32 + 63 + 64, "\0d", 2);
+	updateConfig("path=abc\n");
+	conf_cmp(32 + 63 + 64 + 2, "abc", 4);
+	updateConfig("proj=abc\n");
+	conf_cmp(32 + 63 + 64 + 2 + 32, "abc", 4);
+	updateConfig("projkey=abc\n");
+	conf_cmp(32 + 63 + 64 + 2 + 32 + 32, "abc", 4);
+	updateConfig("speedmin=100\n");
+	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32, "\0d", 2);
+	updateConfig("speedmax=100\n");
+	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2, "\0d", 2);
+	updateConfig("deadzone=100\n");
+	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2, "\0d", 2);
+	updateConfig("callow=100\n");
+	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2, "\0d", 2);
+	updateConfig("calhigh=100\n");
+	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2 + 2, "\0d", 2);
+	updateConfig("sensitivity=100\n");
+	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2 + 2 + 2, "\0d", 2);
+
+	//!!
+	printf("\n\n");
 	return 0;
 }
