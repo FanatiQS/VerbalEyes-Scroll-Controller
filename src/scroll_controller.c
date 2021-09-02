@@ -76,14 +76,14 @@ static int8_t connectionFailToState(const char* msg, const uint8_t backToState) 
 
 // Reconnects to socket if unable to get data before timeout
 static int8_t socketHadNoData() {
-	if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
+	if (verbaleyes_socket_connected() != 1) return connectionFailToState("\r\nConnection to host closed", 0x82);
 	if (time(NULL) < timeout) return 1;
 	return connectionFailToState("\r\nResponse from server ended prematurely", 0x82);
 }
 
 // Prints progress bar until timeing out if unable to get data
 static int8_t socketHadNoDataProgressBar() {
-	if (!verbaleyes_socket_connected()) return connectionFailToState("\r\nConnection to host closed", 0x82);
+	if (verbaleyes_socket_connected() != 1) return connectionFailToState("\r\nConnection to host closed", 0x82);
 	if (showProgressBar()) return 1;
 	return connectionFailToState("\r\nDid not get a response from the server", 0x82);
 }
