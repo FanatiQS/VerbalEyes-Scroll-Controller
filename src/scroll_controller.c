@@ -117,7 +117,7 @@ static void writeWebSocketFrame(const char* format, ...) {
 	uint8_t frame[2 + WS_MASKLEN + WS_PAYLOADLEN_EXTENDED] = { 0x81 };
 
 	// Sets payload length for websocket frame
-	const size_t payloadLen = vsnprintf((char*)frame + 2 + WS_MASKLEN, WS_PAYLOADLEN_EXTENDED, format, args);
+	const uint8_t payloadLen = vsnprintf((char*)frame + 2 + WS_MASKLEN, WS_PAYLOADLEN_EXTENDED, format, args);
 	frame[1] = 0x80 | payloadLen;
 
 	// Generates mask
@@ -127,7 +127,7 @@ static void writeWebSocketFrame(const char* format, ...) {
 	frame[5] = rand() % 256;
 
 	// Masks payload
-	for (size_t i = 0; i < payloadLen; i++) {
+	for (uint8_t i = 0; i < payloadLen; i++) {
 		frame[i + 2 + WS_MASKLEN] = frame[i + 2 + WS_MASKLEN] ^ frame[(i & 3) + 2];
 	}
 
