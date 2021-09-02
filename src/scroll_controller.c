@@ -634,10 +634,8 @@ int8_t verbaleyes_initialize() {
 
 				// Handles incorrect status code, timeout and socket close error
 				if (c == EOF) {
-					if (resIndex == RESINDEXFAILED) {
-						return connectionFailToState("\r\nReceived unexpected HTTP response code", 0x82);
-					}
-					return socketHadNoData();
+					if (resIndex != RESINDEXFAILED) return socketHadNoData();
+					return connectionFailToState("\r\nReceived unexpected HTTP response code", 0x82);
 				}
 
 				// Prints HTTP status-line
