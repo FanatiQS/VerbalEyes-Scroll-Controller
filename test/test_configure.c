@@ -1,5 +1,6 @@
 #include <stdio.h> // printf, fprintf, fflush, stdout, EOF, stderr, stdouts
 #include <string.h> // strlen
+#include <time.h> // time_t, time, NULL
 
 #include "../src/scroll_controller.h"
 
@@ -261,7 +262,19 @@ int main(void) {
 	}
 	test_end(ENDNOTHING);
 
-	//!! test EOF timeout
+	// Tests that no data for a specified timeout would automatically exit configuration mode
+	test_start("Timeout aborted", "1\n", "\r\n[ 1 ] Aborted");
+	time_t t1 = time(NULL);
+	log_clear();
+	while (verbaleyes_configure(0));
+	log_cmp("\r\nDone\r\n");
+	time_t t2 = time(NULL);
+	if (t2 - t1 < 2) {
+		fprintf(stderr, "" COLOR_RED "Timeout did not delay\n" COLOR_NORMAL);
+	}
+	else {
+		printf("" COLOR_GREEN "Timeout delayed correctly\n" COLOR_NORMAL);
+	}
 
 	return 0;
 }
