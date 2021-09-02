@@ -503,7 +503,7 @@ int8_t verbaleyes_initialize() {
 				case 0: {
 					if (showProgressBar()) return 1;
 				}
-				// Handles timeout error
+				// Handles timeout error and known fail
 				case -1: {
 					return connectionFailToState("\r\nFailed to connect to network", 0x80);
 				}
@@ -546,7 +546,7 @@ int8_t verbaleyes_initialize() {
 				case 0: {
 					if (showProgressBar()) return 1;
 				}
-				// Handles timeout error
+				// Handles timeout error and know fail
 				case -1: {
 					return connectionFailToState("\r\nFailed to connect to host", 0x82);
 				}
