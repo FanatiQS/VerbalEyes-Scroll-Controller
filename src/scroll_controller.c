@@ -476,7 +476,7 @@ int8_t verbaleyes_initialize() {
 		}
 		// Reconnects to network if connection is lost
 		default: {
-			if (verbaleyes_network_connected()) break;
+			if (verbaleyes_network_connected() == 1) break;
 			logprintf("\r\nLost connection to network");
 		}
 		// Initialize network connection
@@ -519,7 +519,7 @@ int8_t verbaleyes_initialize() {
 	switch (state) {
 		// Reconnects to socket if connection is lost
 		default: {
-			if (verbaleyes_socket_connected()) break;
+			if (verbaleyes_socket_connected() == 1) break;
 			logprintf("\r\nLost connection to host");
 		}
 		// Initialize socket connection
