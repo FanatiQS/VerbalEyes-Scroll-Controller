@@ -35,6 +35,15 @@ void verbaleyes_conf_commit() {
 	confCommited = 1;
 }
 
+// VerbalEyes function to read data from conf buffer
+char verbaleyes_conf_read(const unsigned short addr) {
+	if (addr >= CONFIGLEN) {
+		fprintf(stderr, "" COLOR_RED "Configuration tried to read outside address range: %d\n" COLOR_NORMAL, addr);
+		exit(EXIT_FAILURE);
+	}
+	return confBuffer[addr];
+}
+
 
 
 // Updates config with a string instead of a character

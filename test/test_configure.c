@@ -15,7 +15,6 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {}
 int8_t verbaleyes_socket_connected() { return 0; }
 short verbaleyes_socket_read() { return 1; }
 void verbaleyes_socket_write(const uint8_t* str, const size_t len) {}
-char verbaleyes_conf_read(const unsigned short addr) { return 1; }
 
 
 
