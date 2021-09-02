@@ -274,7 +274,6 @@ void testConfAddr(char* key, int len, int offset) {
 
 
 
-//!!
 int main(void) {
 	// Setup
 	printf("\n\n");
@@ -413,7 +412,7 @@ int main(void) {
 	updateConfig("sensitivity=100\n");
 	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2 + 2 + 2, "\0d", 2);
 
-	//!!
+	// End of test
 	printf("\n\n");
 	return 0;
 }
