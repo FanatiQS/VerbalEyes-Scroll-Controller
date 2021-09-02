@@ -10,7 +10,7 @@ $(LIBBEARSSL):
 	cd $(LIB) && make
 
 test_configure: $(LIBBEARSSL)
-	$(A) test_configure.c -DCONFIGTIMEOUT=1
+	$(A) test_configure.c -DCONFIGTIMEOUT=2
 	$(EXE)
 	rm $(EXE)
 
