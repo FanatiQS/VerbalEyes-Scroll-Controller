@@ -1,4 +1,4 @@
-#include <stdio.h> // printf, fflush, stdout
+#include <stdio.h> // printf, fprintf, fflush, stdout, EOF, stderr, stdouts
 #include <string.h> // strlen
 
 #include "../src/scroll_controller.h"
