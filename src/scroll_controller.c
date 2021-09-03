@@ -836,8 +836,8 @@ int8_t verbaleyes_initialize() {
 			uint8_t deadzoneCapped = (deadzone > 99) ? 99 : deadzone;
 			deadzoneSize = (speedMax - speedMin) * 100 * deadzone / (100 - deadzoneCapped);
 			float speedSize = (speedMax - speedMin) * 100 + deadzoneSize;
-			jitterSize = (sensitivity) ? sensitivity : 1;
-			speedMapper = speedSize / ((speedCalHigh - speedCalLow) / jitterSize * jitterSize);
+			jitterSize = sensitivity;
+			speedMapper = speedSize / (speedCalHigh - speedCalLow);
 			speedOffset = speedMin * 100 - (speedCalLow * speedMapper);
 
 			// Prints settings
@@ -865,7 +865,7 @@ void verbaleyes_setspeed(const uint16_t value) {
 	static int32_t speed;
 
 	// Maps analog input value to conf range
-	int32_t mappedValue = value / jitterSize * jitterSize * speedMapper + speedOffset;
+	int32_t mappedValue = value * speedMapper + speedOffset;
 
 	// Shifts mapped value above deadzone
 	if (mappedValue > deadzoneSize) {
@@ -878,7 +878,7 @@ void verbaleyes_setspeed(const uint16_t value) {
 	}
 
 	// Supresses updating speed if it has not changed enough unless it is updated to zero
-	if (mappedValue == speed) return;
+	if (mappedValue != 0 && mappedValue <= speed + jitterSize && mappedValue >= speed - jitterSize) return;
 	speed = mappedValue;
 
 	// Sends new speed to the server
