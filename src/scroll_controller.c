@@ -842,13 +842,13 @@ int8_t verbaleyes_initialize() {
 
 			// Prints settings
 			logprintf(
-				"\r\nSetting up speed reader with:\r\n\tMinimum speed at: %i\r\n\tMaximum speed at: %i\r\n\tDeadzone at: %d%%\r\n\tSensitivity at: %d%%\r\n\tCalibration low at: %u\r\n\tCalibration high at: %u\r\n",
-				speedMin,
+				"\r\nSetting up speed reader with:\r\n\tMaximum speed at: %i\r\n\tMinimum speed at: %i\r\n\tDeadzone at: %d%%\r\n\tCalibration low at: %u\r\n\tCalibration high at: %u\r\n\tSensitivity at: %d\r\n",
 				speedMax,
+				speedMin,
 				deadzone,
-				sensitivity,
 				speedCalLow,
-				speedCalHigh
+				speedCalHigh,
+				sensitivity
 			);
 
 			// Sets state to be outside range now that it is done
