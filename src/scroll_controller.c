@@ -449,11 +449,10 @@ bool verbaleyes_configure(const int16_t c) {
 
 
 // Global variables for mapping analog scroll input
-int32_t speedSize;
-int16_t speedMapper;
-int32_t speedComp;
+float speedMapper;
+int32_t speedOffset;
 int32_t deadzoneSize;
-int32_t jitterSize;
+uint16_t jitterSize;
 
 // Global variable for projID to connect to
 char projID[CONF_LEN_PROJ + 1];
@@ -834,11 +833,12 @@ int8_t verbaleyes_initialize() {
 			const uint16_t sensitivity = confGetInt(CONF_ADDR_SENS);
 
 			// Sets helper values to use when mapping analog read value to new range
-			speedSize = (speedMax - speedMin) * (100 + deadzone * 2);
-			speedMapper = (speedCalHigh - speedCalLow) ? speedCalHigh - speedCalLow : 1;
-			speedComp = (speedMin * 100) - (speedCalLow * speedSize / speedMapper);
-			deadzoneSize = speedSize * deadzone / 100;
-			jitterSize = sensitivity * speedSize / speedMapper;
+			uint8_t deadzoneCapped = (deadzone > 99) ? 99 : deadzone;
+			deadzoneSize = (speedMax - speedMin) * 100 * deadzone / (100 - deadzoneCapped);
+			float speedSize = (speedMax - speedMin) * 100 + deadzoneSize;
+			jitterSize = (sensitivity) ? sensitivity : 1;
+			speedMapper = speedSize / ((speedCalHigh - speedCalLow) / jitterSize * jitterSize);
+			speedOffset = speedMin * 100 - (speedCalLow * speedMapper);
 
 			// Prints settings
 			logprintf(
@@ -865,7 +865,7 @@ void verbaleyes_setspeed(const uint16_t value) {
 	static int32_t speed;
 
 	// Maps analog input value to conf range
-	int32_t mappedValue = value * speedSize / speedMapper + speedComp;
+	int32_t mappedValue = value / jitterSize * jitterSize * speedMapper + speedOffset;
 
 	// Shifts mapped value above deadzone
 	if (mappedValue > deadzoneSize) {
@@ -878,7 +878,7 @@ void verbaleyes_setspeed(const uint16_t value) {
 	}
 
 	// Supresses updating speed if it has not changed enough unless it is updated to zero
-	if (mappedValue != 0 && mappedValue <= speed + jitterSize && mappedValue >= speed - jitterSize) return;
+	if (mappedValue == speed) return;
 	speed = mappedValue;
 
 	// Sends new speed to the server
