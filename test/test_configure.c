@@ -1,4 +1,4 @@
-#include <stdio.h> // printf, fprintf, fflush, stdout, EOF, stderr, stdouts
+#include <stdio.h> // printf, fprintf, fflush, stdout, EOF, stderr
 #include <string.h> // strlen
 #include <time.h> // time_t, time, NULL
 
