@@ -811,7 +811,7 @@ int8_t verbaleyes_initialize() {
 			}
 
 			// Validates authentication
-			if (!resMatchIndexes[0]) return connectionFailToState("\r\nAuthentication failed", 0x82);
+			if (resMatchIndexes[0] != SUCCESSFULMATCH) return connectionFailToState("\r\nAuthentication failed", 0x82);
 
 			// Moves on for successful authentication
 			logprintf("\r\nAuthenticated");
