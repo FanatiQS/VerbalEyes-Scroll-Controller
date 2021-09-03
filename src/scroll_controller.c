@@ -836,9 +836,9 @@ int8_t verbaleyes_initialize() {
 			uint8_t deadzoneCapped = (deadzone > 99) ? 99 : deadzone;
 			deadzoneSize = (speedMax - speedMin) * 100 * deadzone / (100 - deadzoneCapped);
 			float speedSize = (speedMax - speedMin) * 100 + deadzoneSize;
-			jitterSize = sensitivity;
 			speedMapper = speedSize / (speedCalHigh - speedCalLow);
 			speedOffset = speedMin * 100 - (speedCalLow * speedMapper);
+			jitterSize = sensitivity * speedMapper;
 
 			// Prints settings
 			logprintf(
