@@ -7,8 +7,8 @@ path=
 gotRead=0
 sleepLen=1
 genState=0
-genIndex=13
-genArrBuf=()
+genIndex=14
+genKeys=( "sensitivity" "calhigh" "calhigh" "callow" "deadzone" "speedmax" "speedmin" "projkey" "proj" "path" "port" "host" "ssidkey" "ssid" )
 
 # Parses arguments
 while [[ $# -gt 0 ]]; do
@@ -87,11 +87,7 @@ fi
 
 # Creates a new configuration if buffer was not defined or form flag was defined
 if [[ $useForm -eq 1 || $hasBuffer -eq 0 ]]; then
-	echo "Create new configuration:"
-	echo "	Navigate with up and down arrow keys"
-	echo "	Multiple values can be updated"
-	echo "	Press enter key when you are done"
-	echo "-----------------------------------"
+	# Prints property list
 	echo "[*] SSID"
 	echo "[ ] SSID Passphrase"
 	echo "[ ] Host"
@@ -105,101 +101,58 @@ if [[ $useForm -eq 1 || $hasBuffer -eq 0 ]]; then
 	echo "[ ] Calibrate Low"
 	echo "[ ] Calibrate High"
 	echo "[ ] Sensitivity"
-	printf "Value: "
+	echo "[ ] Exit"
+	printf "< Navigate [ Up/Down ], Start editing / Stop editing [ Enter ] >"
+	printf "\r\x1b["$genIndex"A["
 
+	# Reads input until exited from interface
 	while read -rsn1 key; do
-		case $genState in
-			0)
-				# Starts escape sequence
-				if [[ $key == $'\x1b' ]]; then
-					genState=1
-				# Breaks loop on enter key
-				elif [[ $key == '' ]]; then
-					break
-				# Adds character to buffer
-				else
-					genArrBuf[$genIndex]+=$key
-					printf $key
-				fi
-				;;
-			1)
-				# Continues escape sequence
-				if [[ $key == '[' ]]; then
-					genState=2
-				fi
-				;;
-			2)
-				# Removes indicator for previous line
-				printf "\r\x1b["$genIndex"A"
-				printf "[ \r"
-				printf "\x1b["$genIndex"B"
+		# Processes input on non escape character
+		if [[ $key != $'\x1b' ]]; then
+			if [[ $genIndex == 1 ]]; then
+				break
+			fi
+			# Moves to the right of the key
+			printf "\x1b[32C: \x1b[K"
 
-				# Processes arrow keys
-				if [[ $key == 'A' && $genIndex -lt 13 ]]; then
-					genIndex=$(( $genIndex + 1 ))
-				elif [[ $key == 'B' && $genIndex -gt 1 ]]; then
-					genIndex=$(( $genIndex - 1 ))
-				fi
+			# Prints character if not started with enter key
+			if [[ $key != '' ]]; then
+				printf $key
+			fi
 
-				# Adds indicator for new line
-				printf "\x1b["$genIndex"A"
-				printf "[*\n"
-				printf "\x1b["$genIndex"B"
+			# Adds input to buffer
+			read value
+			buffer+=${genKeys[$genIndex-1]}=$key$value'\n'
 
-				# Prints current buffer
-				printf "\x1b[7C"
-				if [[ -n "${genArrBuf[$genIndex]}" ]]; then
-					printf ${genArrBuf[$genIndex]}
-				fi
-				printf "\x1b[K"
+			# Moves back to selected line
+			printf "\x1b[F["
 
-				# Resets state
-				genState=0
-				;;
-		esac
+		# Processes escape sequence
+		else
+			# Ignores non escape sequence character
+			read -rsn1 key
+			if [[ $key != '[' ]]; then
+				continue
+			fi
+
+			# Removes indicator for previous line
+			printf "\r[ "
+
+			# Processes arrow keys
+			read -rsn1 key
+			if [[ $key == 'A' && $genIndex -lt 14 ]]; then
+				genIndex=$(( $genIndex + 1 ))
+				printf "\x1b[A"
+			elif [[ $key == 'B' && $genIndex -gt 1 ]]; then
+				genIndex=$(( $genIndex - 1 ))
+				printf "\x1b[B"
+			fi
+
+			# Adds indicator for new line
+			printf "\r[*\b"
+		fi
 	done
-	printf '\n'
-
-	# Adds to buffer
-	if [[ -n ${genArrBuf[13]} ]]; then
-		buffer+="ssid="${genArrBuf[13]}'\n'
-	fi
-	if [[ -n ${genArrBuf[12]} ]]; then
-		buffer+="ssidkey="${genArrBuf[12]}'\n'
-	fi
-	if [[ -n ${genArrBuf[11]} ]]; then
-		buffer+="host="${genArrBuf[11]}'\n'
-	fi
-	if [[ -n ${genArrBuf[10]} ]]; then
-		buffer+="port="${genArrBuf[10]}'\n'
-	fi
-	if [[ -n ${genArrBuf[9]} ]]; then
-		buffer+="path="${genArrBuf[9]}'\n'
-	fi
-	if [[ -n ${genArrBuf[8]} ]]; then
-		buffer+="proj="${genArrBuf[8]}'\n'
-	fi
-	if [[ -n ${genArrBuf[7]} ]]; then
-		buffer+="projkey="${genArrBuf[7]}'\n'
-	fi
-	if [[ -n ${genArrBuf[6]} ]]; then
-		buffer+="speedmin="${genArrBuf[6]}'\n'
-	fi
-	if [[ -n ${genArrBuf[5]} ]]; then
-		buffer+="speedmax="${genArrBuf[5]}'\n'
-	fi
-	if [[ -n ${genArrBuf[4]} ]]; then
-		buffer+="deadzone="${genArrBuf[4]}'\n'
-	fi
-	if [[ -n ${genArrBuf[3]} ]]; then
-		buffer+="callow="${genArrBuf[3]}'\n'
-	fi
-	if [[ -n ${genArrBuf[2]} ]]; then
-		buffer+="calhigh="${genArrBuf[2]}'\n'
-	fi
-	if [[ -n ${genArrBuf[1]} ]]; then
-		buffer+="sensitivity="${genArrBuf[1]}'\n'
-	fi
+	printf '\n\n'
 
 	# Throws on empty buffer
 	if [[ -z $buffer ]]; then
