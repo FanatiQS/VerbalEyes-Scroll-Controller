@@ -44,7 +44,7 @@ static void logprintf(const char* format, ...) {
 
 	// Formats arguments into buffer
 	char buffer[LOGBUFFERLEN];
-	const size_t len = vsnprintf(buffer, LOGBUFFERLEN, format, args);
+	const uint8_t len = vsnprintf(buffer, LOGBUFFERLEN, format, args);
 	verbaleyes_log(buffer, len);
 
 	// Cleans up variadic function
@@ -819,7 +819,7 @@ int8_t verbaleyes_initialize() {
 		// Sets global values used for updating speed
 		case 12: {
 			// Gets deadzone percentage value from config
-			const uint8_t deadzone = confGetInt(CONF_ADDR_DEADZONE);
+			const uint8_t deadzone = verbaleyes_conf_read(CONF_ADDR_DEADZONE + 1);
 
 			// Gets minimum and maximum speed from config
 			const int16_t speedMin = confGetInt(CONF_ADDR_SPEEDMIN);
