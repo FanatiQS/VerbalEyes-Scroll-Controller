@@ -80,7 +80,7 @@ if [[ -z $path ]]; then
 fi
 
 # Only reads if no data is defined
-if [[ $hasBuffer -eq 0 && $gotRead -eq 1 ]]; then
+if [[ $useForm -eq 0 && $hasBuffer -eq 0 && $gotRead -eq 1 ]]; then
 	cat < $path
 	exit
 fi
