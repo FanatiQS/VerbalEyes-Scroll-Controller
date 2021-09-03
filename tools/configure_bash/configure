@@ -8,7 +8,7 @@ gotRead=0
 sleepLen=1
 genState=0
 genIndex=14
-genKeys=( "sensitivity" "calhigh" "calhigh" "callow" "deadzone" "speedmax" "speedmin" "projkey" "proj" "path" "port" "host" "ssidkey" "ssid" )
+genKeys=( "sensitivity" "calhigh" "callow" "deadzone" "speedmax" "speedmin" "projkey" "proj" "path" "port" "host" "ssidkey" "ssid" )
 
 # Parses arguments
 while [[ $# -gt 0 ]]; do
@@ -122,7 +122,7 @@ if [[ $useForm -eq 1 || $hasBuffer -eq 0 ]]; then
 
 			# Adds input to buffer
 			read value
-			buffer+=${genKeys[$genIndex-1]}=$key$value'\n'
+			buffer+=${genKeys[$genIndex-2]}=$key$value'\n'
 
 			# Moves back to selected line
 			printf "\x1b[F["
