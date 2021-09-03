@@ -47,13 +47,8 @@ char verbaleyes_conf_read(const unsigned short addr) {
 
 
 // Updates config with a string instead of a character
-bool updateConfig(const char* str) {
-	int i = 0;
-	if (strlen(str) == 0) return 0;
-	do {
-		if (!verbaleyes_configure(str[i])) return 1;
-	} while (str[i++] != '\n');
-	return 0;
+void configure_str(const char* str) {
+	for (int i = 0; i < strlen(str); i++) verbaleyes_configure(str[i]);
 }
 
 // Tests that all data within span is cleared

@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #define CONFFLAGCOMMITED 1
 #define CONFFLAGOUTSIDESTR 2
-bool updateConfig(const char* str);
+void configure_str(const char* str);
 void conf_cmp(const int, const char*, const int);
 void conf_matchcommit(bool);
 void conf_is_empty();

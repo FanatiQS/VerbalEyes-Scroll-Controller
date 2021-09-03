@@ -1,6 +1,7 @@
 #include <stdio.h> // printf, fprintf, fflush, stdout, EOF, stderr
 #include <string.h> // strlen
 #include <time.h> // time_t, time, NULL
+#include <stdbool.h>
 
 #include "../src/scroll_controller.h"
 
@@ -23,6 +24,16 @@ int numberOfErrors = 0;
 
 // Automatically exits configuration mode after test
 bool autoReset = 0;
+
+// Updates configuration until LF
+bool updateConfig(const char* str) {
+	int i = 0;
+	if (strlen(str) == 0) return 0;
+	do {
+		if (!verbaleyes_configure(str[i])) return 1;
+	} while (str[i++] != '\n');
+	return 0;
+}
 
 // Starts a new test
 void test_start(const char* title, const char* input, const char* log) {
@@ -236,7 +247,7 @@ void fillConf(char* key, bool isStr) {
 	int i;
 
 	// Processes key and delimiter
-	for (i = 0; i < strlen(key); i++) verbaleyes_configure(key[i]);
+	configure_str(key);
 	verbaleyes_configure('=');
 
 	// Processes string value
@@ -245,8 +256,7 @@ void fillConf(char* key, bool isStr) {
 	}
 	// Processes integer value
 	else {
-		char buf[] = "12336";
-		for (i = 0; buf[i] != '\0'; i++) verbaleyes_configure(buf[i]);
+		configure_str("12336");
 	}
 }
 
