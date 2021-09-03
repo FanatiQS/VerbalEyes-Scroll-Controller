@@ -806,7 +806,7 @@ int8_t verbaleyes_initialize() {
 				}
 
 				// Makes sure authentication was successful
-				if (resMatchIndexes[0] != SUCCESSFULMATCH) matchStr(&resMatchIndexes[0], c, "\"auth\":true");
+				if (resMatchIndexes[0] != SUCCESSFULMATCH && c > ' ') matchStr(&resMatchIndexes[0], c, "\"auth\":true");
 				resIndex--;
 			}
 
