@@ -78,7 +78,7 @@ int readFromStdIn() {
 
 // Buffer for updated config data
 long int confFileIndex;
-unsigned char confBuffer[CONFIGLEN + 4] = "myWifi";
+unsigned char confBuffer[VERBALEYES_CONFIGLEN + 4] = "myWifi";
 
 // Reads a character from the specified address in config buffer
 char verbaleyes_conf_read(const unsigned short addr) {
@@ -104,7 +104,7 @@ void verbaleyes_conf_commit() {
 	fseek(file, confFileIndex, SEEK_SET);
 
 	// Writes configuration content
-	for (int i = 0; i < CONFIGLEN; i++) {
+	for (int i = 0; i < VERBALEYES_CONFIGLEN; i++) {
 		fputc(confBuffer[i], file);
 	}
 
@@ -210,7 +210,7 @@ void verbaleyes_log(const char* msg, const size_t len) {
 // Initializes configuration buffer by reading concatenated config data from self
 void initConfStorage() {
 	// Gets cached index of buffer in executable
-	confFileIndex = (confBuffer[CONFIGLEN + 0] << 24) | (confBuffer[CONFIGLEN + 1] << 16) | (confBuffer[CONFIGLEN + 2] << 8) | (confBuffer[CONFIGLEN + 3] << 0);
+	confFileIndex = (confBuffer[VERBALEYES_CONFIGLEN + 0] << 24) | (confBuffer[VERBALEYES_CONFIGLEN + 1] << 16) | (confBuffer[VERBALEYES_CONFIGLEN + 2] << 8) | (confBuffer[VERBALEYES_CONFIGLEN + 3] << 0);
 
 	// Exits early if conf is already defined
 	if (confFileIndex != 0) return;
@@ -224,14 +224,14 @@ void initConfStorage() {
 
 	// Gets index of end of buffer in executable
 	int i = 0;
-	while (i < CONFIGLEN) {
+	while (i < VERBALEYES_CONFIGLEN) {
 		i = (fgetc(file) == confBuffer[i]) ? i + 1 : 0;
 		confFileIndex++;
 	}
 
 	// Goes back to start of buffer
 	fseek(file, confFileIndex, SEEK_SET);
-	confFileIndex -= CONFIGLEN;
+	confFileIndex -= VERBALEYES_CONFIGLEN;
 
 	// Write index to file
 	fputc((confFileIndex >> 24), file);

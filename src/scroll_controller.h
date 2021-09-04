@@ -7,7 +7,7 @@
 #define VERBALEYES_SPEED_CONTROLLER_H
 
 // Number of characters required for configuration
-#define CONFIGLEN 269 // Needs to be updated manually
+#define VERBALEYES_CONFIGLEN 269
 
 // Makes functions work in C++
 #ifdef __cplusplus

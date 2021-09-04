@@ -45,9 +45,9 @@ int main() {
 	// Verifies it cleared entire conf buffer and commited it
 	printf("\n");
 	printf("" COLOR_BLUE "Testing config_clear script:\n" COLOR_NORMAL);
-	char buf[CONFIGLEN];
-	memset(buf, '0', CONFIGLEN);
-	conf_cmp(0, buf, CONFIGLEN);
+	char buf[VERBALEYES_CONFIGLEN];
+	memset(buf, '0', VERBALEYES_CONFIGLEN);
+	conf_cmp(0, buf, VERBALEYES_CONFIGLEN);
 	conf_matchcommit(1);
 	printf("" COLOR_GREEN "Test successful: Entire configuration can be cleared correctly\n\n" COLOR_NORMAL);
 

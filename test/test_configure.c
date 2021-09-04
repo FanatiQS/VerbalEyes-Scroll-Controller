@@ -252,7 +252,7 @@ void fillConf(char* key, bool isStr) {
 
 	// Processes string value
 	if (isStr) {
-		for (i = 0; i < CONFIGLEN; i++) verbaleyes_configure('0');
+		for (i = 0; i < VERBALEYES_CONFIGLEN; i++) verbaleyes_configure('0');
 	}
 	// Processes integer value
 	else {
@@ -275,7 +275,7 @@ void testConfAddr(char* key, int len, int offset) {
 	verbaleyes_configure('\n');
 
 	// Compares conf buffer
-	char buf[CONFIGLEN];
+	char buf[VERBALEYES_CONFIGLEN];
 	memset(buf, '0', (len) ? len : 2);
 	conf_cmp(offset, buf, (len) ? len : 2);
 	printf("\n");
@@ -376,7 +376,7 @@ int main(void) {
 	fillConf("sensitivity", 0);
 	verbaleyes_configure('\n');
 	bool foundGaps = 0;
-	for (int i = 0; i < CONFIGLEN; i++) {
+	for (int i = 0; i < VERBALEYES_CONFIGLEN; i++) {
 		if (confBuffer[i] != '0') {
 			fprintf(stderr, "" COLOR_RED "Gap was left at address: %d\n" COLOR_NORMAL, i);
 			foundGaps = 1;

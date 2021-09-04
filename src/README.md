@@ -58,7 +58,7 @@ char verbaleyes_conf_read(const uint16_t addr)
 ```
 * Reads one byte for the persistent data storage.
 * Should return the byte currently at the address `addr` in storage.
-* Address range is from `0` to `CONFIGLEN`.
+* Address range is from `0` to `VERBALEYES_CONFIGLEN`.
 * Type `uint16_t` is the same as `unsigned short` on most systems.
 
 ##### Write
@@ -67,7 +67,7 @@ void verbaleyes_conf_write(const uint16_t addr, const char value)
 ```
 * Writes one byte to the persistent data storage.
 * Should set byte at address `addr` to `value`.
-* Address range is from `0` to `CONFIGLEN`.
+* Address range is from `0` to `VERBALEYES_CONFIGLEN`.
 * Type `uint16_t` is the same as `unsigned short` on most systems.
 * Data is allowed to be buffered until `verbaleyes_conf_commit` is called.
 

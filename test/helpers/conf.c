@@ -6,7 +6,7 @@
 
 extern int numberOfErrors;
 
-char confBuffer[CONFIGLEN];
+char confBuffer[VERBALEYES_CONFIGLEN];
 static bool confCommited = 0;
 static int confFlags = 0;
 
@@ -17,7 +17,7 @@ static int confFlags = 0;
 // VerbalEyes function to write data to conf buffer
 void verbaleyes_conf_write(const unsigned short addr, const char c) {
 	// Ensures address is not outside max config length
-	if (addr >= CONFIGLEN) {
+	if (addr >= VERBALEYES_CONFIGLEN) {
 		fprintf(stderr, "" COLOR_RED "Configuration tried to write outide address range: %d\n" COLOR_NORMAL, addr);
 		exit(EXIT_FAILURE);
 	}
@@ -37,7 +37,7 @@ void verbaleyes_conf_commit() {
 
 // VerbalEyes function to read data from conf buffer
 char verbaleyes_conf_read(const unsigned short addr) {
-	if (addr >= CONFIGLEN) {
+	if (addr >= VERBALEYES_CONFIGLEN) {
 		fprintf(stderr, "" COLOR_RED "Configuration tried to read outside address range: %d\n" COLOR_NORMAL, addr);
 		exit(EXIT_FAILURE);
 	}
@@ -96,7 +96,7 @@ void conf_cmp(const int offset, const char* compareTo, const int len) {
 	if (confFlags & CONFFLAGOUTSIDESTR) {
 		if (
 			ensureEmpty(0, offset) ||
-			ensureEmpty(offset + len, CONFIGLEN)
+			ensureEmpty(offset + len, VERBALEYES_CONFIGLEN)
 		) {
 			printf("" COLOR_GREEN "Configuration buffer was only updated within its range\n" COLOR_NORMAL);
 		}
@@ -116,13 +116,13 @@ void conf_matchcommit(bool commitState) {
 
 // Tests that entire conf buffer is clear
 void conf_is_empty() {
-	if (ensureEmpty(0, CONFIGLEN)) {
+	if (ensureEmpty(0, VERBALEYES_CONFIGLEN)) {
 		printf("" COLOR_GREEN "Config was empty\n" COLOR_NORMAL);
 	}
 }
 
 // Fills conf buffer with CLEARBYTEs to allow knowing if a nullbyte has been written
 void conf_clear() {
-	memset(confBuffer, CLEARBYTE, CONFIGLEN);
+	memset(confBuffer, CLEARBYTE, VERBALEYES_CONFIGLEN);
 	confCommited = 0;
 }

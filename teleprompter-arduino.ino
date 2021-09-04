@@ -114,7 +114,7 @@ unsigned long clock() {
 void setup() {
 	WiFi.setAutoConnect(0);
 	Serial.begin(9600);
-	EEPROM.begin(CONFIGLEN);
+	EEPROM.begin(VERBALEYES_CONFIGLEN);
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(0, INPUT_PULLUP);
 }
