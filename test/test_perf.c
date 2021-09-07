@@ -5,8 +5,8 @@
 
 #include "./helpers/print_colors.h"
 
-// Use same random numbers for every test
-int rand(void) { return 0; } //!! could replace clock instead since that is what sets the random seed
+// Use same random number sequence for every test
+clock_t clock() { return 1; }
 
 // Noop
 void verbaleyes_network_connect(const char* ssid, const char* key) {}
@@ -23,7 +23,7 @@ int8_t verbaleyes_socket_connected() { return 1; }
 char verbaleyes_conf_read(const unsigned short addr) { return 0; }
 
 // Response data
-char socket_read_data[] = "\0http/1.1 101 OK\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ICX+Yqv66kxgM0FcWaLWlFLwTAI=\r\n\r\n\0\x81\x09" "authed789\0";
+char socket_read_data[] = "\0http/1.1 101 OK\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: KM6afhWtO4bb/E9amIx6hTrgkCw=\r\n\r\n\0\x81\x09" "authed789\0";
 int socket_read_index = 0;
 short verbaleyes_socket_read() {
 	unsigned char c = socket_read_data[socket_read_index++];
