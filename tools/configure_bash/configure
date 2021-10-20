@@ -29,7 +29,7 @@ while [[ $# -gt 0 ]]; do
 			;;
 		# Prints help/usage message
 		-h|--help)
-			echo "Usage: ./configure [ options ] [ filepath ]"
+			echo "Usage: $0 [ options ] [ filepath ]"
 			echo "	Multiple filepaths and/or options are concatenated"
 			echo "	Unless -o is used, first usb serial device found will be used"
 			echo "	Automatically uses -f if no filepath or -e option was used"
