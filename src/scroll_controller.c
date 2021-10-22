@@ -372,6 +372,14 @@ bool verbaleyes_configure(const int16_t c) {
 			// Exit if configuration is not actively being updated
 			if (confFlags == 0) return 0;
 
+			// Commits all changed values if commit is required
+			if (confFlags == FLAGCOMMIT) {
+				if (confFlags & FLAGCOMMIT) verbaleyes_conf_commit();
+				logprintf("\r\nConfiguration saved\r\n");
+				confFlags = 0;
+				return 1;
+			}
+
 			// Continues waiting for new data until timeout is reached
 			if (time(NULL) < timeout) return 1;
 		}
@@ -403,9 +411,8 @@ bool verbaleyes_configure(const int16_t c) {
 				}
 
 				// Resets to handle new keys
-				confFlags = FLAGCOMMIT;
+				confFlags = FLAGCOMMIT | FLAGACTIVE;
 				confIndex = 0;
-				return 1;
 			}
 			// Handles termination of key
 			else if (confFlags != 0) {
@@ -413,7 +420,6 @@ bool verbaleyes_configure(const int16_t c) {
 				if (confFlags & FLAGFAILED) {
 					confIndex = 0;
 					confFlags &= ~FLAGFAILED;
-					return 1;
 				}
 				// Handles termination before key was validated
 				else if (confIndex != 0) {
@@ -422,18 +428,16 @@ bool verbaleyes_configure(const int16_t c) {
 					}
 					logprintf(" ] Aborted");
 					confIndex = 0;
-					return 1;
 				}
-				// Commits all changed values if commit is required
+				// Clears active flag after double LF
 				else {
-					if (confFlags & FLAGCOMMIT) verbaleyes_conf_commit();
-					logprintf("\r\nDone\r\n");
-					confFlags = 0;
+					confFlags &= ~FLAGACTIVE;
+					if (confFlags == 0) logprintf("\r\n");
 				}
 			}
 
-			// Exits configuration mode
-			return 0;
+			// Continues processing more data
+			return 1;
 		}
 		// Ignores these characters
 		case 0x7F:
