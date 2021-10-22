@@ -6,6 +6,9 @@
 #ifndef VERBALEYES_SPEED_CONTROLLER_H
 #define VERBALEYES_SPEED_CONTROLLER_H
 
+// The version of the VerbalEyes SpeedController Micro Library
+#define VERBALEYES_VERSION 0.5f
+
 // Number of characters required for configuration
 #define VERBALEYES_CONFIGLEN 269
 
