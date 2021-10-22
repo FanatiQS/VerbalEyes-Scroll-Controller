@@ -241,12 +241,12 @@ void initConfStorage() {
 
 	// Configure initial configuration
 	muteLogs = 1;
-	char confStr[] = "host=127.0.0.1\nport=8080\npath=/\nproj=myProject\nspeedmin=-10\nspeedmax=10\n";
+	char confStr[] = "host=127.0.0.1\nport=8080\npath=/\nproj=myProject\nspeedmin=-10\nspeedmax=10\n\n";
 	for (int i = 0; i < strlen(confStr); i++) {
 		verbaleyes_configure(confStr[i]);
 	}
 	confBuffer[266] = POTMAX;
-	verbaleyes_configure('\n');
+	verbaleyes_configure('\0');
 	muteLogs = 0;
 
 	// Closes file stream
