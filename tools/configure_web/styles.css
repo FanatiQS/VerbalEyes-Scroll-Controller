@@ -42,6 +42,17 @@
 	opacity: 1;
 }
 
+/* Removes shifting around the fields and instead keeps them staticly in place */
+@media (prefers-reduced-motion) {
+	.config-container {
+		transition: margin-bottom 0.3s ease-in-out;
+		margin-bottom: 1.5em;
+	}
+	.config-container-open {
+		margin-bottom: 0px;
+	}
+}
+
 .config-console-container {
 	height: 256px;
 	width: 68.7ch;
