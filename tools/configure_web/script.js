@@ -62,7 +62,7 @@ document.querySelector('#webserial-upload').onclick = async function () {
 		}
 	}
 	catch (err) {
-		log("Error: " + err.message);
+		log("Error: " + err.message + "\n");
 	}
 };
 
