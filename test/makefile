@@ -25,7 +25,9 @@ test_c99: $(LIBBEARSSL)
 	rm $(EXE)
 
 test_c++: $(LIBBEARSSL)
-	g++ -S -I$(LIB) -std=c++11 -pedantic-errors $(SRC) -o $(EXE)
+	cp $(SRC) $(SRC).cpp
+	g++ -S -I$(LIB) -std=c++11 -pedantic-errors $(SRC).cpp -o $(EXE)
+	rm $(SRC).cpp
 	rm $(EXE)
 
 test_perf:
