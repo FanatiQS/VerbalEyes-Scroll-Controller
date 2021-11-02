@@ -434,9 +434,5 @@ int main(void) {
 	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2 + 2 + 2, "\0d", 2);
 
 	// Prints out the number of errors that occured
-	debug_printerrors();
-
-	// End of test
-	printf("\n\n");
-	return 0;
+	return debug_printerrors();
 }
