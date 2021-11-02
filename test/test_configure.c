@@ -48,9 +48,10 @@ void test_start(const char* title, const char* input, const char* log) {
 	// Processes input data
 	if (updateConfig(input)) {
 		fprintf(stderr, "" COLOR_RED "Updating configuration exited too early\n" COLOR_NORMAL);
+		numberOfErrors++;
 	}
 
-	// Compates buffered log message to log
+	// Compares buffered log message to log
 	log_cmp(log);
 }
 
@@ -85,15 +86,21 @@ void test_end(int state) {
 		log_clear();
 
 		// Exits configuration mode
-		if (verbaleyes_configure('\n')) {
+		verbaleyes_configure('\n');
+		if (verbaleyes_configure('\0')) {
 			fprintf(stderr, "" COLOR_RED "Did not exit configuration mode after LF\n" COLOR_NORMAL);
+			numberOfErrors++;
 		}
 
-		// Tests that "Done" message was printed
-		if (state) {
-			log_cmp("\r\nDone\r\n");
+		// Tests that done message was printed
+		if (state == ENDCOMMIT) {
+			log_cmp("\r\nConfiguration saved\r\n");
 		}
-		// Tests that no "Done" message was printed
+		// Tests that only CRLF was printed
+		else if (state == ENDDONE) {
+			log_cmp("\r\n");
+		}
+		// Tests that no done message was printed
 		else {
 			log_cmp("");
 		}
@@ -238,6 +245,27 @@ void runTests() {
 	test_start("Config Macro", "sensitivity=65535\n", "\r\n[ sensitivity ] is now: 65535");
 	test_conf_int(267, "\xff\xff");
 	test_end(ENDCOMMIT);
+
+	// Tests that no data for a specified timeout would automatically exit configuration mode
+	test_start("Timeout aborted", "1\n", "\r\n[ 1 ] Aborted");
+	fflush(stdout);
+	time_t t1 = time(NULL);
+	log_clear();
+	while (verbaleyes_configure(0));
+	if (autoReset) {
+		log_cmp("\r\n");
+	}
+	else {
+		log_cmp("\r\nConfiguration saved\r\n");
+	}
+	time_t t2 = time(NULL);
+	if (t2 - t1 < 2) {
+		fprintf(stderr, "" COLOR_RED "Timeout did not delay\n\n" COLOR_NORMAL);
+		numberOfErrors++;
+	}
+	else {
+		printf("" COLOR_GREEN "Timeout delayed correctly\n\n" COLOR_NORMAL);
+	}
 }
 
 
@@ -298,6 +326,7 @@ int main(void) {
 	autoReset = 1;
 	conf_setflags(CONFFLAGCOMMITED | CONFFLAGOUTSIDESTR);
 	verbaleyes_configure('\n');
+	verbaleyes_configure('\0');
 	runTests();
 
 	// Tests that EOF, 0 and LF all return false if it is not already processing something else
@@ -311,21 +340,6 @@ int main(void) {
 		log_cmp("");
 	}
 	test_end(ENDNOTHING);
-
-	// Tests that no data for a specified timeout would automatically exit configuration mode
-	test_start("Timeout aborted", "1\n", "\r\n[ 1 ] Aborted");
-	time_t t1 = time(NULL);
-	log_clear();
-	while (verbaleyes_configure(0));
-	log_cmp("\r\nDone\r\n");
-	time_t t2 = time(NULL);
-	if (t2 - t1 < 2) {
-		fprintf(stderr, "" COLOR_RED "Timeout did not delay\n\n" COLOR_NORMAL);
-		numberOfErrors++;
-	}
-	else {
-		printf("" COLOR_GREEN "Timeout delayed correctly\n\n" COLOR_NORMAL);
-	}
 
 	// Tests configuration item addresses
 	printf("\n\n");
