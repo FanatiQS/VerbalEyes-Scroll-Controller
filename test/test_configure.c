@@ -8,6 +8,7 @@
 #include "./helpers/print_colors.h"
 #include "./helpers/conf.h"
 #include "./helpers/log.h"
+#include "./helpers/debug.h"
 
 // Only defined to not throw compilation errors
 void verbaleyes_network_connect(const char* ssid, const char* key) {}
@@ -18,9 +19,6 @@ short verbaleyes_socket_read() { return 1; }
 void verbaleyes_socket_write(const uint8_t* str, const size_t len) {}
 
 
-
-// Number of errors occuring
-int numberOfErrors = 0;
 
 // Automatically exits configuration mode after test
 bool autoReset = 0;
@@ -434,6 +432,9 @@ int main(void) {
 	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2 + 2, "\0d", 2);
 	updateConfig("sensitivity=100\n");
 	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2 + 2 + 2, "\0d", 2);
+
+	// Prints out the number of errors that occured
+	debug_printerrors();
 
 	// End of test
 	printf("\n\n");
