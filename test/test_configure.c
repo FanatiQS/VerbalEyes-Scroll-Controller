@@ -389,15 +389,15 @@ int main(void) {
 	verbaleyes_configure('\n');
 	fillConf("sensitivity", 0);
 	verbaleyes_configure('\n');
-	bool foundGaps = 0;
+	int foundGaps = 0;
 	for (int i = 0; i < VERBALEYES_CONFIGLEN; i++) {
 		if (confBuffer[i] != '0') {
 			fprintf(stderr, "" COLOR_RED "Gap was left at address: %d\n" COLOR_NORMAL, i);
-			foundGaps = 1;
+			foundGaps++;
 		}
 	}
 	if (foundGaps) {
-		fprintf(stderr, "" COLOR_RED "Gaps were found in conf buffer\n" COLOR_NORMAL);
+		fprintf(stderr, "" COLOR_RED "%d gaps were found in conf buffer\n" COLOR_NORMAL, foundGaps);
 		numberOfErrors++;
 	}
 	else {
