@@ -3,8 +3,8 @@ This is a C library to control scroll speed and scroll position for a VerbalEyes
 It works by connecting to Wi-Fi and sending the commands to the server over a WebSocket connection.
 Configuration of what network and server to use is done with a simple text based protocol.
 
-# Pre-built for Arduino/ESP
-This is an implementation of the library that works on Arduino supported boards.
+# ESP8266 Build
+This is an implementation of the library that works on the ESP8266.
 Configuration is done over the USB connection with more details further down in this readme.
 
 ## Wiring
