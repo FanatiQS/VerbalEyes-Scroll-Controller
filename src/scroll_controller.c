@@ -377,7 +377,7 @@ bool verbaleyes_configure(const int16_t c) {
 				if (confFlags & FLAGCOMMIT) verbaleyes_conf_commit();
 				logprintf("\r\nConfiguration saved\r\n");
 				confFlags = 0;
-				return 1;
+				return 0;
 			}
 
 			// Continues waiting for new data until timeout is reached
@@ -434,6 +434,10 @@ bool verbaleyes_configure(const int16_t c) {
 					confFlags &= ~FLAGACTIVE;
 					if (confFlags == 0) logprintf("\r\n");
 				}
+			}
+			// Does not continue processing data
+			else {
+				return 0;
 			}
 
 			// Continues processing more data
