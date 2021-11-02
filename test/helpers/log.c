@@ -57,6 +57,7 @@ void log_cmp(const char* source) {
 	// Prints failure
 	int len = (strlen(source) < strlen(logBuffer)) ? strlen(source) : strlen(logBuffer);
 	fprintf(stderr, "" COLOR_RED "Logs did not match:\n%s\n%s\n" COLOR_NORMAL, logBuffer, source);
+	fprintf(stderr, "" COLOR_RED "Lengths: %lu %lu\n" COLOR_NORMAL, strlen(source), strlen(logBuffer));
 	for (int i = 0; i < len; i++) {
 		fprintf(stderr, "index: %d  %d  %d\n", i, logBuffer[i], source[i]);
 	}
