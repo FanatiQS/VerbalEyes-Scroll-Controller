@@ -30,20 +30,36 @@ document.querySelector('.config-console-clear').onclick = function () {
 	tty.textContent = '';
 };
 
+// Reads logs from web-serial to console
+let serialLogging = false;
+document.querySelector("#webserial-read").onclick = async function () {
+	try {
+		if (!serialDevice) serialDevice = await new SerialDevice();
+		serialLogging = true;
+		for await (const msg of serialDevice) {
+			log(msg);
+		}
+	}
+	catch (err) {
+		log("\nError: " + err.message + "\n");
+	}
+};
+
 // Uploads configuration over web-serial
 let serialDevice = null;
 document.querySelector('#webserial-upload').onclick = async function () {
 	if (!document.querySelectorAll(".config-container-open").length) {
-		log("No configuration to send\n");
+		log("\nNo configuration to send\n");
 		return;
 	}
 	try {
 		// Connects to device and sends serialized data
 		if (!serialDevice) serialDevice = await new SerialDevice();
 		serialDevice.write(serializeConfig('\n'));
-		log("Configuration sent\n");
+		log("\nConfiguration sent\n");
 
 		// Reads response data up to configuration is done
+		if (serialLogging) return;
 		let firstMsg = true;
 		for await (const msg of serialDevice) {
 			const index = msg.indexOf("\r\nDone\r\n");
@@ -62,7 +78,7 @@ document.querySelector('#webserial-upload').onclick = async function () {
 		}
 	}
 	catch (err) {
-		log("Error: " + err.message + "\n");
+		log("\nError: " + err.message + "\n");
 	}
 };
 
@@ -93,7 +109,7 @@ document.querySelector("#gen-conf").onclick = function () {
 			break;
 		}
 		case "windows": {
-			log("Windows is currently not supported\n");
+			log("\nWindows is currently not supported\n");
 			return;
 		}
 	}
