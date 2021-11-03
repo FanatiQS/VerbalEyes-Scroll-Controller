@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Escapes the form if
+function on_exit() {
+	printf "\x1b["$genIndex"B"
+}
+
 useForm=0
 hasBuffer=0
 buffer=
@@ -87,6 +92,9 @@ fi
 
 # Creates a new configuration if buffer was not defined or form flag was defined
 if [[ $useForm -eq 1 || $hasBuffer -eq 0 ]]; then
+	# Sets a trap to escape the form if aborted
+	trap on_exit EXIT
+
 	# Prints property list
 	echo "[*] SSID"
 	echo "[ ] SSID Passphrase"
@@ -112,6 +120,7 @@ if [[ $useForm -eq 1 || $hasBuffer -eq 0 ]]; then
 			if [[ $genIndex == 1 ]]; then
 				break
 			fi
+
 			# Moves to the right of the key
 			printf "\x1b[32C: \x1b[K"
 
