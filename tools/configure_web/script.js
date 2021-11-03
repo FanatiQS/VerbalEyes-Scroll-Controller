@@ -33,15 +33,10 @@ document.querySelector('.config-console-clear').onclick = function () {
 // Reads logs from web-serial to console
 let serialLogging = false;
 document.querySelector("#webserial-read").onclick = async function () {
-	try {
-		if (!serialDevice) serialDevice = await new SerialDevice();
-		serialLogging = true;
-		for await (const msg of serialDevice) {
-			log(msg);
-		}
-	}
-	catch (err) {
-		log("\nError: " + err.message + "\n");
+	if (!serialDevice) serialDevice = await new SerialDevice();
+	serialLogging = true;
+	for await (const msg of serialDevice) {
+		log(msg);
 	}
 };
 
@@ -52,33 +47,41 @@ document.querySelector('#webserial-upload').onclick = async function () {
 		log("\nNo configuration to send\n");
 		return;
 	}
-	try {
-		// Connects to device and sends serialized data
-		if (!serialDevice) serialDevice = await new SerialDevice();
-		serialDevice.write(serializeConfig('\n'));
-		log("\nConfiguration sent\n");
+	// Connects to device and sends serialized data
+	if (!serialDevice) serialDevice = await new SerialDevice();
+	serialDevice.write(serializeConfig('\n'));
+	log("\nConfiguration sent\n");
 
-		// Reads response data up to configuration is done
-		if (serialLogging) return;
-		let firstMsg = true;
-		for await (const msg of serialDevice) {
-			const index = msg.indexOf("\r\nDone\r\n");
-			if (index !== -1) {
-				log(msg.slice(0, index + 8));
-				serialDevice.close();
-				serialDevice = null;
-				document.querySelector('#webserial-disconnect').disabled = true;
-				return;
+	// Reads response data up to configuration is done
+	if (serialLogging) return;
+	let trimStartDone = false;
+	let buffer = '';
+	for await (const chunk of serialDevice) {
+		// Buffers incomplete lines until next chunk and creates string without incomplete
+		const splitted = (buffer + chunk).split("\r\n");
+		buffer = splitted.pop();
+		const msg = splitted.join('\n');
+
+		// Trims out everything before configuration starts
+		if (!trimStartDone) {
+			const index = msg.indexOf('[');
+			if (index >= 0) {
+				log(msg.slice(index) + '\n');
+				trimStartDone = true;
 			}
-			if (firstMsg) {
-				if (!msg.startsWith('[')) continue;
-				firstMsg = false;
-			}
-			log(msg);
 		}
-	}
-	catch (err) {
-		log("\nError: " + err.message + "\n");
+		// Exits after configuration ends
+		else if (msg.startsWith("Configuration saved\n")) {
+			log("Configuration saved\n");
+			serialDevice.close();
+			serialDevice = null;
+			document.querySelector('#webserial-disconnect').disabled = true;
+			return;
+		}
+		// Prints logs
+		else {
+			log(msg + '\n');
+		}
 	}
 };
 
