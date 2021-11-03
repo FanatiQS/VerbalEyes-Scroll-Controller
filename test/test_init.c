@@ -26,17 +26,18 @@ void fillConfChar(const char* key, char c) {
 }
 
 // Makes sure a string only contains the correct character
-void checkConfStr(const char* str, char c) {
-	bool matched = 1;
+bool checkConfStr(const char* str, char c) {
+	bool err = 0;
 	for (int i = 0; i < strlen(str); i++) {
 		if (str[i] != c) {
 			fprintf(stderr, "" COLOR_RED "Configuration contained incorrect data:\n\tindex: %d\n\tstring char: %d\n\tchar: %d\n" COLOR_NORMAL, i, str[i], c);
-			matched = 0;
+			err = 1;
 		}
 	}
-	if (matched) {
+	if (!err) {
 		//!! printf("" COLOR_GREEN "Configuration item matched\n" COLOR_NORMAL);
 	}
+	return err;
 }
 
 // Indicates what test to run
@@ -64,17 +65,32 @@ void verbaleyes_socket_write(const uint8_t* str, const size_t len) {}
 
 // Tests length and value of ssid and ssidkey
 void verbaleyes_network_connect(const char* ssid, const char* key) {
+	static bool ssidLenErr = false;
+	static bool ssidValErr = false;
+	static bool ssidkeyLenErr = false;
+	static bool ssidkeyValErr = false;
+
 	// Tests length and value of ssid
-	if (strlen(ssid) != ((useShortConf) ? SHORTCONFLEN : 32)) {
+	if (!ssidLenErr && strlen(ssid) != ((useShortConf) ? SHORTCONFLEN : 32)) {
 		fprintf(stderr, "" COLOR_RED "Length of ssid was incorrect: %lu\n" COLOR_NORMAL, strlen(ssid));
+		numberOfErrors++;
+		ssidLenErr = true;
 	}
-	checkConfStr(ssid, 'a');
+	if (!ssidValErr && checkConfStr(ssid, 'a')) {
+		numberOfErrors++;
+		ssidValErr = true;
+	}
 
 	// Tests length and value of ssidkey
-	if (strlen(key) != ((useShortConf) ? SHORTCONFLEN : 63)) {
+	if (!ssidkeyLenErr && strlen(key) != ((useShortConf) ? SHORTCONFLEN : 63)) {
 		fprintf(stderr, "" COLOR_RED "Length of ssidkey was incorrect: %lu\n" COLOR_NORMAL, strlen(key));
+		numberOfErrors++;
+		ssidkeyLenErr = true;
 	}
-	checkConfStr(key, 'b');
+	if (!ssidkeyValErr && checkConfStr(key, 'b')) {
+		numberOfErrors++;
+		ssidkeyValErr = true;
+	}
 }
 
 // Tests all states related to network connection
@@ -96,15 +112,26 @@ int8_t verbaleyes_network_connected() {
 
 // Tests length and value of host and port
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
+	static bool hostLenErr = false;
+	static bool hostValErr = false;
+	static bool portErr = false;
+
 	// Test length of host
-	if (strlen(host) != ((useShortConf) ? SHORTCONFLEN : 64)) {
+	if (!hostLenErr && strlen(host) != ((useShortConf) ? SHORTCONFLEN : 64)) {
 		fprintf(stderr, "" COLOR_RED "Length of host was incorrect: %lu\n" COLOR_NORMAL, strlen(host));
+		numberOfErrors++;
+		hostLenErr = true;
 	}
-	checkConfStr(host, 'c');
+	if (!hostValErr && checkConfStr(host, 'c')) {
+		numberOfErrors++;
+		hostValErr = true;
+	}
 
 	// Tests value of port
-	if (port != 1111) {
+	if (!portErr && port != 1111) {
 		fprintf(stderr, "" COLOR_RED "Value of port was incorrect: %d\n" COLOR_NORMAL, port);
+		numberOfErrors++;
+		portErr = true;
 	}
 }
 
@@ -187,7 +214,7 @@ int main() {
 	runTests(1);
 
 	//!!
-	return 0;
+	return debug_printerrors();
 }
 
 
