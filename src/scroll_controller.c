@@ -76,16 +76,16 @@ static int8_t connectionFailToState(const char* msg, const uint8_t backToState) 
 
 // Reconnects to socket if unable to get data before timeout
 static int8_t socketHadNoData() {
-	if (verbaleyes_socket_connected() != 1) return connectionFailToState("\r\nConnection to host closed", 0x82);
+	if (verbaleyes_socket_connected() != 1) return connectionFailToState("\r\nConnection to host closed", 0x90);
 	if (time(NULL) < timeout) return 1;
-	return connectionFailToState("\r\nResponse from server ended prematurely", 0x82);
+	return connectionFailToState("\r\nResponse from server ended prematurely", 0x90);
 }
 
 // Prints progress bar until timeing out if unable to get data
 static int8_t socketHadNoDataProgressBar() {
-	if (verbaleyes_socket_connected() != 1) return connectionFailToState("\r\nConnection to host closed", 0x82);
+	if (verbaleyes_socket_connected() != 1) return connectionFailToState("\r\nConnection to host closed", 0x90);
 	if (showProgressBar()) return 1;
-	return connectionFailToState("\r\nDid not get a response from the server", 0x82);
+	return connectionFailToState("\r\nDid not get a response from the server", 0x90);
 }
 
 
@@ -193,19 +193,19 @@ struct confItem {
 
 // Array of all configurable properties
 static struct confItem confItems[] = {
-	{ "ssid",           CONF_LEN_SSID,        CONF_ADDR_SSID,         0  },
-	{ "ssidkey",        CONF_LEN_SSIDKEY,     CONF_ADDR_SSIDKEY,      0  },
-	{ "host",           CONF_LEN_HOST,        CONF_ADDR_HOST,         2  },
-	{ "port",           0,                    CONF_ADDR_PORT,         2  },
-	{ "path",           CONF_LEN_PATH,        CONF_ADDR_PATH,         2  },
-	{ "proj",           CONF_LEN_PROJ,        CONF_ADDR_PROJ,         2  },
-	{ "projkey",        CONF_LEN_PROJKEY,     CONF_ADDR_PROJKEY,      2  },
-	{ "speedmin",       -1,                   CONF_ADDR_SPEEDMIN,     12 },
-	{ "speedmax",       -1,                   CONF_ADDR_SPEEDMAX,     12 },
-	{ "deadzone",       0,                    CONF_ADDR_DEADZONE,     12 },
-	{ "callow",         0,                    CONF_ADDR_CALLOW,       12 },
-	{ "calhigh",        0,                    CONF_ADDR_CALHIGH,      12 },
-	{ "sensitivity",    0,                    CONF_ADDR_SENS,         12 }
+	{ "ssid",           CONF_LEN_SSID,        CONF_ADDR_SSID,         0x00 },
+	{ "ssidkey",        CONF_LEN_SSIDKEY,     CONF_ADDR_SSIDKEY,      0x00 },
+	{ "host",           CONF_LEN_HOST,        CONF_ADDR_HOST,         0x10 },
+	{ "port",           0,                    CONF_ADDR_PORT,         0x10 },
+	{ "path",           CONF_LEN_PATH,        CONF_ADDR_PATH,         0x10 },
+	{ "proj",           CONF_LEN_PROJ,        CONF_ADDR_PROJ,         0x10 },
+	{ "projkey",        CONF_LEN_PROJKEY,     CONF_ADDR_PROJKEY,      0x10 },
+	{ "speedmin",       -1,                   CONF_ADDR_SPEEDMIN,     0x20 },
+	{ "speedmax",       -1,                   CONF_ADDR_SPEEDMAX,     0x20 },
+	{ "deadzone",       0,                    CONF_ADDR_DEADZONE,     0x20 },
+	{ "callow",         0,                    CONF_ADDR_CALLOW,       0x20 },
+	{ "calhigh",        0,                    CONF_ADDR_CALHIGH,      0x20 },
+	{ "sensitivity",    0,                    CONF_ADDR_SENS,         0x20 }
 };
 
 #define CONFITEMSLEN (sizeof confItems / sizeof confItems[0])
@@ -477,7 +477,7 @@ int8_t verbaleyes_initialize() {
 	switch (state) {
 		// Prevents immediately retrying after something fails
 		case 0x80:
-		case 0x82: {
+		case 0x90: {
 			if (time(NULL) >= timeout) state &= 0x7F;
 			return 1;
 		}
@@ -487,7 +487,7 @@ int8_t verbaleyes_initialize() {
 			logprintf("\r\nLost connection to network");
 		}
 		// Initialize network connection
-		case 0: {
+		case 0x00: {
 			// Gets network ssid and key from config
 			char ssid[CONF_LEN_SSID + 1];
 			confGetStr(CONF_ADDR_SSID, CONF_LEN_SSID, ssid);
@@ -500,10 +500,10 @@ int8_t verbaleyes_initialize() {
 			// Connects to ssid with key
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
 			verbaleyes_network_connect(ssid, ssidkey);
-			state = 1;
+			state = 0x01;
 		}
 		// Completes network connection
-		case 1: {
+		case 0x01: {
 			// Awaits network connection established
 			switch (verbaleyes_network_connected()) {
 				// Shows progress bar until network is connected
@@ -518,7 +518,7 @@ int8_t verbaleyes_initialize() {
 
 			// Prints devices IP address
 			logprintf("\r\nNetwork connection established");
-			state = 2;
+			state = 0x10;
 		}
 	}
 
@@ -530,7 +530,7 @@ int8_t verbaleyes_initialize() {
 			logprintf("\r\nLost connection to host");
 		}
 		// Initialize socket connection
-		case 2: {
+		case 0x10: {
 			// Gets host and port from config
 			buf = (char*)realloc(buf, CONF_LEN_HOST + 1);
 			if (buf == NULL) logprintf("\r\nERROR: realloc failed\r\n");
@@ -543,10 +543,10 @@ int8_t verbaleyes_initialize() {
 			// Connects to socket at host
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
 			verbaleyes_socket_connect(buf, port);
-			state = 3;
+			state = 0x11;
 		}
 		// Completes socket connection
-		case 3: {
+		case 0x11: {
 			// Awaits socket connectin established
 			switch (verbaleyes_socket_connected()) {
 				// Shows progress bar until socket is connected
@@ -555,12 +555,12 @@ int8_t verbaleyes_initialize() {
 				}
 				// Handles timeout error and know fail
 				case -1: {
-					return connectionFailToState("\r\nFailed to connect to host", 0x82);
+					return connectionFailToState("\r\nFailed to connect to host", 0x90);
 				}
 			}
 		}
 		// Sends http request to use websocket protocol
-		case 4: {
+		case 0x12: {
 			// Gets path to use on host
 			char path[CONF_LEN_PATH + 1];
 			confGetStr(CONF_ADDR_PATH, CONF_LEN_PATH, path);
@@ -620,10 +620,10 @@ int8_t verbaleyes_initialize() {
 			timeout = time(NULL) + CONNECTINGTIMEOUT;
 
 			// Sets up to read and verify http response
-			state = 5;
+			state = 0x13;
 		}
 		// Validates first HTTP status-line character
-		case 5: {
+		case 0x13: {
 			const int16_t c = verbaleyes_socket_read();
 
 			// Shows progress bar until socket starts receiving data
@@ -632,17 +632,17 @@ int8_t verbaleyes_initialize() {
 			// Validates first character for status-line and moves on to validate the rest
 			logprintf("\r\n\t%c", c);
 			resIndex = (toupper(c) == 'H') ? 1 : RESINDEXFAILED;
-			state = 6;
+			state = 0x14;
 		}
 		// Validates HTTP status-line
-		case 6: {
+		case 0x14: {
 			while (resIndex != 12) {
 				const int16_t c = verbaleyes_socket_read();
 
 				// Handles incorrect status code, timeout and socket close error
 				if (c == EOF) {
 					if (resIndex != RESINDEXFAILED) return socketHadNoData();
-					return connectionFailToState("\r\nReceived unexpected HTTP response code", 0x82);
+					return connectionFailToState("\r\nReceived unexpected HTTP response code", 0x90);
 				}
 
 				// Prints HTTP status-line
@@ -668,10 +668,10 @@ int8_t verbaleyes_initialize() {
 
 			// Successfully validated status-line and sets up to validate http headers
 			memset(resMatchIndexes, 0, sizeof resMatchIndexes);
-			state = 7;
+			state = 0x15;
 		}
 		// Validates HTTP headers
-		case 7: {
+		case 0x15: {
 			// Validate headers until EOF
 			int16_t c;
 			while ((c = verbaleyes_socket_read()) != EOF) {
@@ -700,19 +700,19 @@ int8_t verbaleyes_initialize() {
 
 			// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
 			if (!resMatchIndexes[0] || !resMatchIndexes[1]) {
-				return connectionFailToState("\r\nHTTP response is not an upgrade to the WebSockets protocol", 0x82);
+				return connectionFailToState("\r\nHTTP response is not an upgrade to the WebSockets protocol", 0x90);
 			}
 			// Requires WebSocket accept header with correct value
 			else if (!resMatchIndexes[2]) {
-				return connectionFailToState("\r\nMissing or incorrect WebSocket accept header", 0x82);
+				return connectionFailToState("\r\nMissing or incorrect WebSocket accept header", 0x90);
 			}
 			// Checks for non-requested WebSocket extension header
 			else if (resMatchIndexes[3]) {
-				return connectionFailToState("\r\nUnexpected WebSocket Extension header", 0x82);
+				return connectionFailToState("\r\nUnexpected WebSocket Extension header", 0x90);
 			}
 			// Checks for non-requested WebSocket protocol header
 			else if (resMatchIndexes[4]) {
-				return connectionFailToState("\r\nUnexpected WebSocket Protocol header", 0x82);
+				return connectionFailToState("\r\nUnexpected WebSocket Protocol header", 0x90);
 			}
 
 			// Frees up allocated buffer
@@ -723,7 +723,7 @@ int8_t verbaleyes_initialize() {
 			logprintf("\r\nWebSocket connection established");
 		}
 		// Connect to verbalEyes project
-		case 8: {
+		case 0x16: {
 			// Gets project and project key from config
 			confGetStr(CONF_ADDR_PROJ, CONF_LEN_PROJ, projID);
 			char projkey[CONF_LEN_PROJKEY + 1];
@@ -740,10 +740,10 @@ int8_t verbaleyes_initialize() {
 
 			// Sets up to read and verify websocket response
 			resIndex = 0;
-			state = 9;
+			state = 0x17;
 		}
 		// Validates WebSocket opcode for authentication
-		case 9: {
+		case 0x17: {
 			const int16_t c = verbaleyes_socket_read();
 
 			// Shows progress bar until socket starts receiving data
@@ -751,15 +751,15 @@ int8_t verbaleyes_initialize() {
 
 			// Makes sure this is an unfragmented WebSocket frame in text format
 			if (c != 0x81) {
-				return connectionFailToState("\r\nReceived response data is either not a WebSocket frame or uses an unsupported WebSocket feature", 0x82);
+				return connectionFailToState("\r\nReceived response data is either not a WebSocket frame or uses an unsupported WebSocket feature", 0x90);
 			}
 
 			// Sets up to read WebSocket payload length
 			resIndex = WS_PAYLOADLEN_NOTSET;
-			state = 10;
+			state = 0x18;
 		}
 		// Gets length of WebSocket payload for authentication
-		case 10: {
+		case 0x18: {
 			while (1) {
 				const int16_t c = verbaleyes_socket_read();
 
@@ -769,7 +769,7 @@ int8_t verbaleyes_initialize() {
 				// Gets payload length and continues if extended payload length is used
 				if (resIndex == WS_PAYLOADLEN_NOTSET) {
 					// Server is not allowed to mask messages sent to the client according to the spec
-					if (c & 0x80) return connectionFailToState("\r\nReveiced a masked frame which is not allowed", 0x82);
+					if (c & 0x80) return connectionFailToState("\r\nReveiced a masked frame which is not allowed", 0x90);
 
 					// Gets payload length without mask bit
 					resIndex = c & 0x7F;
@@ -778,7 +778,7 @@ int8_t verbaleyes_initialize() {
 					if (resIndex < WS_PAYLOADLEN_EXTENDED) break;
 
 					// Aborts if payload length requires more than the 16 bits available in resIndex
-					if (resIndex == 127) return connectionFailToState("\r\nWebsocket frame was unexpectedly long", 0x82);
+					if (resIndex == 127) return connectionFailToState("\r\nWebsocket frame was unexpectedly long", 0x90);
 				}
 				// Gets first byte of extended payload length
 				else if (resIndex == WS_PAYLOADLEN_EXTENDED) {
@@ -794,10 +794,10 @@ int8_t verbaleyes_initialize() {
 			// Sets up to read WebSocket payload
 			logprintf("\r\nReceived authentication response:\r\n\t");
 			resMatchIndexes[0] = 0;
-			state = 11;
+			state = 0x19;
 		}
 		// Validates WebSocket payload for authentication
-		case 11: {
+		case 0x19: {
 			// Reads entire WebSocket authentication response
 			while (resIndex) {
 				const int16_t c = verbaleyes_socket_read();
@@ -819,13 +819,13 @@ int8_t verbaleyes_initialize() {
 			}
 
 			// Validates authentication
-			if (resMatchIndexes[0] != SUCCESSFULMATCH) return connectionFailToState("\r\nAuthentication failed", 0x82);
+			if (resMatchIndexes[0] != SUCCESSFULMATCH) return connectionFailToState("\r\nAuthentication failed", 0x90);
 
 			// Moves on for successful authentication
 			logprintf("\r\nAuthenticated");
 		}
 		// Sets global values used for updating speed
-		case 12: {
+		case 0x20: {
 			// Gets deadzone percentage value from config
 			const uint8_t deadzone = verbaleyes_conf_read(CONF_ADDR_DEADZONE + 1);
 
