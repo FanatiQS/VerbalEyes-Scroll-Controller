@@ -178,7 +178,7 @@ sleep $sleepLen; printf "$buffer" > $path &
 
 # Reads data until configuration mode is exited
 if [[ $gotRead -eq 0 ]]; then
-	sed "/Done/q" $path
+	sed "/Configuration saved/q" $path
 # Reads data until exited
 else
 	cat < $path
