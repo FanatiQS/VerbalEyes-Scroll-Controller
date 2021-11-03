@@ -51,7 +51,7 @@ document.querySelector('#webserial-upload').onclick = async function () {
 				log(msg.slice(0, index + 8));
 				serialDevice.close();
 				serialDevice = null;
-				disconnectBtn.disabled = true;
+				document.querySelector('#webserial-disconnect').disabled = true;
 				return;
 			}
 			if (firstMsg) {
