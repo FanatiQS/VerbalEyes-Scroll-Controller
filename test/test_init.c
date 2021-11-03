@@ -1,6 +1,7 @@
 #include <stdio.h> // printf, fprintf, stderr
 #include <string.h> // strlen
 #include <stdbool.h> // bool
+#include <time.h> // clock_t
 
 #include "../src/scroll_controller.h"
 
@@ -59,9 +60,6 @@ void testInit(const char* state, char* log) {
 }
 
 
-
-// Only defined to not throw compilation errors
-void verbaleyes_socket_write(const uint8_t* str, const size_t len) {}
 
 // Tests length and value of ssid and ssidkey
 void verbaleyes_network_connect(const char* ssid, const char* key) {
@@ -149,6 +147,56 @@ int8_t verbaleyes_socket_connected() {
 
 		// Tests established socket connection
 		default: return 1;
+
+		// Tests socket disconnect
+		case 6: {
+			testState++;
+			return 1;
+		}
+		case 7: return 0;
+	}
+}
+// Reads socket data
+int16_t verbaleyes_socket_read() {
+	switch (testState) {
+		// Has no data
+		default: return EOF;
+	}
+}
+
+// WebSocket request strings for writing or comparing reads
+#define WS_REQ "GET ddd HTTP/1.1\r\nHost: ccc\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: "
+#define WS_KEY "nxZqCIY+DNYVMizHXRYUvQ=="
+
+// Forces same random seed to be used every time
+clock_t clock() { return 1; }
+
+// Writes socket data
+void verbaleyes_socket_write(const uint8_t* str, const size_t len) {
+	switch (testState) {
+		// Tests WebSocket request / path
+		case 5: {
+			// Tests content of WebSocket request
+			if (useShortConf) {
+				if (strcmp((char*)str, WS_REQ WS_KEY "\r\n\r\n")) {
+					fprintf(stderr, "" COLOR_RED "HTTP request does not look correct\n" COLOR_NORMAL);
+					numberOfErrors++;
+				}
+				else {
+					printf("" COLOR_GREEN "HTTP request looks correct\n" COLOR_NORMAL);
+				}
+			}
+			// Tests length of path
+			else {
+				const char* path = (char*)str + 4;
+				int len = 0;
+				while (path[len] == 'd') len++;
+				if (len != 32) {
+					fprintf(stderr, "" COLOR_RED "Length of path was incorrect: %d\n" COLOR_NORMAL, len);
+					numberOfErrors++;
+				}
+			}
+		}
 	}
 }
 
@@ -162,6 +210,9 @@ int8_t verbaleyes_socket_connected() {
 // Log messaged used for socket
 #define LOG_SOCKET_1 "\r\nConnecting to host: ccc:1111..."
 #define LOG_SOCKET_2 "\r\nFailed to connect to host"
+#define LOG_SOCKET_3 "\r\nAccessing WebSocket server at ddd..."
+#define LOG_SOCKET_4 "\r\nDid not get a response from the server"
+#define LOG_SOCKET_5 "\r\nConnection to host closed"
 
 // Other log messages
 #define LOG_PROGRESSBAR "..."
@@ -199,8 +250,11 @@ void runTests(bool useShort) {
 	// Test network connection lost and socket connection awaiting
 	testInit("", "\r\nLost connection to network" LOG_NETWORK_1 LOG_NETWORK_3 LOG_SOCKET_1 LOG_PROGRESSBAR LOG_SOCKET_2);
 
-	// Test network default continue and socket connection continue
-	//!! testInit("", LOG_SOCKET_1 LOG_SOCKET_2);
+	// Test network default continue and socket connection continue and ws response no data
+	testInit("", LOG_SOCKET_1 LOG_SOCKET_3 LOG_PROGRESSBAR LOG_SOCKET_4);
+
+	// Test ws response disconnect socket
+	testInit("", LOG_SOCKET_1 LOG_SOCKET_3 LOG_SOCKET_5);
 }
 
 
@@ -237,7 +291,7 @@ int main() {
 //!!
 char socket_read_data[] = "\0http/1.1 101 OK\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ICX+Yqv66kxgM0FcWaLWlFLwTAI=\r\n\r\n\0\x81\x09" "authed789\0";
 int socket_read_index = 0;
-short verbaleyes_socket_read() {
+short verbaleyes_socket_read2() {
 	unsigned char c = socket_read_data[socket_read_index++];
 	return (c == '\0') ? EOF : c;
  }
