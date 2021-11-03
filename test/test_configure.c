@@ -1,7 +1,7 @@
 #include <stdio.h> // printf, fprintf, fflush, stdout, EOF, stderr
 #include <string.h> // strlen
 #include <time.h> // time_t, time, NULL
-#include <stdbool.h>
+#include <stdbool.h> // bool
 
 #include "../src/scroll_controller.h"
 
