@@ -88,7 +88,7 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 
 // Gets the connection status of the socket connection
 int8_t verbaleyes_socket_connected() {
-	return client.connected() * 2 - 1;
+	return (client.connected()) ? 1 : -1;
 }
 
 // Consumes a single character from the sockets response data buffer
