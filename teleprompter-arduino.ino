@@ -138,7 +138,8 @@ void loop() {
 	verbaleyes_setspeed(analogRead(A0));
 
 	// Jump to top of document if button at pin 0 is pulled high
-	verbaleyes_resetoffset(digitalRead(0));
+	verbaleyes_resetoffset(digitalRead(D3));
+
 
 	// Only reads pins 25 times per second
 	delay(1000 / 25);
