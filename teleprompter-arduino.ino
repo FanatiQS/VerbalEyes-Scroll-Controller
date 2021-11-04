@@ -120,7 +120,7 @@ void setup() {
 	Serial.begin(9600);
 	EEPROM.begin(VERBALEYES_CONFIGLEN);
 	pinMode(LED_BUILTIN, OUTPUT);
-	pinMode(0, INPUT_PULLUP);
+	pinMode(D3, INPUT_PULLUP);
 }
 
 void loop() {
