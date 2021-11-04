@@ -27,12 +27,11 @@ CONNECTIONS:
         Wemos<D3> -- Button<VCC>
 */
 
-#include <ESP8266WiFi.h>
-// #include <WiFiClientSecure.h>
-#include <EEPROM.h>
 #include "./src/scroll_controller.h"
 
 
+// Binds the VerbalEyes percistent storage calls to EEPROM library
+#include <EEPROM.h>
 
 // Reads a character from the specified address in EEPROM
 char verbaleyes_conf_read(const unsigned short addr) {
@@ -50,6 +49,10 @@ void verbaleyes_conf_commit() {
 }
 
 
+
+// Binds the VerbalEyes network and socket calls to the ESP8266 WiFi library
+#include <ESP8266WiFi.h>
+// #include <WiFiClientSecure.h>
 
 // Connects to a WiFi network
 void verbaleyes_network_connect(const char* ssid, const char* key) {
