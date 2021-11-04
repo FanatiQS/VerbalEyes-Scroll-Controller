@@ -31,10 +31,9 @@ document.querySelector('.config-console-clear').onclick = function () {
 };
 
 // Reads logs from web-serial to console
-let serialLogging = false;
 document.querySelector("#webserial-read").onclick = async function () {
 	if (!serialDevice) serialDevice = await new SerialDevice();
-	serialLogging = true;
+	document.querySelector("#webserial-disconnect").disabled = false;
 	for await (const msg of serialDevice) {
 		log(msg);
 	}
@@ -48,7 +47,12 @@ document.querySelector('#webserial-upload').onclick = async function () {
 		return;
 	}
 	// Connects to device and sends serialized data
-	if (!serialDevice) serialDevice = await new SerialDevice();
+	let serialLogging = false;
+	if (!serialDevice) {
+		serialDevice = await new SerialDevice();
+		serialLogging = true;
+	}
+	document.querySelector("#webserial-disconnect").disabled = false;
 	serialDevice.write(serializeConfig('\n'));
 	log("\nConfiguration sent\n");
 
@@ -73,9 +77,6 @@ document.querySelector('#webserial-upload').onclick = async function () {
 		// Exits after configuration ends
 		else if (msg.startsWith("Configuration saved\n")) {
 			log("Configuration saved\n");
-			serialDevice.close();
-			serialDevice = null;
-			document.querySelector('#webserial-disconnect').disabled = true;
 			return;
 		}
 		// Prints logs
