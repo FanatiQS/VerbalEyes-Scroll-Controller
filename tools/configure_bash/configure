@@ -34,16 +34,17 @@ while [[ $# -gt 0 ]]; do
 			;;
 		# Prints help/usage message
 		-h|--help)
-			echo "Usage: $0 [ options ] [ filepath ]"
-			echo "	Multiple filepaths and/or options are concatenated"
+			echo "Usage: $0 [ options ]"
+			echo "	Multiple options can be concatenated"
 			echo "	Unless -o is used, first usb serial device found will be used"
-			echo "	Automatically uses -f if no filepath or -e option was used"
+			echo "	Automatically uses -f if -p or -e option was not used"
 			echo "OPTIONS:"
 			echo "	-h, --help    Prints help information"
 			echo "	-r, --read    Reads logs from device until disconnected or terminated"
 			echo "	-o, --out     Sets the output file/device to use, requires 1 argument"
 			echo "	-f, --form    Displays a form for sending configurations to the output"
 			echo "	-e, --eval    Sends configuration key-value pair to the output, requires 1 argument"
+			echo "	-p, --path    Sends the content of file at path to the output, requires 1 argument"
 			echo "	-s, --sleep   Sets the delay in seconds before writing data, requires 1 argument"
 			exit
 			;;
@@ -51,21 +52,21 @@ while [[ $# -gt 0 ]]; do
 		-f|--form)
 			useForm=1
 			;;
-		# Uses argument strings as is instead of as path
+		# Uses argument strings as is
 		-e|--eval)
 			hasBuffer=1
 			buffer+="$2\n"
 			shift
 			;;
+		# Gets buffer from argument path
+		-p|--path)
+			hasBuffer=1
+			buffer+="$(cat $2)\n"
+			;;
 		# Rejects invalid commands
 		-*)
 			echo "Invalid command" $1
 			exit
-			;;
-		# Gets buffer from argument path or uses it as is after eval
-		*)
-			hasBuffer=1
-			buffer+="$(cat $1)\n"
 			;;
 	esac
 	shift
