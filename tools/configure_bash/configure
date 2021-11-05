@@ -68,6 +68,11 @@ while [[ $# -gt 0 ]]; do
 			echo "Invalid command" $1
 			exit
 			;;
+		# Allows using it in a shebang
+		*)
+			hasBuffer=1
+			buffer+="$(cat $1)\n"
+			;;
 	esac
 	shift
 done
