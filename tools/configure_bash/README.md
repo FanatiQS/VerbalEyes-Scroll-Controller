@@ -17,7 +17,7 @@ The form is used by default if no paths or eval strings are used.
 Enabled with `-o <path>` or `--out <path>` where path is where to output the data to.
 This can be either a serial device or a file path.
 Details on finding serial device paths can be found [here](#listing-serial-devices).
-If output to a file, that file can then be used with optino `--path` to write that data to a device.
+If output to a file, that file can then be used with option `--path` to write that data to a device.
 
 ### Path
 Enabled with `-p <path>` or `--path <path>` where path is the file to read configuration from.
