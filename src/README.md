@@ -2,10 +2,11 @@
 
 
 
-## Functions
+## Usage
+### Functions
 The API is built in a way so that the functions only allow the next function to be called if it returns false but is always allowed to move back to any previous function.
 
-### verbaleyes_configure
+#### verbaleyes_configure
 ```c
 bool verbaleyes_configure(const uint16_t input)
 ```
@@ -17,7 +18,7 @@ It handles an input string one character at a time.
 * If all data is handled and the function is still in configuration mode, the data was not a complete or a valid configuration instruction. Configuration mode will automatically exit if being open without a successful update for a specified amount of time. This time can be customised by defining the macro `CONFIGTIMEOUT` for the file `./src/scroll_controller.c`.
 * Information about the structure of the input data can be found in the [README](../readme.md).
 
-### verbaleyes_initialize
+#### verbaleyes_initialize
 ```c
 int8_t verbaleyes_initialize()
 ```
@@ -28,31 +29,30 @@ int8_t verbaleyes_initialize()
 * The return values -1 and 1 does not need to be handled separately and is only available to detect when a fail has occurred. This way, they can both be treated as a truthy values.
 * If it does not return 0, the functions `verbaleyes_setspeed` and `verbaleyes_resetoffset` are not allowed to be called. The function `verbaleyes_configure` is allowed to be called though.
 
-### verbaleyes_setspeed
+#### verbaleyes_setspeed
 ```c
 void verbaleyes_setspeed(const uint16_t input)
 ```
 
-### verbaleyes_resetoffset
+#### verbaleyes_resetoffset
 ```c
-
 void verbaleyes_resetoffset(const bool input)
 ```
 
 
 
-## Required function implementations
+### Required function implementations
 Just like C requires you to define the function `main`, there are functions that you are required to define for everything to work.
 There are 11 functions that are used by the speed controller but not defined.
 These functions are for doing things like logging, handling persistent data, connecting to the network, connecting to and reading/writing to the socket.
 These actions all depend on the platform your working with and are therefore not implemented by default.
 
 
-### Configuration
+#### Configuration
 Configuration functions are about handling persistent data.
 This data is used for things like wifi, server address and calibration.
 
-##### Read
+###### Read
 ```c
 char verbaleyes_conf_read(const uint16_t addr)
 ```
@@ -61,7 +61,7 @@ char verbaleyes_conf_read(const uint16_t addr)
 * Address range is from `0` to `VERBALEYES_CONFIGLEN`.
 * Type `uint16_t` is the same as `unsigned short` on most systems.
 
-##### Write
+###### Write
 ```c
 void verbaleyes_conf_write(const uint16_t addr, const char value)
 ```
@@ -71,7 +71,7 @@ void verbaleyes_conf_write(const uint16_t addr, const char value)
 * Type `uint16_t` is the same as `unsigned short` on most systems.
 * Data is allowed to be buffered until `verbaleyes_conf_commit` is called.
 
-##### Commit
+###### Commit
 ```c
 void verbaleyes_conf_commit()
 ```
@@ -79,9 +79,9 @@ void verbaleyes_conf_commit()
 * When data is buffered, this function is most likely not required to be defined.
 * Buffering is good for flash memory since it can only write data so many times while an actual EEPROM does not benefit from buffering the data.
 
-### Network
+#### Network
 
-#### Connect
+##### Connect
 ```c
 void verbaleyes_network_connect(const char* ssid, const char* ssidkey)
 ```
@@ -92,7 +92,7 @@ void verbaleyes_network_connect(const char* ssid, const char* ssidkey)
 * Both `ssid` and `ssidkey` are null terminated character arrays that can include any character sent to the configuration through the `verbaleyes_configure` function.
 * Maximum lengths for `ssid` and `ssidkey` can be found in [readme](should include link here).
 
-##### Connected
+###### Connected
 ```c
 int8_t verbaleyes_network_connected();
 ```
@@ -105,9 +105,9 @@ int8_t verbaleyes_network_connected();
 * If the network is in a `connecting` state for too long (10 seconds), it automatically rejects the network connection and retries. This time can be customised by defining the macro `CONNECTINGTIMEOUT` for the file `./src/scroll_controller.c`.
 * Type `int8_t` is the same as `signed char` on most systems.
 
-### Socket
+#### Socket
 
-##### Connect
+###### Connect
 ```c
 void verbaleyes_socket_connect(const char* host, const uint16_t port)
 ```
@@ -120,7 +120,7 @@ void verbaleyes_socket_connect(const char* host, const uint16_t port)
 * Maximum lengths for `host` can be found in [readme](should include link here).
 * The `port` can be any unsigned 16-bit number.
 
-##### Connected
+###### Connected
 ```c
 int8_t verbaleyes_socket_connected()
 ```
@@ -133,7 +133,7 @@ int8_t verbaleyes_socket_connected()
 * If the socket is in a `connecting` state for too long (10 seconds), it automatically rejects the socket connection and retries. This time can be customised by defining the macro `CONNECTINGTIMEOUT` for the file `./src/scroll_controller.c`.
 * Type `int8_t` is the same as `signed char` on most systems.
 
-##### Read
+###### Read
 ```c
 int16_t verbaleyes_socket_read()
 ```
@@ -142,7 +142,7 @@ int16_t verbaleyes_socket_read()
 * It is very important to return `EOF` if no data is available instead of synchronously waiting for data.
 * Type `int16_t` is the same as `short` on most systems.
 
-##### Write
+###### Write
 ```c
 void verbaleyes_socket_write(const uint8_t* data, const size_t len)
 ```
@@ -151,9 +151,9 @@ void verbaleyes_socket_write(const uint8_t* data, const size_t len)
 * The reason for `data` being a `uint8_t*` instead of `char*` is to make it very clear that it is not a null terminated character array.
 * Type `uint8_t` is the same as `unsigned char` on most systems.
 
-### Logging
+#### Logging
 
-##### Log
+###### Log
 ```c
 void verbaleyes_log(const char* msg, size_t len)
 ```
