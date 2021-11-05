@@ -1,28 +1,70 @@
-# VerbalEyes SpeedController Core
-This is a C library to control scroll speed and scroll position for a VerbalEyes server with a micro controller.
-It works by connecting to Wi-Fi and sending the commands to the server over a WebSocket connection.
-Configuration of what network and server to use is done with a simple text based protocol.
+# VerbalEyes Scroll Controller
 
-# ESP8266 Build
-This is an implementation of the library that works on the ESP8266.
-Configuration is done over the USB connection with more details further down in this readme.
+## Introduction
+The VerbalEyes Scroll Controller is a small WiFi connected controller for controlling teleprompter scrolling on a VerbalEyes servers.
+When connected to a VerbalEyes project, the scrolling speed can be controlled using a !! and the scroll position can be reset back to the top of the document with a button press.
+It is built on the ESP8266 platform but the core API can be used separately to implement it on other platforms as well.
+<!-- It works by connecting to Wi-Fi and sending the commands to the server over a WebSocket connection. -->
 
-## Wiring
+
+
+## Core Library
+The core library can be used to implement the scroll controller on other platforms.
+It is written in C and works in C99+ as well as C++.
+Configuration if normally done over USB, but can work with any unidirectional serial stream using a simple text based protocol. <!-- maybe this is too detailed information for the root readme and should be moved to the src/readme instead? -->
+More details on how the core API works can be found [here](./src/README.md).
+
+<!--
+Because of this, the functions to access to Wi-Fi, sockets, persistent storage and logging are not defined.
+These have to be implemented to work on the micro controller that it is used on by defining all the required functions the library uses. These functions are prototyped in `./src/scroll-controller.h` and documented together with the available API functions in [./src/README.md](./src/README.md). -->
+
+
+
+## ESP8266 Build
+<!-- The built-in implementation has only been tested to work on the ESP8266. -->
+<!-- It is an Arduino project with -->
+<!-- This is an implementation of the library that works on the ESP8266. -->
+
+### LED indicator
+The built-in status LED on the ESP8266 vaguely indicates what the speed controller is doing.
+To get more detailed information about what is happening, connect the device to a computer to read its logs.
+The easiest way to read the logs is to use either the [bash script](./tools/configure_bash) or the [web interface](./tools/configure_web), but it is also possible to read logs manually from the serial port (instructions for manually reading and writing over serial [here](./tools/configure_bash/README.md)).
+
+#### LED statuses
+| Blinks | Description |
+| --- | -
+| Slow | If the built-in status LED blinks once every 8 seconds, that means the scroll controller is connected to a server and ready to transmit data.
+| Fast | When the built-in status LED blinks continuously, the scroll controller is either not connected to a server and/or is in the middle of processing configuration data.
+
+### Configuration
+The scroll controller is configured from a computer by connecting to it over USB and either using the [bash script](./tools/configure_bash), the [web interface](./tools/configure_web) or manually sending data to it (instructions for manually reading and writing over serial [here](./tools/configure_bash/README.md)).
+<!-- A list of possible error messages that could occur can be found in [here](./src/README.md). -->
+<!-- information about the errors that can occur is probably not needed here -->
+
+### Build
+This project requires wiring up the hardware and flashing the custom firmware.
+
+#### Components
+* 1x Wemos D1 Mini
+* 1x Potentiometer (resistance doesn't really matter)
+* 1x Button (optional)
+* Some wires (red, black and other)
+
+#### Wiring
 TODO: Add details on how the board should be wired
 
-## LED indicator
-The built-in status LED blinks once every 8 seconds whenever the device is connected to a server and is not parsing incoming configuration data.
-When it is actively trying to connect to a server or parses configuration data, it blinks rapidly.
+#### Flashing Firmware
+Flashing the firmware is done using the Arduino IDE.
+1. Download the Arduino IDE if it is not installed already.
+2. Add support for the ESP8266 by following [these instructions](no instructions added yet)
+3. Open the file `teleprompter-arduino.ino` in the Arduino IDE.
+4. Compile and upload the project to the device.
+This includes plugging it in over USB, selecting the correct serial port and maybe more.
 
 
 
-# Core Library
-The core library should be able to run on anything supporting C99 or C++.
-Because of this, the functions to access to Wi-Fi, sockets, persistent storage and logging are not defined.
-These have to be implemented to work on the micro controller that it is used on by defining all the required functions the library uses. These functions are prototyped in `./src/scroll-controller.h` and documented together with the available API functions in [./src/README.md](../src/README.md).
 
-
-
+<!--
 # Configuration
 * Configuration of the device is done with a simple text based serial protocol consisting of a key-value-pair structure like this `key=value\n` where `\n` has to be encoded as an actual LF character.
 * Spaces before or after the key or value are not trimmed out, so `key = value\n` would not be the same as `key=value\n`.
@@ -175,3 +217,4 @@ cat < path
 cat < path
 ```
 * Windows: ?
+-->
