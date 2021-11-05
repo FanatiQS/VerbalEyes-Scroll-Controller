@@ -161,3 +161,64 @@ void verbaleyes_log(const char* msg, size_t len)
 * The message is a null terminated character array that can include any character sent to the configuration through the `verbaleyes_configure` function.
 * The `len` arguments is not required to be used.
 * Messages do not always end with newline, so if something like printf is used that buffers messages up to newlines, it needs to be flushed for some messages to not be very delayed, like progress bars and configuration.
+
+
+
+## Configuration protocol
+The VerbalEyes Scroll Controller uses a simple text base protocol for all configurations.
+It is one or more key-value pairs ending with an extra line feed, like this `key=value\n\n`.
+Multiple configurations are concatenated, like this `key1=value1\nkeyvalue2\n\n`.
+
+* Note that spaces are not trimmed, so `key = value\n` would not work.
+* If configuration is opened but never exited, configuration will simply act as if it received an extra line feed after being open for 60 seconds.
+This timeout can be configured at compile-time with the C macro `CONFIGTIMEOUT`.
+* If an error occurs after delimiter has been received, all further data is ignored until a LF is reached. This is by design.
+* An alternative for the `=` delimiter is to use a tab instead.
+* If input value is longer than the max length for that key, the configuration system will not add the overflowing data but everything up until max length is reached will be written to persistent storage. This will result in incorrect data in storage if error occurred.
+* Comments are supported if the first character is a `#` sign, everything up to next LF will be ignored.
+* Keys are case sensitive.
+* Configuration system is meant to be used by sending in an entire configuration string at once. Even though it works sending it characters as they are typed, the user experience is sub par with, no indication that a configuration value has been null terminated until the next key starts being processed or configuration mode is exited, and no support for backspace other than aborting and starting over.
+
+### Configuration item types
+These are the types for configuration items
+| Type 				| Minimum Value | Maximum Value | Description |
+| ----------------- | ------------- | ------------- | -
+| string 			| n/a 			| n/a 			| A string is a just a plain string
+| unsigned short 	| 0 			| 65535 		| An unsigned short is a string representation of a 16 bit unsigned integer.
+| signed short 		| -32767 		| 32767 		| A signed short is a string representation of a 16 bit signed integer. A `-` character is used before the number to indicate it is negative.
+| percent 			| 0 			| 100 			| A percent value is a string representation of a percentage value not including the `%` sign. Values above 100 are technically possible but have undefined behaviour.
+
+### Configuration items
+These are all the configurations that can be configured
+| Key			| Type 				| Max length 	| Description |
+| ------------- | ----------------- | ------------- | -
+| ssid 			| string			| 32			| The SSID (WiFi) to connect to.
+| ssidkey 		| string 			| 63			| The passphrase to the SSID.
+| host 			| string 			| 64			| The host (server) to connect to. Can be an IP address or a DNS name.
+| port 			| unsigned short 	| n/a			| The port to use when connecting to the host. Usually 80 for HTTP and 443 for HTTPs.
+| path 			| string 			| 32			| The path to use on the host. Requires a `/` for root.
+| proj 			| string 			| 32 			| The VerbalEyes project to connect to.
+| projkey 		| string 			| 32 			| The password to the VerbalEyes project.
+| speedmin 		| signed short 		| n/a 			| The speed to send when the potentiometer is turned all the way in one direction.
+| speedmax 		| signed short 		| n/a 			| The speed to send when the potentiometer is turned all the way in the other direction.
+| deadzone 		| percent 			| n/a 			| The size of the deadzone around the speed value 0 in percentage of entire range. Used to make 0 mark bigger on the potentiometer.
+| callow 		| unsigned short 	| n/a 			| The minimum value from the analog read. Used for calibrating potentiometer when it does not give 0 at the limit.
+| calhigh 		| unsigned short 	| n/a 			| The maximum value from the analog read. Used for calibrating the maximum value from the potentiometer. Depends on resolution of ADC on micro controller and used for calibrating potentiometer when it does not give max ADC value at the limit.
+| sensitivity 	| unsigned short	| n/a 			| Defines the step size for analog read. Used to remove analog jitter.
+
+### Examples
+* To configure the Wi-Fi SSID to `myWifi`, it would look like this `ssid=myWifi\n\n`
+* To configure the port to 80, it would look like this `port=80\n\n`
+* To configure minimum speed to -10, it would look like this `speedmin=-10\n\n`
+* To combine all the examples above would look like this `ssid=myWifi\nport=80\nspeedmin=-10\n\n`
+
+### Errors
+This is a list of all errors that can occur in the configuration parser
+| Error message			| Description
+| --------------------- | -
+| [ ] Aborted 			| Key input was not completed before being canceled
+| [ ] No matching key 	| The received key did not match a config item
+| Invalid input (%c) 	| Numerical input received non-numerical character
+| Value was too high and clamped down to maximum value xxxxx | Integer received a value higher than the maximum value for a 16 bit integer
+| Value was too low and clamped up to minimum value of -xxxxx | Signed integer received a value lower than the minimum value for a 16 bit integer
+| Maximum input length reached | The text input has exceeded the maximum length for the specified config item
