@@ -54,7 +54,7 @@ Useful to remove sensitive data like WiFi credentials.
 ## Manual configuration
 Configurations can be done manually using the command line without any external tools.
 
-#### Listing serial devices
+### Listing serial devices
 Before we can read or write data, we need to know where the serial device can be located.
 These commands list all serial devices connected to the computer.
 Hopefully there is only 1 serial device connected to make it easier to know which is which.
@@ -72,7 +72,7 @@ ls /dev/ttyUSB*
 ?
 ```
 
-#### Writing:
+### Writing:
 Replace "path" with selected device port from [ls](#listing-serial-devices).
 
 * OSX:
@@ -88,7 +88,7 @@ printf 'key=value\n\n' > path
 ?
 ```
 
-#### Reading:
+### Reading:
 Replace "path" with selected device port from [ls](#listing-serial-devices)
 
 * OSX:
