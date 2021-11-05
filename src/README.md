@@ -43,7 +43,7 @@ void verbaleyes_resetoffset(const bool input)
 
 ### Required function implementations
 Just like C requires you to define the function `main`, there are functions that you are required to define for everything to work.
-There are 11 functions that are used by the speed controller but not defined.
+There are 10 functions that are used by the speed controller but not defined.
 These functions are for doing things like logging, handling persistent data, connecting to the network, connecting to and reading/writing to the socket.
 These actions all depend on the platform your working with and are therefore not implemented by default.
 
