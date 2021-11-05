@@ -33,3 +33,17 @@ Enabled with `-s <seconds>` or `--sleep <seconds>` where seconds is the number o
 The sleep option is more a debug option.
 It delays writing data to let the reader startup first.
 When data is not printed to the console after writing a configuration, it can be useful to tell it to wait 1 second before sending anything by using the option `-s 1`.
+
+
+
+## Presets
+Presets can be created, either manually or with the `--out` option with the configure script.
+They can later be written to a device by using the `--path` option.
+Comments are supported with the hash sign.
+
+### Calibrate
+TODO: Add calibrate instructions for using config_calibrate preset.
+
+### Clear
+This is a simple preset to clear a devices persistent storage.
+Useful to remove sensitive data like WiFi credentials.
