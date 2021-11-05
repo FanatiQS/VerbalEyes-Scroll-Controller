@@ -124,13 +124,24 @@ void setup() {
 }
 
 void loop() {
+	// Blinks built-in LED every 256ms or once for 256ms every 8192ms
+	static long blinkMask = 0x100;
+	static bool blinkState = 0;
+	bool blinkValue = (millis() & blinkMask) != 0;
+	if (blinkValue != blinkState) {
+		blinkState = blinkValue;
+		digitalWrite(LED_BUILTIN, blinkValue);
+	}
+
 	// Updates config data from serial input. Restarts loop if handling serial data
 	if (verbaleyes_configure(Serial.read())) {
+		blinkMask = 0x100;
 		return;
 	}
 
 	// Ensure network and socket are setup and connected. Restarts loop if setup is not done
 	if (verbaleyes_initialize()) {
+		blinkMask = 0x100;
 		return;
 	}
 
@@ -140,6 +151,11 @@ void loop() {
 	// Jump to top of document if button at pin 0 is pulled high
 	verbaleyes_resetoffset(digitalRead(D3));
 
+	// Blinks light every 8192ms when idle
+	if (blinkMask != 0x1F00) {
+		blinkMask = 0x1F00;
+		digitalWrite(LED_BUILTIN, true);
+	}
 
 	// Only reads pins 25 times per second
 	delay(1000 / 25);

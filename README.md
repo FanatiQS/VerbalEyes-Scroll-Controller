@@ -10,6 +10,10 @@ Configuration is done over the USB connection with more details further down in 
 ## Wiring
 TODO: Add details on how the board should be wired
 
+## LED indicator
+The built-in status LED blinks once every 8 seconds whenever the device is connected to a server and is not parsing incoming configuration data.
+When it is actively trying to connect to a server or parses configuration data, it blinks rapidly.
+
 
 
 # Core Library
