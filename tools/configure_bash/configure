@@ -41,10 +41,10 @@ while [[ $# -gt 0 ]]; do
 			echo "OPTIONS:"
 			echo "	-h, --help    Prints help information"
 			echo "	-r, --read    Reads logs from device until disconnected or terminated"
-			echo "	-o, --out     Sets the output file/device to use, requires 1 argument"
 			echo "	-f, --form    Displays a form for sending configurations to the output"
+			echo "	-o, --out     Sets the output file/device to use, requires 1 argument"
+			echo "	-p, --path    Sends the content of file to the output, requires 1 argument"
 			echo "	-e, --eval    Sends configuration key-value pair to the output, requires 1 argument"
-			echo "	-p, --path    Sends the content of file at path to the output, requires 1 argument"
 			echo "	-s, --sleep   Sets the delay in seconds before writing data, requires 1 argument"
 			exit
 			;;
