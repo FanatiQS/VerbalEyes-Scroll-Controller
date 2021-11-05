@@ -33,11 +33,13 @@ int8_t verbaleyes_initialize()
 ```c
 void verbaleyes_setspeed(const uint16_t input)
 ```
+* TODO!!
 
 #### verbaleyes_resetoffset
 ```c
 void verbaleyes_resetoffset(const bool input)
 ```
+* TODO!!
 
 
 
@@ -80,6 +82,7 @@ void verbaleyes_conf_commit()
 * Buffering is good for flash memory since it can only write data so many times while an actual EEPROM does not benefit from buffering the data.
 
 #### Network
+TODO!!
 
 ##### Connect
 ```c
@@ -106,6 +109,7 @@ int8_t verbaleyes_network_connected();
 * Type `int8_t` is the same as `signed char` on most systems.
 
 #### Socket
+TODO!!
 
 ###### Connect
 ```c
@@ -152,6 +156,7 @@ void verbaleyes_socket_write(const uint8_t* data, const size_t len)
 * Type `uint8_t` is the same as `unsigned char` on most systems.
 
 #### Logging
+TODO!!
 
 ###### Log
 ```c
