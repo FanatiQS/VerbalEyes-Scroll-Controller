@@ -72,7 +72,7 @@ ls /dev/ttyUSB*
 ```
 
 #### Writing:
-Replace "path" with selected device port from [ls](###Listing-serial-devices).
+Replace "path" with selected device port from [ls](#listing-serial-devices).
 
 * OSX:
 ```sh
@@ -88,7 +88,7 @@ printf 'key=value\n\n' > path
 ```
 
 #### Reading:
-Replace "path" with selected device port from [ls](###Listing-serial-devices)
+Replace "path" with selected device port from [ls](#listing-serial-devices)
 
 * OSX:
 ```sh
