@@ -2,6 +2,7 @@
 This is a script to easily configure a VerbalEyes Scroll Controller.
 It can both read logs from the device as well as of course write configurations.
 Configurations can either be written directly to a scroll controller or to a preset file.
+A list of errors that can occur can be found [here](../../src/README.md#errors).
 
 ### Read
 Enabled with `-r` or `--read`.
