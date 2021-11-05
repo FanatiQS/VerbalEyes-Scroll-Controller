@@ -1,1 +1,35 @@
 ## Usage
+This is a script to easily configure a VerbalEyes Scroll Controller.
+It can both read logs from the device as well as of course write configurations.
+Configurations can either be written directly to a scroll controller or to a preset file.
+
+### Read
+Enabled with `-r` or `--read`.
+It reads logs from the device.
+Can be combined with writing data or used by itself.
+
+### Form
+Enabled with `-f` or `--form`.
+It opens an interactive form to add fields with a little bit of an interface.
+The form is used by default if no paths or eval strings are used.
+
+### Output
+Enabled with `-o <path>` or `--out <path>` where path is where to output the data to.
+This can be either a serial device or a file path.
+Details on finding serial device paths can be found [here](no-path-yet-but-should-be-in-this-document).
+If output to a file, that file can then be used with optino `--path` to write that data to a device.
+
+### Path
+Enabled with `-p <path>` or `--path <path>` where path is the file to read configuration from.
+This is useful for reading in presets that was created earlier with the `--out` option.
+
+### Eval
+Enabled with `-e <data>` or `--eval <data>` where data is the configuration data to add.
+The data is a key-value pair and needs to follow the [configuration protocol](./src/README.md).
+That is why this option is not recommended if you are not very familiar with the configuration system.
+
+### Sleep
+Enabled with `-s <seconds>` or `--sleep <seconds>` where seconds is the number of seconds to sleep.
+The sleep option is more a debug option.
+It delays writing data to let the reader startup first.
+When data is not printed to the console after writing a configuration, it can be useful to tell it to wait 1 second before sending anything by using the option `-s 1`.
