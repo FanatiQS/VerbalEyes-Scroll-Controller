@@ -16,7 +16,7 @@ The form is used by default if no paths or eval strings are used.
 ### Output
 Enabled with `-o <path>` or `--out <path>` where path is where to output the data to.
 This can be either a serial device or a file path.
-Details on finding serial device paths can be found [here](####Listing-serial-devices).
+Details on finding serial device paths can be found [here](#listing-serial-devices).
 If output to a file, that file can then be used with optino `--path` to write that data to a device.
 
 ### Path
@@ -25,7 +25,7 @@ This is useful for reading in presets that was created earlier with the `--out` 
 
 ### Eval
 Enabled with `-e <data>` or `--eval <data>` where data is the configuration data to add.
-The data is a key-value pair and needs to follow the [configuration protocol](./src/README.md).
+The data is a key-value pair and needs to follow the [configuration protocol](../../src/README.md).
 That is why this option is not recommended if you are not very familiar with the configuration protocol.
 
 ### Sleep
