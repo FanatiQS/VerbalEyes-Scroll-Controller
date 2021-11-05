@@ -38,8 +38,6 @@ The easiest way to read the logs is to use either the [bash script](./tools/conf
 
 ### Configuration
 The scroll controller is configured from a computer by connecting to it over USB and either using the [bash script](./tools/configure_bash), the [web interface](./tools/configure_web) or manually sending data to it (instructions for manually reading and writing over serial [here](./tools/configure_bash/README.md)).
-<!-- A list of possible error messages that could occur can be found in [here](./src/README.md). -->
-<!-- information about the errors that can occur is probably not needed here -->
 
 ### Build
 This project requires wiring up the hardware and flashing the custom firmware.
