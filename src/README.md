@@ -6,16 +6,16 @@
 
 ### Functions
 The API is built in a way so that the functions only allow the next function to be called if it returns false but is always allowed to move back to any previous function.
-For example, the function `verbaleyes_configure` is always allowed to be called, but `verbaleyes_initialize` is only allowed to be called if `verbaleyes_configure` returns `false`.
+For example, the function `verbaleyes_configure` is always allowed to be called, but `verbaleyes_initialize` is only allowed to be called if `verbaleyes_configure` returns false.
 
 #### verbaleyes_configure
 ```c
-bool verbaleyes_configure(const uint16_t input)
+bool verbaleyes_configure(const uint16_t value)
 ```
 This function is used to update the configuration from the outside.
 It handles an input string one character at a time.
 The input string must conform to the [configuration protocol](#configuration-protocol).
-* The argument `input` is any 8-bit character or EOF if there is input data to read.
+* The argument `value` is any 8-bit character or EOF if there is input data to read.
 * The return value is a boolean indicating if it is currently in configuration mode and handling data.
 * If it is in configuration mode, it is not allowed to call `verbaleyes_initialize`, `verbaleyes_setspeed` or `verbaleyes_resetoffset` until all data is handled and the configuration mode has been exited (returns false).
 * If all data is handled and the function is still in configuration mode, the data was not a complete or a valid configuration instruction. Configuration mode will automatically exit if being open without a successful update for a specified amount of time.
