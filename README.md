@@ -26,6 +26,7 @@ To get more detailed information about what is happening, connect the device to 
 The easiest way to read the logs is to use either the [bash script](./tools/configure_bash) or the [web interface](./tools/configure_web), but it is also possible to read logs manually from the serial port (instructions for manually reading and writing over serial [here](./tools/configure_bash/README.md)).
 
 #### LED statuses
+
 | Blinks | Description |
 | --- | -
 | Slow | If the built-in status LED blinks once every 8 seconds, that means the scroll controller is connected to a server and ready to transmit data.
