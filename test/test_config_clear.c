@@ -17,7 +17,7 @@ void verbaleyes_socket_write(const uint8_t* str, const size_t len) {}
 
 
 
-//!!
+// Runs the test
 int main() {
 	// Clears conf buffer
 	conf_clear();
