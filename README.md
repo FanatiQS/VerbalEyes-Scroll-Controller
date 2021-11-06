@@ -14,10 +14,6 @@ It is written in C and works in C99 or newer as well as C++.
 Configuration is normally done over USB, but can work with any unidirectional serial stream using a simple text based protocol. <!-- maybe this is too detailed information for the root readme and should be moved to the src/readme instead? -->
 More details on how the core API works can be found [here](./src/README.md).
 
-<!--
-Because of this, the functions to access to Wi-Fi, sockets, persistent storage and logging are not defined.
-These have to be implemented to work on the micro controller that it is used on by defining all the required functions the library uses. These functions are prototyped in `./src/scroll-controller.h` and documented together with the available API functions in [./src/README.md](./src/README.md). -->
-
 
 
 ## ESP8266 Build

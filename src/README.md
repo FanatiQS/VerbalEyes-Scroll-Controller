@@ -56,8 +56,9 @@ This function resets the scroll position on button press.
 ### Required function implementations
 Just like C requires you to define the function `main`, there are functions that you are required to define for everything to work.
 There are 10 functions that are used by the speed controller but not defined.
-These functions are for doing things like logging, handling persistent data, connecting to the network, connecting to and reading/writing to the socket.
-These actions all depend on the platform your working with and are therefore not implemented by default.
+These functions are related to things like logging, handling persistent data, connecting to the network and reading/writing to sockets.
+These actions all depend on the platform you're working with and is the reason they are not implemented by default.
+These functions are prototyped in `scroll-controller.h`
 
 #### Configuration
 Configuration functions are about handling persistent data.
