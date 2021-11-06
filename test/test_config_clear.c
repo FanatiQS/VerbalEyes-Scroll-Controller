@@ -17,9 +17,7 @@ void verbaleyes_socket_write(const uint8_t* str, const size_t len) {}
 
 
 
-// Number of errors occuring
-int numberOfErrors = 0;
-
+//!!
 int main() {
 	// Clears conf buffer
 	conf_clear();
@@ -41,6 +39,7 @@ int main() {
 	while ((c = fgetc(file)) != EOF) {
 		verbaleyes_configure(c);
 	}
+	verbaleyes_configure('\0');
 
 	// Verifies it cleared entire conf buffer and commited it
 	printf("\n");
