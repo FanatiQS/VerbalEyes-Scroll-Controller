@@ -32,18 +32,23 @@ This function is used to connect to a VerbalEyes server and some other configura
 	* -1: Connecting has failed somehow.
 * The return values -1 and 1 does not need to be handled separately and is only available to detect when a fail has occurred. This way, they can both be treated as a truthy values.
 * If it does not return 0 (false), the functions `verbaleyes_setspeed` and `verbaleyes_resetoffset` are not allowed to be called. The function `verbaleyes_configure` is however allowed to be called.
+* This function is only allowed to be called if `verbaleyes_configure` returned false.
 
 #### verbaleyes_setspeed
 ```c
-void verbaleyes_setspeed(const uint16_t input)
+void verbaleyes_setspeed(const uint16_t value)
 ```
-* TODO!!
+This function sets the scroll speed on the server if it needs to be updated.
+* The argument `value` is a reading from an analog input.
+* This function is only allowed to be called if both `verbaleyes_configure` and `verbaleyes_initialize` returned false.
 
 #### verbaleyes_resetoffset
 ```c
-void verbaleyes_resetoffset(const bool input)
+void verbaleyes_resetoffset(const bool value)
 ```
-* TODO!!
+This function resets the scroll position on button press.
+* The argument `value` is a reading from a digital input.
+* This function is only allowed to be called if both `verbaleyes_configure` and `verbaleyes_initialize` returned false.
 
 
 
