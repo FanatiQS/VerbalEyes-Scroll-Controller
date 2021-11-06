@@ -10,8 +10,8 @@ It is built on the ESP8266 platform but the core API can be used separately to i
 
 ## Core Library
 The core library can be used to implement the scroll controller on other platforms.
-It is written in C and works in C99+ as well as C++.
-Configuration if normally done over USB, but can work with any unidirectional serial stream using a simple text based protocol. <!-- maybe this is too detailed information for the root readme and should be moved to the src/readme instead? -->
+It is written in C and works in C99 or newer as well as C++.
+Configuration is normally done over USB, but can work with any unidirectional serial stream using a simple text based protocol. <!-- maybe this is too detailed information for the root readme and should be moved to the src/readme instead? -->
 More details on how the core API works can be found [here](./src/README.md).
 
 <!--
