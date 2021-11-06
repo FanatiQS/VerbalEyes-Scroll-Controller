@@ -109,7 +109,7 @@ void verbaleyes_network_connect(const char* ssid, const char* ssidkey)
 
 ###### Connected
 ```c
-int8_t verbaleyes_network_connected();
+int8_t verbaleyes_network_connected()
 ```
 * This function returns the state of the network connection.
 * It basically returns a boolean with an extra state for fail.
