@@ -12,24 +12,26 @@ For example, the function `verbaleyes_configure` is always allowed to be called,
 ```c
 bool verbaleyes_configure(const uint16_t input)
 ```
-This is the way to change the configuration from the outside.
+This function is used to update the configuration from the outside.
 It handles an input string one character at a time.
-* The argument `input` is any 8-bit character or EOF if there is input / data to read.
+The input string must conform to the [configuration protocol](#configuration-protocol).
+* The argument `input` is any 8-bit character or EOF if there is input data to read.
 * The return value is a boolean indicating if it is currently in configuration mode and handling data.
-* If it is in configuration mode, it is not allowed to call `verbaleyes_initialize`, `verbaleyes_setspeed` or `verbaleyes_resetoffset` until all data is handled and the configuration mode has been exited and the function returns false / 0.
-* If all data is handled and the function is still in configuration mode, the data was not a complete or a valid configuration instruction. Configuration mode will automatically exit if being open without a successful update for a specified amount of time. This time can be customised by defining the macro `CONFIGTIMEOUT` for the file `./src/scroll_controller.c`.
-* Information about the structure of the input data can be found in the [README](../readme.md).
+* If it is in configuration mode, it is not allowed to call `verbaleyes_initialize`, `verbaleyes_setspeed` or `verbaleyes_resetoffset` until all data is handled and the configuration mode has been exited (returns false).
+* If all data is handled and the function is still in configuration mode, the data was not a complete or a valid configuration instruction. Configuration mode will automatically exit if being open without a successful update for a specified amount of time.
+This time can be customised by defining the macro `CONFIGTIMEOUT` for the file `./src/scroll_controller.c`.
 
 #### verbaleyes_initialize
 ```c
 int8_t verbaleyes_initialize()
 ```
+This function is used to connect to a VerbalEyes server and some other configuration setup.
 * The return value is one of three states:
 	* 0: Everything is connected and working.
 	* 1: It is not connected but is working on it.
 	* -1: Connecting has failed somehow.
 * The return values -1 and 1 does not need to be handled separately and is only available to detect when a fail has occurred. This way, they can both be treated as a truthy values.
-* If it does not return 0, the functions `verbaleyes_setspeed` and `verbaleyes_resetoffset` are not allowed to be called. The function `verbaleyes_configure` is allowed to be called though.
+* If it does not return 0 (false), the functions `verbaleyes_setspeed` and `verbaleyes_resetoffset` are not allowed to be called. The function `verbaleyes_configure` is however allowed to be called.
 
 #### verbaleyes_setspeed
 ```c
