@@ -23,7 +23,7 @@ int main() {
 	conf_clear();
 
 	// Prints logs
-	log_setflags(LOGFLAGPRINT);
+	// log_setflags(LOGFLAGPRINT);
 
 	// Opens configuration file to test
 	FILE* file = fopen("../tools/configure_bash/config_clear", "r");
