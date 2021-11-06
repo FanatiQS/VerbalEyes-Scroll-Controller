@@ -1,4 +1,6 @@
-# Implementing VerbalEyes Speed Controller
+# VerbalEyes Speed Controller - Core Library
+The core library can be used to implement the scroll controller on new platforms.
+It is written in C and works in C99 or newer as well as C++.
 
 
 
@@ -181,7 +183,7 @@ void verbaleyes_log(const char* msg, size_t len)
 
 
 ## Configuration protocol
-The VerbalEyes Scroll Controller uses a simple text base protocol for all configurations.
+The VerbalEyes Scroll Controller uses a simple text base protocol for all configurations and is normally done over USB, but can work with any unidirectional serial stream.
 It is one or more key-value pairs ending with an extra line feed, like this `key=value\n\n`.
 Multiple configurations are concatenated, like this `key1=value1\nkeyvalue2\n\n`.
 
