@@ -23,7 +23,7 @@ More details on how the core API works can be found [here](./src/README.md).
 ### LED indicator
 The built-in status LED on the ESP8266 vaguely indicates what the speed controller is doing.
 To get more detailed information about what is happening, connect the device to a computer to read its logs.
-The easiest way to read the logs is to use either the [bash script](./tools/configure_bash) or the [web interface](./tools/configure_web), but it is also possible to read logs manually from the serial port (instructions for manually reading and writing over serial [here](./tools/configure_bash/README.md)).
+The easiest way to read the logs is to use either the [bash script](./tools/configure_bash) or the [web interface](./tools/configure_web), but it is also possible to read logs manually from the serial port (instructions for manually reading and writing over serial [here](./tools/configure_bash/README.md#manual-configuration)).
 
 #### LED statuses
 
@@ -33,7 +33,7 @@ The easiest way to read the logs is to use either the [bash script](./tools/conf
 | Fast | When the built-in status LED blinks continuously, the scroll controller is either not connected to a server and/or is in the middle of processing configuration data.
 
 ### Configuration
-The scroll controller is configured from a computer by connecting to it over USB and either using the [bash script](./tools/configure_bash), the [web interface](./tools/configure_web) or manually sending data to it (instructions for manually reading and writing over serial [here](./tools/configure_bash/README.md)).
+The scroll controller is configured from a computer by connecting to it over USB and either using the [bash script](./tools/configure_bash), the [web interface](./tools/configure_web) or manually sending data to it (instructions for manually reading and writing over serial [here](./tools/configure_bash/README.md#manual-configuration)).
 
 ### Build
 This project requires wiring up the hardware and flashing the custom firmware.
