@@ -58,7 +58,6 @@ There are 10 functions that are used by the speed controller but not defined.
 These functions are for doing things like logging, handling persistent data, connecting to the network, connecting to and reading/writing to the socket.
 These actions all depend on the platform your working with and are therefore not implemented by default.
 
-
 #### Configuration
 Configuration functions are about handling persistent data.
 This data is used for things like wifi, server address and calibration.
@@ -87,11 +86,11 @@ void verbaleyes_conf_write(const uint16_t addr, const char value)
 void verbaleyes_conf_commit()
 ```
 * If `verbaleyes_conf_write` buffers the data instead of writing it right away, this function would then write all the buffered data to persistent storage.
-* When data is buffered, this function is most likely not required to be defined.
+* When data is not buffered, this function is most likely not required and can be defined as an empty block.
 * Buffering is good for flash memory since it can only write data so many times while an actual EEPROM does not benefit from buffering the data.
 
 #### Network
-TODO!!
+Network function are related to the wireless network connection.
 
 ##### Connect
 ```c
@@ -102,7 +101,7 @@ void verbaleyes_network_connect(const char* ssid, const char* ssidkey)
 * If connecting to network is a sync function, `verbaleyes_network_connected` should return 1 for success and -1 for fail since -1 will fail right away while 0 continues waiting for network to be connected.
 * If there is already an active network connection, that one should be disconnected and a new one should be established.
 * Both `ssid` and `ssidkey` are null terminated character arrays that can include any character sent to the configuration through the `verbaleyes_configure` function.
-* Maximum lengths for `ssid` and `ssidkey` can be found in [readme](should include link here).
+* Maximum lengths for `ssid` and `ssidkey` can be found [here](#configuration-items).
 
 ###### Connected
 ```c
@@ -118,7 +117,7 @@ int8_t verbaleyes_network_connected();
 * Type `int8_t` is the same as `signed char` on most systems.
 
 #### Socket
-TODO!!
+Socket functions are related to the socket connection to the server.
 
 ###### Connect
 ```c
@@ -130,8 +129,9 @@ void verbaleyes_socket_connect(const char* host, const uint16_t port)
 * If there is already an active socket connection, that one should be disconnected and a new one should be established.
 * If there is still buffered data from a previous socket, that data will automatically be flushed before establishing the WebSocket connection.
 * The `host` argument is a null terminated character array that can include any character sent to the configuration through the `verbaleyes_configure` function.
-* Maximum lengths for `host` can be found in [readme](should include link here).
+* Maximum lengths for `host` can be found [here](#configuration-items).
 * The `port` can be any unsigned 16-bit number.
+* Type `uint16_t` is the same as `unsigned short` on most systems.
 
 ###### Connected
 ```c
@@ -165,13 +165,13 @@ void verbaleyes_socket_write(const uint8_t* data, const size_t len)
 * Type `uint8_t` is the same as `unsigned char` on most systems.
 
 #### Logging
-TODO!!
+Logging functions are related to printing the logs.
 
 ###### Log
 ```c
 void verbaleyes_log(const char* msg, size_t len)
 ```
-* Logs messages about what is going on and is the only way to know that is going wrong when something happens.
+* Logs messages about what is going on and is the best way to know that is going on in the internals.
 * The message is a null terminated character array that can include any character sent to the configuration through the `verbaleyes_configure` function.
 * The `len` arguments is not required to be used.
 * Messages do not always end with newline, so if something like printf is used that buffers messages up to newlines, it needs to be flushed for some messages to not be very delayed, like progress bars and configuration.
