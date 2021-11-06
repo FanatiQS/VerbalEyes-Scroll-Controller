@@ -199,6 +199,7 @@ This timeout can be configured at compile-time with the C macro `CONFIGTIMEOUT`.
 
 ### Configuration item types
 These are the types for configuration items
+
 | Type 				| Minimum Value | Maximum Value | Description |
 | ----------------- | ------------- | ------------- | -
 | string 			| n/a 			| n/a 			| A string is a just a plain string
@@ -208,6 +209,7 @@ These are the types for configuration items
 
 ### Configuration items
 These are all the configurations that can be configured
+
 | Key			| Type 				| Max length 	| Description |
 | ------------- | ----------------- | ------------- | -
 | ssid 			| string			| 32			| The SSID (WiFi) to connect to.
@@ -232,6 +234,7 @@ These are all the configurations that can be configured
 
 ### Errors
 This is a list of all errors that can occur in the configuration parser
+
 | Error message			| Description
 | --------------------- | -
 | [ ] Aborted 			| Key input was not completed before being canceled
