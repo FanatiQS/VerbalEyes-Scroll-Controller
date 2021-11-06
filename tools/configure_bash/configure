@@ -186,7 +186,7 @@ sleep $sleepLen; printf "$buffer" > $path &
 if [[ $gotRead -eq 0 ]]; then
 	LC_ALL=C sed -n '/\[/,//{
 		p
-		/Configuration saved/q
+		/Configuration/q
 	}' $path
 # Reads data until exited
 else

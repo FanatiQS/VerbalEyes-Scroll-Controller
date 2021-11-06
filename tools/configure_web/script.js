@@ -75,7 +75,7 @@ document.querySelector('#webserial-upload').onclick = async function () {
 			}
 		}
 		// Exits after configuration ends
-		else if (msg.startsWith("Configuration saved\n")) {
+		else if (msg.startsWith("Configuration\n")) {
 			log("Configuration saved\n");
 			return;
 		}

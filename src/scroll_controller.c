@@ -432,7 +432,7 @@ bool verbaleyes_configure(const int16_t c) {
 				// Clears active flag after double LF
 				else {
 					confFlags &= ~FLAGACTIVE;
-					if (confFlags == 0) logprintf("\r\n");
+					if (confFlags == 0) logprintf("\r\nConfiguration canceled\r\n");
 				}
 			}
 			// Does not continue processing data
