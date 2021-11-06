@@ -3,8 +3,10 @@
 
 
 ## Usage
+
 ### Functions
 The API is built in a way so that the functions only allow the next function to be called if it returns false but is always allowed to move back to any previous function.
+For example, the function `verbaleyes_configure` is always allowed to be called, but `verbaleyes_initialize` is only allowed to be called if `verbaleyes_configure` returns `false`.
 
 #### verbaleyes_configure
 ```c
