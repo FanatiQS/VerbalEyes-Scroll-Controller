@@ -3,9 +3,9 @@
 
 #include "../src/scroll_controller.h"
 
+#include "./helpers/print_colors.h"
 #include "./helpers/conf.h"
 #include "./helpers/log.h"
-#include "./helpers/print_colors.h"
 
 // Only defined to not throw compilation errors
 void verbaleyes_network_connect(const char* ssid, const char* key) {}
