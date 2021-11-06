@@ -1,4 +1,4 @@
-# VerbalEyes Speed Controller - Core Library
+# VerbalEyes Scroll Controller - Core Library
 The core library can be used to implement the scroll controller on new platforms.
 It is written in C and works in C99 or newer as well as C++.
 
