@@ -1,5 +1,5 @@
 EXE = ./tmp
-LIB = ../lib
+LIB = lib
 LIBBEARSSL = $(LIB)/bearssl
 SRC = ../src/scroll_controller.c
 A = gcc $(SRC) $(LIBBEARSSL)/*.c -I$(LIB) -o $(EXE) ./helpers/*.c
