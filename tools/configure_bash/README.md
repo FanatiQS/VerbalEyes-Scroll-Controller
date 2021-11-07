@@ -1,3 +1,5 @@
+# VerbalEyes Scroll Controller - Bash Configurator
+
 ## Usage
 This is a script to easily configure a VerbalEyes Scroll Controller.
 It can both read logs from the device as well as of course write configurations.
