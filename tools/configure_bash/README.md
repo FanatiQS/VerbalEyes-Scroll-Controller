@@ -2,7 +2,6 @@
 This is a script to easily configure a VerbalEyes Scroll Controller.
 It can both read logs from the device as well as of course write configurations.
 Configurations can either be written directly to a scroll controller or to a preset file.
-A list of errors that can occur can be found [here](../../src/README.md#errors).
 
 ## Usage
 The script has these options available.
@@ -172,3 +171,9 @@ I dunno if its even possible :/
 ```sh
 stty -echo -F `ls /dev/cu.usbserial-* | head -1`
 ```
+
+## Errors
+* Options that are not recognised will throw and error.
+* If the option `--out` is not used, the script tries to automatically detect a serial device to use.
+If unable to, an error will be thrown.
+* A list of errors that can occur on the scroll controller when parsing input can be found [here](../../src/README.md#errors).
