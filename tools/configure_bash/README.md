@@ -72,7 +72,7 @@ ls /dev/ttyUSB*
 ?
 ```
 
-### Writing:
+### Writing
 Replace "path" with selected device port from [ls](#listing-serial-devices).
 
 The protocol for how the data should be defined is available [here](../../src/README.md#configuration-protocol).
@@ -90,7 +90,7 @@ printf 'key=value\n\n' > path
 ?
 ```
 
-### Reading:
+### Reading
 Replace "path" with selected device port from [ls](#listing-serial-devices)
 
 * OSX:
