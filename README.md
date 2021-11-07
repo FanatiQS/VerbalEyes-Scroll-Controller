@@ -2,7 +2,7 @@
 
 ## Introduction
 The VerbalEyes Scroll Controller is a small WiFi connected controller for controlling teleprompter scrolling on a VerbalEyes servers.
-When connected to a VerbalEyes project, the scrolling speed can be controlled using a !! and the scroll position can be reset back to the top of the document with a button press.
+When connected to a VerbalEyes project, the scrolling speed can be controlled using a dial and the scroll position can be reset back to the top of the document with a button press.
 It is built on the ESP8266 platform but the core API can be used separately to implement it on other platforms as well.
 
 
