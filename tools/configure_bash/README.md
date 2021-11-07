@@ -107,3 +107,67 @@ cat < path
 ```ps
 ?
 ```
+
+### Read first device found
+Automatically finds the first device and reads from it
+
+* OSX:
+```sh
+cat < `ls /dev/cu.usbserial-* | head -1`
+```
+* Linux:
+```sh
+cat < `ls /dev/ttyUSB* | head -1`
+```
+* Windows:
+```ps
+?
+```
+
+### Write first device found
+The protocol for how the data should be defined is available [here](../../src/README.md#configuration-protocol).
+
+* OSX:
+```sh
+echo -e 'key=value\n\n' > `ls /dev/cu.usbserial-* | head -1`
+```
+* Linux:
+```sh
+echo -e 'key=value\n\n' > `ls /dev/ttyUSB* | head -1`
+```
+* Windows:
+```ps
+?
+```
+
+### Interactive
+This is not a recommended way of working as it is not a great experience, explained in more detail [here](../../src/README.md#configuration-protocol).
+
+Makes the command line interface interactive and lets you write your data to the device and see feedback from it right away in the same window.
+
+The protocol for how the data should be defined is available [here](../../src/README.md#configuration-protocol).
+
+In this mode, tabs are especially nice to use as delimiter instead of the normal `=`.
+
+* OSX:
+```sh
+screen `ls /dev/cu.usbserial-* | head -1`
+```
+Exit with Ctrl+a k y
+* Linux:
+```sh
+screen `ls /dev/ttyUSB* | head -1`
+```
+Note: screen command might need to be installed from the package manager
+* Windows:
+```ps
+I dunno if its even possible :/
+```
+
+
+
+## Note
+* If the device is spamming logs or stops the reading right away, try running this command (had this issue in raspbian).
+```sh
+stty -echo -F `ls /dev/cu.usbserial-* | head -1`
+```
