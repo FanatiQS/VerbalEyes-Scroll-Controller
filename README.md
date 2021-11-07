@@ -49,7 +49,7 @@ TODO: Add details on how the board should be wired (potentiometer: terminal vcc,
 #### Flashing Firmware
 Flashing the firmware is done using the Arduino IDE.
 1. Download the Arduino IDE if it is not installed already.
-2. Add support for the ESP8266 by following [these instructions](no instructions added yet)
+2. Add support for the ESP8266 by following [these instructions](https://arduino-esp8266.readthedocs.io/en/latest/installing.html#using-git-version)
 3. Open the file `teleprompter-arduino.ino` in the Arduino IDE.
 4. Compile and upload the project to the device.
 This includes plugging it in over USB, selecting the correct serial port and maybe more.
