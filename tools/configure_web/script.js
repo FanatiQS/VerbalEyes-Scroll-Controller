@@ -20,15 +20,15 @@ function serializeConfig(lf) {
 
 
 // Logs a messsage to the on-screen TTY
-const tty = document.querySelector('.config-console');
-function log(msg) {
+const tty = document.querySelector('.webserial-console');
+function print(msg) {
 	const atBottom = (tty.parentNode.scrollTop >= tty.scrollHeight - tty.parentNode.clientHeight);
 	tty.textContent += msg;
 	if (atBottom) tty.parentNode.scrollTop = tty.scrollHeight;
 }
 
 // Clears log
-document.querySelector('.config-console-clear').onclick = function () {
+document.querySelector('.webserial-console-clear').onclick = function () {
 	tty.textContent = '';
 };
 
