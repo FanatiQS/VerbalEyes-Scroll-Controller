@@ -7,13 +7,6 @@ It is built on the ESP8266 platform but the core API can be used separately to i
 
 
 
-## Core Library
-The core library can be used to implement the scroll controller on other platforms.
-It is written in C and works in C99 or newer as well as C++.
-More details on how the core API works can be found [here](./src/README.md).
-
-
-
 ## ESP8266 Build
 <!-- The built-in implementation has only been tested to work on the ESP8266. -->
 <!-- It is an Arduino project with -->
@@ -53,3 +46,10 @@ Flashing the firmware is done using the Arduino IDE.
 3. Open the file `teleprompter-arduino.ino` in the Arduino IDE.
 4. Compile and upload the project to the device.
 This includes plugging it in over USB, selecting the correct serial port and maybe more.
+
+
+
+## Core Library
+The core library can be used to implement the scroll controller on other platforms.
+It is written in C and works in C99 or newer as well as C++.
+More details on how the core API works can be found [here](./src/README.md).
