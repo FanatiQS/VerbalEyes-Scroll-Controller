@@ -32,6 +32,13 @@ document.querySelector('.config-console-clear').onclick = function () {
 	tty.textContent = '';
 };
 
+// Logs error if WebSerial is not available
+if (!navigator.serial) {
+	log("WebSerial API not available\n");
+	document.querySelector("#webserial-read").disabled = true;
+	document.querySelector("#webserial-upload").disabled = true;
+}
+
 
 
 // Reads logs from web-serial to console
