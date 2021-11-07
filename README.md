@@ -4,7 +4,6 @@
 The VerbalEyes Scroll Controller is a small WiFi connected controller for controlling teleprompter scrolling on a VerbalEyes servers.
 When connected to a VerbalEyes project, the scrolling speed can be controlled using a !! and the scroll position can be reset back to the top of the document with a button press.
 It is built on the ESP8266 platform but the core API can be used separately to implement it on other platforms as well.
-<!-- It works by connecting to Wi-Fi and sending the commands to the server over a WebSocket connection. -->
 
 
 
@@ -36,7 +35,7 @@ The easiest way to read the logs is to use either the [bash script](./tools/conf
 The scroll controller is configured from a computer by connecting to it over USB and either using the [bash script](./tools/configure_bash), the [web interface](./tools/configure_web) or manually sending data to it (instructions for manually reading and writing over serial [here](./tools/configure_bash/README.md#manual-configuration)).
 
 ### Build
-This project requires wiring up the hardware and flashing the custom firmware.
+This project requires wiring up the hardware and flashing the firmware.
 
 #### Components
 * 1x Wemos D1 Mini
@@ -45,7 +44,7 @@ This project requires wiring up the hardware and flashing the custom firmware.
 * Some wires (red, black and other)
 
 #### Wiring
-TODO: Add details on how the board should be wired
+TODO: Add details on how the board should be wired (potentiometer: terminal vcc, terminal gnd, wiper)
 
 #### Flashing Firmware
 Flashing the firmware is done using the Arduino IDE.
