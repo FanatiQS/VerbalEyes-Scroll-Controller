@@ -7,39 +7,32 @@ It is built on the ESP8266 platform but the core API can be used separately to i
 
 
 
-## ESP8266 Build
-<!-- The built-in implementation has only been tested to work on the ESP8266. -->
-<!-- It is an Arduino project with -->
-<!-- This is an implementation of the library that works on the ESP8266. -->
-
-### LED indicator
+## LED indicator
 The built-in status LED on the ESP8266 vaguely indicates what the speed controller is doing.
 To get more detailed information about what is happening, connect the device to a computer to read its logs.
 The easiest way to read the logs is to use either the [bash script](./tools/configure_bash) or the [web interface](./tools/configure_web), but it is also possible to read logs manually from the serial port (instructions for manually reading and writing over serial [here](./tools/configure_bash/README.md#manual-configuration)).
-
-#### LED statuses
 
 | Blinks | Description |
 | --- | -
 | Slow | If the built-in status LED blinks once every 8 seconds, that means the scroll controller is connected to a server and ready to transmit data.
 | Fast | When the built-in status LED blinks continuously, the scroll controller is either not connected to a server and/or is in the middle of processing configuration data.
 
-### Configuration
+## Configuration
 The scroll controller is configured from a computer by connecting to it over USB and either using the [bash script](./tools/configure_bash), the [web interface](./tools/configure_web) or manually sending data to it (instructions for manually reading and writing over serial [here](./tools/configure_bash/README.md#manual-configuration)).
 
-### Build
+## Build
 This project requires wiring up the hardware and flashing the firmware.
 
-#### Components
+### Components
 * 1x Wemos D1 Mini
 * 1x Potentiometer (resistance doesn't really matter)
 * 1x Button (optional)
 * Some wires (red, black and other)
 
-#### Wiring
+### Wiring
 TODO: Add details on how the board should be wired (potentiometer: terminal vcc, terminal gnd, wiper)
 
-#### Flashing Firmware
+### Flashing Firmware
 Flashing the firmware is done using the Arduino IDE.
 1. Download the Arduino IDE if it is not installed already.
 2. Add support for the ESP8266 by following [these instructions](https://arduino-esp8266.readthedocs.io/en/latest/installing.html#using-git-version)
