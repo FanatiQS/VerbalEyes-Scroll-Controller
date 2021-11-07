@@ -104,31 +104,6 @@ document.querySelector('#webserial-disconnect').onclick = function () {
 	this.disabled = true;
 	log("\nDisconnected\n");
 };
-
-
-
-// Sets default OS for manual configuration
-document.querySelector('#generate-os').selectIndex = navigator.platform.startsWith('Win') * 1 || !navigator.platform.startsWith('Mac') * 2;
-
-// Generates manual configuration command
-document.querySelector("#gen-conf").onclick = function () {
-	const os = this.previousElementSibling.selectedOptions[0].value;
-	let output = "Copy and paste this command into you command line tool:\n";
-	switch (os) {
-		case "macos": {
-			output += `printf '${serializeConfig('\\n')}' > \`ls /dev/cu.usbserial-* | head -1\`; cat < \`ls /dev/cu.usbserial-* | head -1\``;
-			break;
-		}
-		case "linux": {
-			output += `printf '${serializeConfig('\\n')}' > \`ls /dev/ttyUSB* | head -1\`; cat < \`ls /dev/ttyUSB* | head -1\``;
-			break;
-		}
-		case "windows": {
-			log("\nWindows is currently not supported\n");
-			return;
-		}
-	}
-	log(output + '\n');
 };
 
 
@@ -159,3 +134,29 @@ document.querySelector('#config-save').onclick = function (event) {
 	saveHandler.setAttribute('href', `data:text/plain,${encodeURIComponent(serializeConfig('\n'))}`);
 	saveHandler.click();
 };
+
+
+
+// // Sets default OS for manual configuration
+// document.querySelector('#generate-os').selectIndex = navigator.platform.startsWith('Win') * 1 || !navigator.platform.startsWith('Mac') * 2;
+//
+// // Generates manual configuration command
+// document.querySelector("#gen-conf").onclick = function () {
+// 	const os = this.previousElementSibling.selectedOptions[0].value;
+// 	let output = "Copy and paste this command into you command line tool:\n";
+// 	switch (os) {
+// 		case "macos": {
+// 			output += `printf '${serializeConfig().replace(/\n/g, '\\n')}' > \`ls /dev/cu.usbserial-* | head -1\`; cat < \`ls /dev/cu.usbserial-* | head -1\``;
+// 			break;
+// 		}
+// 		case "linux": {
+// 			output += `printf '${serializeConfig().replace(/\n/g, '\\n')}' > \`ls /dev/ttyUSB* | head -1\`; cat < \`ls /dev/ttyUSB* | head -1\``;
+// 			break;
+// 		}
+// 		case "windows": {
+// 			log("\nWindows is currently not supported\n");
+// 			return;
+// 		}
+// 	}
+// 	log(output + '\n');
+// };
