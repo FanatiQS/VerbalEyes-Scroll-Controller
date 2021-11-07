@@ -17,6 +17,8 @@ function serializeConfig(lf) {
 	return output;
 }
 
+
+
 // Logs a messsage to the on-screen TTY
 const tty = document.querySelector('.config-console');
 function log(msg) {
@@ -29,6 +31,8 @@ function log(msg) {
 document.querySelector('.config-console-clear').onclick = function () {
 	tty.textContent = '';
 };
+
+
 
 // Reads logs from web-serial to console
 document.querySelector("#webserial-read").onclick = async function () {
