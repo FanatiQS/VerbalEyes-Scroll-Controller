@@ -25,9 +25,7 @@ Priority sorting guide:
 
 
 ## Configure HTTP POST
-* Sort new data in configuration system.md and push it to github
-* Update configuration system.md files name to indicate it is only related to http post configuration and not any kind of configuration. Also make sure that is true.
-* Clean up comments mess at the end of .ino.
+* Sort new data in http_post_configure.md
 
 
 
