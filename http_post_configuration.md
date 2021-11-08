@@ -139,6 +139,8 @@ Another way to authenticate is to use query parameters instead of a cookie. The 
 
 A simple way of handling security would be to set up a softAP with a key and then create an http server on that APs IP. That would make it only accessible with the APs key. More info here https://arduino.stackexchange.com/questions/67269/create-one-server-in-ap-mode-and-another-in-station-mode.
 
+Another way is to rely on physical acces by requireing a button to be held down or something.
+
 
 
 ## Wifi
