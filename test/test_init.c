@@ -171,7 +171,14 @@ int8_t verbaleyes_socket_connected() {
 #define HTTP_HALF "HTTP/1.1 10"
 #define HTTP_404 "HTTP/1.1 404"
 #define HTTP_STATUS "HTTP/1.1 101 Switching Protocols\r\n"
+#define HTTP_HEADER_CONNECTION_WRONG "Connection: Keep-Alive\r\n"
 #define HTTP_HEADER_CONNECTION "Connection: Upgrade\r\n"
+#define HTTP_HEADER_UPGRADE_WRONG "Upgrade: HTTP/2.0\r\n"
+#define HTTP_HEADER_UPGRADE "Upgrade: websocket\r\n"
+#define HTTP_HEADER_KEY_WRONG "Sec-WebSocket-Accept: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+#define HTTP_HEADER_KEY "Sec-WebSocket-Accept: KM6afhWtO4bb/E9amIx6hTrgkCw=\r\n"
+#define HTTP_HEADER_EXTENSION "Sec-WebSocket-Extensions: yes\r\n"
+#define HTTP_HEADER_PROTOCOL "Sec-WebSocket-Protocol: yes\r\n"
 
 // Gets next character of string cast to signed char for -1
 int16_t getReadData(char* data) {
@@ -208,6 +215,21 @@ int16_t verbaleyes_socket_read() {
 
 		// Tests HTTP status line and half headers and connection lost
 		case 12: return getReadData(EOFS HTTP_STATUS HTTP_HEADER_CONNECTION);
+
+		// Tests wrong connection type
+		case 13: return getReadData(EOFS HTTP_STATUS HTTP_HEADER_CONNECTION_WRONG "\r\n");
+
+		// Tests wrong upgrade
+		case 14: return getReadData(EOFS HTTP_STATUS HTTP_HEADER_CONNECTION HTTP_HEADER_UPGRADE_WRONG "\r\n");
+
+		// Tests wrong ws key
+		case 15: return getReadData(EOFS HTTP_STATUS HTTP_HEADER_CONNECTION HTTP_HEADER_UPGRADE HTTP_HEADER_KEY_WRONG "\r\n");
+
+		// Tests present extension
+		case 16: return getReadData(EOFS HTTP_STATUS HTTP_HEADER_CONNECTION HTTP_HEADER_UPGRADE HTTP_HEADER_KEY HTTP_HEADER_EXTENSION "\r\n");
+
+		// Tests present protocol
+		case 17: return getReadData(EOFS HTTP_STATUS HTTP_HEADER_CONNECTION HTTP_HEADER_UPGRADE HTTP_HEADER_KEY HTTP_HEADER_PROTOCOL "\r\n");
 
 		// There should be a case for every test calling this function
 		default: {
@@ -266,8 +288,14 @@ void verbaleyes_socket_write(const uint8_t* str, const size_t len) {
 #define LOG_SOCKET_3 "\r\nAccessing WebSocket server at ddd..."
 #define LOG_SOCKET_4 "\r\nDid not get a response from the server"
 #define LOG_SOCKET_5 "\r\nConnection to host closed"
-#define LOG_SOCKET_6 "\r\nReceived unexpected HTTP response code"
-#define LOG_SOCKET_7 "\r\nResponse from server ended prematurely"
+#define LOG_SOCKET_6 "\r\nResponse from server ended prematurely"
+
+// Log messages used for HTTP header
+#define LOG_HTTP_1 "\r\nReceived unexpected HTTP response code"
+#define LOG_HTTP_2 "\r\nHTTP response is not an upgrade to the WebSockets protocol"
+
+// Log messages used for WebSocket
+#define LOG_WS_1 "\r\nWebSocket connection established"
 
 // Other log messages
 #define LOG_PROGRESSBAR ".."
@@ -278,18 +306,41 @@ void verbaleyes_socket_write(const uint8_t* str, const size_t len) {
 // List of logs matching the tests
 char* logs[] = {
 	LOG_NETWORK_1 LOG_NETWORK_2,
+
 	LOG_NETWORK_1 LOG_NETWORK_3 LOG_SOCKET_1 LOG_SOCKET_2,
+
 	"\r\nLost connection to network" LOG_NETWORK_1 LOG_PROGRESSBAR LOG_NETWORK_2,
+
 	LOG_NETWORK_1 LOG_NETWORK_3 LOG_SOCKET_1 LOG_PROGRESSBAR LOG_SOCKET_2,
+
 	LOG_SOCKET_1 LOG_SOCKET_3 LOG_PROGRESSBAR LOG_SOCKET_4,
+
 	LOG_SOCKET_1 LOG_SOCKET_3 LOG_SOCKET_5,
-	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_NOT LOG_SOCKET_6,
-	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_NOT2 LOG_SOCKET_6,
-	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_HALF LOG_SOCKET_7,
+
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_NOT LOG_HTTP_1,
+
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_NOT2 LOG_HTTP_1,
+
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_HALF LOG_SOCKET_6,
+
 	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_HALF LOG_SOCKET_5,
-	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_404 LOG_SOCKET_6,
-	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_STATUS "\t" HTTP_HEADER_CONNECTION "\t" LOG_SOCKET_7,
-	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_STATUS "\t" HTTP_HEADER_CONNECTION "\t" LOG_SOCKET_5
+
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_404 LOG_HTTP_1,
+
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_STATUS "\t" HTTP_HEADER_CONNECTION "\t" LOG_SOCKET_6,
+
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_STATUS "\t" HTTP_HEADER_CONNECTION "\t" LOG_SOCKET_5,
+
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_STATUS "\t" HTTP_HEADER_CONNECTION_WRONG "\t\r\n\t" LOG_HTTP_2,
+
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_STATUS "\t" HTTP_HEADER_CONNECTION "\t" HTTP_HEADER_UPGRADE_WRONG "\t\r\n\t" LOG_HTTP_2,
+
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_STATUS "\t" HTTP_HEADER_CONNECTION "\t" HTTP_HEADER_UPGRADE "\t" HTTP_HEADER_KEY_WRONG "\t\r\n\t" "\r\nMissing or incorrect WebSocket accept header",
+
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_STATUS "\t" HTTP_HEADER_CONNECTION "\t" HTTP_HEADER_UPGRADE "\t" HTTP_HEADER_KEY "\t" HTTP_HEADER_EXTENSION "\t\r\n\t" "\r\nUnexpected WebSocket Extension header",
+
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_STATUS "\t" HTTP_HEADER_CONNECTION "\t" HTTP_HEADER_UPGRADE "\t" HTTP_HEADER_KEY "\t" HTTP_HEADER_PROTOCOL "\t\r\n\t" "\r\nUnexpected WebSocket Protocol header"
+
 };
 
 // Runs a test
