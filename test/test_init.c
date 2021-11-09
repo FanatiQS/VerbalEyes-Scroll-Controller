@@ -140,8 +140,14 @@ int8_t verbaleyes_socket_connected() {
 			return 1;
 		}
 
-		// Tests socket dropped during processing HTTP
-		case 8: {
+		// Tests socket dropped during processing HTTP status line
+		case 9: {
+			if (testReadIndex > 0) return 0;
+			return 1;
+		}
+
+		// Tests socket dropped during processing HTTP headers
+		case 12: {
 			if (testReadIndex > 0) return 0;
 			return 1;
 		}
@@ -159,7 +165,10 @@ int8_t verbaleyes_socket_connected() {
 
 // HTTP responses
 #define HTTP_NOT "testing non-http response"
-#define HTTP_HALF "HTTP/1.1 101 Swich"
+#define HTTP_NOT2 "http not"
+#define HTTP_HALF "HTTP/1.1 10"
+#define HTTP_404 "HTTP/1.1 404"
+#define HTTP_STATUS "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\n"
 
 // Gets next character of string cast to signed char for -1
 int16_t getReadData(char* data) {
@@ -177,19 +186,25 @@ int16_t verbaleyes_socket_read() {
 		case 5: return EOF;
 
 		// Tests non-HTTP response
-		case 6: {
-			return getReadData(EOFS HTTP_NOT);
-		}
+		case 6: return getReadData(EOFS HTTP_NOT);
 
-		// Tests half HTTP response
-		case 7: {
-			return getReadData(EOFS HTTP_HALF);
-		}
+		// Tests non-HTTP response2
+		case 7: return getReadData(EOFS HTTP_NOT2);
 
-		// Tests half HTTP and connection lost
-		case 8: {
-			return getReadData(EOFS HTTP_HALF);
-		}
+		// Tests half HTTP status line response
+		case 8: return getReadData(EOFS HTTP_HALF);
+
+		// Tests half HTTP status line and connection lost
+		case 9: return getReadData(EOFS HTTP_HALF);
+
+		// Tests invalid HTTP code
+		case 10: return getReadData(EOFS HTTP_404);
+
+		// Tests HTTP status line response and half headers
+		case 11: return getReadData(EOFS HTTP_STATUS);
+
+		// Tests HTTP status line and half headers and connection lost
+		case 12: return getReadData(EOFS HTTP_STATUS);
 
 		// There should be a case for every test calling this function
 		default: {
@@ -249,6 +264,7 @@ void verbaleyes_socket_write(const uint8_t* str, const size_t len) {
 #define LOG_SOCKET_4 "\r\nDid not get a response from the server"
 #define LOG_SOCKET_5 "\r\nConnection to host closed"
 #define LOG_SOCKET_6 "\r\nReceived unexpected HTTP response code"
+#define LOG_SOCKET_7 "\r\nResponse from server ended prematurely"
 
 // Other log messages
 #define LOG_PROGRESSBAR "..."
