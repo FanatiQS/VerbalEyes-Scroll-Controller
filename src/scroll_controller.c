@@ -692,7 +692,7 @@ int8_t verbaleyes_initialize() {
 				matchStr(&resMatchIndexes[1], lowerc, "upgrade: websocket\r\n");
 				matchStr(&resMatchIndexes[2], (resMatchIndexes[2] <= 20) ? lowerc : c, buf);
 				matchStr(&resMatchIndexes[3], lowerc, "sec-websocket-extensions: ");
-				matchStr(&resMatchIndexes[4], lowerc, "sec-webSocket-protocol: ");
+				matchStr(&resMatchIndexes[4], lowerc, "sec-websocket-protocol: ");
 			}
 
 			// Handles timeout and socket close error if end of headers was not reached
