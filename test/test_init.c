@@ -160,6 +160,8 @@ int8_t verbaleyes_socket_connected() {
 	}
 }
 
+
+
 // EOF for string int8_t
 #define EOFS "\xff"
 
