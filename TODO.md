@@ -12,8 +12,13 @@ Priority sorting guide:
 ## Tools
 ### Configure Bash
 * Include instructions on how to download configure script with curl
-	* curl https://raw.githubusercontent.com/FanatiQS/VerbalEyes-ScrollController-Micro/master/tools/configure_bash/configure -o configure; sudo chmod 777 confiure
+	* curl https://raw.githubusercontent.com/FanatiQS/VerbalEyes-Scroll-Controller/master/tools/configure_bash/configure -o configure && chmod 777 configure
 	* Mention that this is an alternative to downloading the entire repository and that it might be simpler and safer to clone entire repo.
+### Configure Web
+* Add notes on that it is possible and okay to download source for configure_web and putting it up on your own website for access by your team.
+Can download page by visiting it and downloading it from a web browser.
+* Maybe add a script that bundles all the files together or maybe there is a page online that does that?
+Was unable to find a tool like that online, so I created a basic first draft (bundler on my github).
 
 
 
