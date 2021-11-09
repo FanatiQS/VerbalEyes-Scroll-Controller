@@ -96,7 +96,7 @@ void test_end(int state) {
 		}
 		// Tests that only CRLF was printed
 		else if (state == ENDDONE) {
-			log_cmp("\r\n");
+			log_cmp("\r\nConfiguration canceled\r\n");
 		}
 		// Tests that no done message was printed
 		else {
@@ -251,7 +251,7 @@ void runTests() {
 	log_clear();
 	while (verbaleyes_configure(0));
 	if (autoReset) {
-		log_cmp("\r\n");
+		log_cmp("\r\nConfiguration canceled\r\n");
 	}
 	else {
 		log_cmp("\r\nConfiguration saved\r\n");
