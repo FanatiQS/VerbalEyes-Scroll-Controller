@@ -302,7 +302,18 @@ void testInit() {
 	log_clear();
 
 	// Run initialize function until error or success
-	while (verbaleyes_initialize() == 1);
+	int8_t state;
+	while ((state = verbaleyes_initialize()) == 1);
+
+	// Ensures that it delays before continuing after fail
+	if (state == -1) {
+		time_t start = time(NULL);
+		while (start == time(NULL)) {
+			if (verbaleyes_initialize() == 1) continue;
+			fprintf(stderr, "" COLOR_RED "Continued processing when it should not have\n" COLOR_NORMAL);
+			numberOfErrors++;
+		}
+	}
 
 	// Compare log buffer
 	if (useShortConf) log_cmp(logs[testState]);
