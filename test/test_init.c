@@ -170,7 +170,8 @@ int8_t verbaleyes_socket_connected() {
 #define HTTP_NOT2 "http not"
 #define HTTP_HALF "HTTP/1.1 10"
 #define HTTP_404 "HTTP/1.1 404"
-#define HTTP_STATUS "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\n"
+#define HTTP_STATUS "HTTP/1.1 101 Switching Protocols\r\n"
+#define HTTP_HEADER_CONNECTION "Connection: Upgrade\r\n"
 
 // Gets next character of string cast to signed char for -1
 int16_t getReadData(char* data) {
@@ -203,10 +204,10 @@ int16_t verbaleyes_socket_read() {
 		case 10: return getReadData(EOFS HTTP_404);
 
 		// Tests HTTP status line response and half headers
-		case 11: return getReadData(EOFS HTTP_STATUS);
+		case 11: return getReadData(EOFS HTTP_STATUS HTTP_HEADER_CONNECTION);
 
 		// Tests HTTP status line and half headers and connection lost
-		case 12: return getReadData(EOFS HTTP_STATUS);
+		case 12: return getReadData(EOFS HTTP_STATUS HTTP_HEADER_CONNECTION);
 
 		// There should be a case for every test calling this function
 		default: {
@@ -287,8 +288,8 @@ char* logs[] = {
 	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_HALF LOG_SOCKET_7,
 	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_HALF LOG_SOCKET_5,
 	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_404 LOG_SOCKET_6,
-	"",
-	""
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_STATUS "\t" HTTP_HEADER_CONNECTION "\t" LOG_SOCKET_7,
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_STATUS "\t" HTTP_HEADER_CONNECTION "\t" LOG_SOCKET_5
 };
 
 // Runs a test
