@@ -680,7 +680,7 @@ int8_t verbaleyes_initialize() {
 
 				// Prints HTTP headers
 				if (c == '\n') {
-					logprintf("\r\n\t");
+					logprintf("\n\t");
 				}
 				else {
 					logprintf("%c", c);
@@ -807,7 +807,7 @@ int8_t verbaleyes_initialize() {
 
 				// Prints entire WebSocket payload
 				if (c == '\n') {
-					logprintf("\r\n\t");
+					logprintf("\n\t");
 				}
 				else {
 					logprintf("%c", c);
