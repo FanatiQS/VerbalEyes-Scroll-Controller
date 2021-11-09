@@ -33,6 +33,7 @@ bool checkConfStr(const char* str, char c) {
 		if (str[i] != c) {
 			fprintf(stderr, "" COLOR_RED "Configuration contained incorrect data:\n\tindex: %d\n\tstring char: %d\n\tchar: %d\n" COLOR_NORMAL, i, str[i], c);
 			err = 1;
+			numberOfErrors++;
 		}
 	}
 	if (!err) {
@@ -45,26 +46,6 @@ bool checkConfStr(const char* str, char c) {
 int testState = 0;
 bool testDroppedConnection = false;
 int testReadIndex = 0;
-
-// Runs a test
-void testInit(const char* state, char* log) {
-	// Prints test id
-	printf("\nTest: %d\n", testState);
-
-	// Clears log buffer
-	log_clear();
-
-	// Run initialize function until error or success
-	while (verbaleyes_initialize() == 1);
-
-	// Compare log buffer
-	if (useShortConf) log_cmp(log);
-
-	// Increments test state for next test
-	testState++;
-	testDroppedConnection = false;
-	testReadIndex = 0;
-}
 
 
 
@@ -274,6 +255,47 @@ void verbaleyes_socket_write(const uint8_t* str, const size_t len) {
 #define LOG_INLINE "\r\n\t"
 
 
+
+// List of logs matching the tests
+char* logs[] = {
+	LOG_NETWORK_1 LOG_NETWORK_2,
+	LOG_NETWORK_1 LOG_NETWORK_3 LOG_SOCKET_1 LOG_SOCKET_2,
+	"\r\nLost connection to network" LOG_NETWORK_1 LOG_PROGRESSBAR LOG_NETWORK_2,
+	LOG_NETWORK_1 LOG_NETWORK_3 LOG_SOCKET_1 LOG_PROGRESSBAR LOG_SOCKET_2,
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_PROGRESSBAR LOG_SOCKET_4,
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_SOCKET_5,
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_NOT LOG_SOCKET_6,
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_NOT2 LOG_SOCKET_6,
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_HALF LOG_SOCKET_7,
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_HALF LOG_SOCKET_5,
+	LOG_SOCKET_1 LOG_SOCKET_3 LOG_INLINE HTTP_404 LOG_SOCKET_6,
+	"",
+	""
+};
+
+// Runs a test
+void testInit() {
+	// Prints test id
+	printf("" COLOR_BLUE "\nTest: %d\n" COLOR_NORMAL, testState);
+	fflush(stdout);
+
+	// Clears log buffer
+	log_clear();
+
+	// Run initialize function until error or success
+	while (verbaleyes_initialize() == 1);
+
+	// Compare log buffer
+	if (useShortConf) log_cmp(logs[testState]);
+
+	// Increments test state for next test
+	testState++;
+	testDroppedConnection = false;
+	testReadIndex = 0;
+}
+
+
+
 // Tests initilization function with long or short names
 void runTests(bool useShort) {
 	// Updates all config items
@@ -294,23 +316,8 @@ void runTests(bool useShort) {
 	verbaleyes_configure('\n');
 	printf("\n\n");
 
-	// Test network connection rejected
-	testInit("", LOG_NETWORK_1 LOG_NETWORK_2);
-
-	// Test network connection awaiting
-	testInit("", LOG_NETWORK_1 LOG_PROGRESSBAR LOG_NETWORK_2);
-
-	// Test network connection continue and socket connection rejected
-	testInit("", LOG_NETWORK_1 LOG_NETWORK_3 LOG_SOCKET_1 LOG_SOCKET_2);
-
-	// Test network connection lost and socket connection awaiting
-	testInit("", "\r\nLost connection to network" LOG_NETWORK_1 LOG_NETWORK_3 LOG_SOCKET_1 LOG_PROGRESSBAR LOG_SOCKET_2);
-
-	// Test network default continue and socket connection continue and ws response no data
-	testInit("", LOG_SOCKET_1 LOG_SOCKET_3 LOG_PROGRESSBAR LOG_SOCKET_4);
-
-	// Test ws response disconnect socket
-	testInit("", LOG_SOCKET_1 LOG_SOCKET_3 LOG_SOCKET_5);
+	// Run tests
+	while (testState < (sizeof(logs) / sizeof(logs[0]))) testInit();
 }
 
 
@@ -321,7 +328,7 @@ int main() {
 	log_setflags(LOGFLAGBUFFER | LOGFLAGPRINT);
 
 	//!!
-	runTests(1);
+	runTests(true);
 
 	//!!
 	return debug_printerrors();
@@ -346,8 +353,3 @@ int main() {
 
 //!!
 char socket_read_data[] = "\0http/1.1 101 OK\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ICX+Yqv66kxgM0FcWaLWlFLwTAI=\r\n\r\n\0\x81\x09" "authed789\0";
-int socket_read_index = 0;
-short verbaleyes_socket_read2() {
-	unsigned char c = socket_read_data[socket_read_index++];
-	return (c == '\0') ? EOF : c;
- }
