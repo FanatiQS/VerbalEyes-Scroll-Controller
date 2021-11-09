@@ -44,6 +44,7 @@ bool checkConfStr(const char* str, char c) {
 // Indicates what test to run
 int testState = 0;
 bool testDroppedConnection = false;
+int testReadIndex = 0;
 
 // Runs a test
 void testInit(const char* state, char* log) {
@@ -62,6 +63,7 @@ void testInit(const char* state, char* log) {
 	// Increments test state for next test
 	testState++;
 	testDroppedConnection = false;
+	testReadIndex = 0;
 }
 
 
@@ -157,6 +159,12 @@ int8_t verbaleyes_socket_connected() {
 			return 1;
 		}
 
+		// Tests socket dropped during processing HTTP
+		case 8: {
+			if (testReadIndex > 0) return 0;
+			return 1;
+		}
+
 		// Tests connection lost
 		case -1: return 0; //!! requires entire socket connection to be established first
 
@@ -164,11 +172,49 @@ int8_t verbaleyes_socket_connected() {
 		default: return 1;
 	}
 }
+
+// EOF for string int8_t
+#define EOFS "\xff"
+
+// HTTP responses
+#define HTTP_NOT "testing non-http response"
+#define HTTP_HALF "HTTP/1.1 101 Swich"
+
+// Gets next character of string cast to signed char for -1
+int16_t getReadData(char* data) {
+	if (testReadIndex > strlen(data) - 1) return EOF;
+ 	return (int8_t)data[testReadIndex++];
+}
+
 // Reads socket data
 int16_t verbaleyes_socket_read() {
 	switch (testState) {
-		// Has no data
-		default: return EOF;
+		// Tests no response before timeout
+		case 4: return EOF;
+
+		// Tests no response before connection closed
+		case 5: return EOF;
+
+		// Tests non-HTTP response
+		case 6: {
+			return getReadData(EOFS HTTP_NOT);
+		}
+
+		// Tests half HTTP response
+		case 7: {
+			return getReadData(EOFS HTTP_HALF);
+		}
+
+		// Tests half HTTP and connection lost
+		case 8: {
+			return getReadData(EOFS HTTP_HALF);
+		}
+
+		// There should be a case for every test calling this function
+		default: {
+			fprintf(stderr, "" COLOR_RED "Called verbaleyes_socket_read with unknown test: %d\n" COLOR_NORMAL, testState);
+			exit(EXIT_FAILURE);
+		}
 	}
 }
 
@@ -221,9 +267,11 @@ void verbaleyes_socket_write(const uint8_t* str, const size_t len) {
 #define LOG_SOCKET_3 "\r\nAccessing WebSocket server at ddd..."
 #define LOG_SOCKET_4 "\r\nDid not get a response from the server"
 #define LOG_SOCKET_5 "\r\nConnection to host closed"
+#define LOG_SOCKET_6 "\r\nReceived unexpected HTTP response code"
 
 // Other log messages
 #define LOG_PROGRESSBAR "..."
+#define LOG_INLINE "\r\n\t"
 
 
 // Tests initilization function with long or short names
