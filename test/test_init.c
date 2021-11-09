@@ -43,9 +43,13 @@ bool checkConfStr(const char* str, char c) {
 
 // Indicates what test to run
 int testState = 0;
+bool testDroppedConnection = false;
 
 // Runs a test
 void testInit(const char* state, char* log) {
+	// Prints test id
+	printf("\nTest: %d\n", testState);
+
 	// Clears log buffer
 	log_clear();
 
@@ -57,6 +61,7 @@ void testInit(const char* state, char* log) {
 
 	// Increments test state for next test
 	testState++;
+	testDroppedConnection = false;
 }
 
 
@@ -97,13 +102,13 @@ int8_t verbaleyes_network_connected() {
 		// Tests rejected network
 		case 0: return -1;
 
-		// Tests connection lost once
-		case 3: testState++;
-
-		// Tests awaiting network connection
-		case 1: return 0;
-
 		// Tests established network connection
+		case 1: return 1;
+
+		// Tests connection lost and awaiting network connection
+		case 2: return 0;
+
+		// Connection should be established for other tests to work
 		default: return 1;
 	}
 }
@@ -137,23 +142,26 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 int8_t verbaleyes_socket_connected() {
 	switch (testState) {
 		// Tests rejected socket connection
-		case 2: return -1;
-
-		// Tests connection lost once
-		case -1: testState++; //!! requires entire socket connection to be established first
+		case 1: return -1;
 
 		// Tests awaiting socket connection
-		case 4: return 0;
+		case 3: return 0;
 
 		// Tests established socket connection
-		default: return 1;
+		case 4: return 1;
 
 		// Tests socket disconnect
-		case 6: {
-			testState++;
+		case 5: {
+			if (testDroppedConnection) return 0;
+			testDroppedConnection = true;
 			return 1;
 		}
-		case 7: return 0;
+
+		// Tests connection lost
+		case -1: return 0; //!! requires entire socket connection to be established first
+
+		// Connection should be established for other tests
+		default: return 1;
 	}
 }
 // Reads socket data
