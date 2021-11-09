@@ -270,7 +270,7 @@ void verbaleyes_socket_write(const uint8_t* str, const size_t len) {
 #define LOG_SOCKET_7 "\r\nResponse from server ended prematurely"
 
 // Other log messages
-#define LOG_PROGRESSBAR "..."
+#define LOG_PROGRESSBAR ".."
 #define LOG_INLINE "\r\n\t"
 
 

@@ -15,7 +15,7 @@ test_configure: $(LIBBEARSSL)
 	rm $(EXE)
 
 test_init: $(LIBBEARSSL)
-	$(A) test_init.c -DCONNECTINGTIMEOUT=2 -DCONNECTIONFAILEDDELAY=1
+	$(A) test_init.c -DCONNECTINGTIMEOUT=1 -DCONNECTIONFAILEDDELAY=1
 	$(EXE)
 	rm $(EXE)
 
