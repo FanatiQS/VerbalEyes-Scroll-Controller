@@ -24,14 +24,25 @@ test_config_clear: $(LIBBEARSSL)
 	$(EXE)
 	rm $(EXE)
 
-test_c99: $(LIBBEARSSL)
+test_c: $(LIBBEARSSL)
 	gcc -S -I$(LIB) -std=c99 -pedantic-errors $(SRC) -o $(EXE)
 	clang -S -I$(LIB) -std=c99 -pedantic-errors $(SRC) -o $(EXE)
+	gcc -S -I$(LIB) -std=c11 -pedantic-errors $(SRC) -o $(EXE)
+	clang -S -I$(LIB) -std=c11 -pedantic-errors $(SRC) -o $(EXE)
+	gcc -S -I$(LIB) -std=c17 -pedantic-errors $(SRC) -o $(EXE)
+	clang -S -I$(LIB) -std=c17 -pedantic-errors $(SRC) -o $(EXE)
 	rm $(EXE)
 
 test_c++: $(LIBBEARSSL)
 	cp $(SRC) $(SRC).cpp
 	g++ -S -I$(LIB) -std=c++98 -pedantic-errors $(SRC).cpp -o $(EXE)
+	clang++ -S -I$(LIB) -std=c++98 -pedantic-errors $(SRC).cpp -o $(EXE)
+	g++ -S -I$(LIB) -std=c++11 -pedantic-errors $(SRC).cpp -o $(EXE)
+	clang++ -S -I$(LIB) -std=c++11 -pedantic-errors $(SRC).cpp -o $(EXE)
+	g++ -S -I$(LIB) -std=c++14 -pedantic-errors $(SRC).cpp -o $(EXE)
+	clang++ -S -I$(LIB) -std=c++14 -pedantic-errors $(SRC).cpp -o $(EXE)
+	g++ -S -I$(LIB) -std=c++17 -pedantic-errors $(SRC).cpp -o $(EXE)
+	clang++ -S -I$(LIB) -std=c++17 -pedantic-errors $(SRC).cpp -o $(EXE)
 	rm $(SRC).cpp
 	rm $(EXE)
 
