@@ -118,6 +118,7 @@ void test_end(int state) {
 #define ADDR_SSID 0
 #define ADDR_PORT 159
 #define ADDR_SPEEDMIN 257
+#define ADDR_SENSITIVITY 267
 
 // Tests configuration input combinations
 void runTests() {
@@ -241,7 +242,7 @@ void runTests() {
 
 	// Tests if macro CONFIGLEN is correct length
 	test_start("Config Macro", "sensitivity=65535\n", "\r\n[ sensitivity ] is now: 65535");
-	test_conf_int(267, "\xff\xff");
+	test_conf_int(ADDR_SENSITIVITY, "\xff\xff");
 	test_end(ENDCOMMIT);
 
 	// Tests that no data for a specified timeout would automatically exit configuration mode
