@@ -228,14 +228,14 @@ bool verbaleyes_configure(const int16_t c) {
 		case '\t':
 		case '=': {
 			// Falls through to default if not true
-			if (confFlags < FLAGVALUE) {
+			if (!(confFlags & FLAGVALUE)) {
 				// Prevents handling failed matches
 				if (confFlags & FLAGFAILED) return 1;
 
 				// Finish matching key and reset all items
 				for (int8_t i = 0; i < CONFITEMSLEN; i++) {
 					if (
-						confFlags < FLAGVALUE &&
+						!(confFlags & FLAGVALUE) &&
 						!confItems[i].nameMatchFailed &&
 						confItems[i].name[confIndex] == '\0'
 					) {
@@ -248,7 +248,7 @@ bool verbaleyes_configure(const int16_t c) {
 				}
 
 				// Prevents handling value for keys with no match
-				if (confFlags < FLAGVALUE) {
+				if (!(confFlags & FLAGVALUE)) {
 					if (confIndex == 0) logprintf("\r\n[");
 					logprintf(" ] No matching key");
 					confFlags |= FLAGFAILED | FLAGACTIVE;
@@ -263,7 +263,7 @@ bool verbaleyes_configure(const int16_t c) {
 		// Updates configurable value
 		default: {
 			// Validates incomming key against valid configuration keys
-			if (confFlags < FLAGVALUE) {
+			if (!(confFlags & FLAGVALUE)) {
 				// Key handling has failed and remaining characters should be ignored
 				if (confFlags & FLAGFAILED) return 1;
 
@@ -387,7 +387,7 @@ bool verbaleyes_configure(const int16_t c) {
 		case 0x1B:
 		case '\n': {
 			// Handles termination of value
-			if (confFlags >= FLAGVALUE) {
+			if (confFlags & FLAGVALUE) {
 				// Terminates stored string
 				if (confItems[confMatchIndex].len > 0) {
 					if (confIndex < confItems[confMatchIndex].len) {
