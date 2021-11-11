@@ -4,7 +4,7 @@ LIBBEARSSL = $(LIB)/bearssl
 SRC = ../src/scroll_controller.c
 A = gcc $(SRC) $(LIBBEARSSL)/*.c -I$(LIB) -o $(EXE) ./helpers/*.c
 
-all: test_c99 test_c++ test_configure test_config_clear test_perf
+all: test_c test_c++ test_configure test_init
 
 $(LIBBEARSSL):
 	cd $(LIB) && make
