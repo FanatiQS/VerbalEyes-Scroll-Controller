@@ -12,8 +12,11 @@ Priority sorting guide:
 ## Tools
 ### Configure Bash
 * Include instructions on how to download configure script with curl
-	* curl https://raw.githubusercontent.com/FanatiQS/VerbalEyes-Scroll-Controller/master/tools/configure_bash/configure -o configure && chmod 777 configure
+	* Download script with `curl https://raw.githubusercontent.com/FanatiQS/VerbalEyes-Scroll-Controller/master/tools/configure_bash/configure -o configure && chmod 777 configure`
+	* Run configuration script without download with `bash <(curl -s https://raw.githubusercontent.com/FanatiQS/VerbalEyes-Scroll-Controller/master/tools/configure_bash/configure)`
 	* Mention that this is an alternative to downloading the entire repository and that it might be simpler and safer to clone entire repo.
+	* Link to download only bash dir `https://downgit.github.io/#/home?url=https://github.com/FanatiQS/VerbalEyes-Scroll-Controller/tree/master/tools/configure_bash`
+	* Use same downgit system to make link to download only configure_web and put link in its readme.
 ### Configure Web
 * Add notes on that it is possible and okay to download source for configure_web and putting it up on your own website for access by your team.
 Can download page by visiting it and downloading it from a web browser.
@@ -26,6 +29,9 @@ Was unable to find a tool like that online, so I created a basic first draft (bu
 * Add dependency section to src/readme.md that mentions the core requires bearssl and that it is already used in ESPs core.
 * Maybe remove documentation about configuring with screen. It is not a good experience and should probably not be used.
 * Update board wiring documentation.
+* Using values outside range -1 -> 255 will cast it to a char.
+Key and string values should work, but int values will probably not work.
+Mention somewhere that passing values outside the range to `verbaleyes_configure` is undefined behaviour.
 
 
 
@@ -53,11 +59,45 @@ Was unable to find a tool like that online, so I created a basic first draft (bu
 * All calls to logprintf needs to be checked that they are within buffer length.
 * Check max http request length is not overflowing.
 * Test all configuration reads at max length
+* Should have a test that connects to a node ws server to test ws protocol is correct.
+Could steal a lot from emulator.
+
+### Implementation test
+* Implementation test might not be required to be on the device itself to test.
+* Testing should be split up into testing the 4 API functions and their calls to the prototypes.
+* Should not lock down tests so it could only be done over usb serial and things like that if support for http post configuration should be easily tested if added.
+* Needs to test return value and arguments for the API calls.
+
+#### Configuration
+* Testing configuration should be able to be done from another device over serial.
+* It has to be done in 2 parts, writing the data over serial and then reading the data back after a reboot to ensure it is committed correctly.
+* Needs to test that every address can be written to in configuration.
+* Needs to test that configuration is persistent (by rebooting between write test and read test).
+* Needs to test that every address can be read after commit and reboot.
+* Should test that every valid character (not \r\n\b\e\0\v\7f\f)
+* Requires an wifi with customisable ssid and passphrase to make it max length.
+Maybe nodejs script to create adhoc network?
+* The ssid and passphrase have fairly strict requirements what characters are allowed.
+* The host can use an mDNS client on the test server to allow more characters.
+* The path should allow for anything since it is just a TCP buffer but might require special parser on server.
+* The proj and projkey can be anything since it is just a websocket message.
+* Might require reconfiguring some property to be able to test EVERY character possible.
+* Make sure no function other than `verbaleyes_configure` is called when configuration mode is entered.
+* Should build configuration preset in javascript and output to file/device using command line arguments.
+* What happens if configuration gets value other than -1 -> 255?
+
+#### Log
+* Testing that the log function outputs whatever it receives could be done by sending back an http header field that contains all characters and checking that line over serial.
+
+#### Wifi
+* Check that it can connect with max length ssid and passphrase.
+* Make sure it does not connect if last character is off/missing.
 
 
 
 ## Library
 ### Refactor
+* Go through all code and maybe convert 1/0 to true/false.
 * Maybe remove state to jump to in connectionFailToState argument, it could just clear the 4 LSBs to restart that group. Maybe rename to connectionFailed.
 
 ### Debug experience
@@ -158,6 +198,24 @@ Was unable to find a tool like that online, so I created a basic first draft (bu
 * Maybe add right/left arrow key navigation support?
 * Should there be an option to make a script executable like the presets config_calibrate and config_clear instead of always being able to parse anything not starting with a `-` as a path.
 * Should there be an option when launched without options to start reading? That would make it possible to read logs without having to use the command line.
+* Replace update button to not look like other fields and do not say "Exit".
+* When replacing data for a field, the new field is just added and the old one is still there.
+* Trap during reading from device to add extra LF to force line to be clear.
+* Remove existing data with backspace.
+* If input for value is started with normal character (not enter), first character can not be removed with backspace.
+
+### Calibration tool
+* Add script to automatically calibrate the callow, calhigh and sensitivity.
+* This would probably be easiest to write in javascript.
+* Getting callow and calhigh would require potentiometer to be turned to each limit at least once.
+Use the lowest and highest value received.
+* Getting sensitivity would require potentiometer to be untouched.
+Use diff between highest and lowest number.
+* Should it consider enough data gathered on calibrating callow and calhigh when received a set number of reads from device logs or when user considers it enough by probably pressing enter in calibration tool interface?
+* If using fs read stream in nodejs, the stream can be read manually with the read function and does not require an event listener.
+That can be good to let it buffer until enter is pressed.
+It should start in that mode, but can also be achieved with the .pause method. I think.
+* Might be cleaner to write in Deno?
 
 
 
@@ -180,6 +238,12 @@ Was unable to find a tool like that online, so I created a basic first draft (bu
 ## Markdown
 * Document undefined behaviour for speed conf items.
 * Mention undefined behaviours for configuration: callow > calhigh, callow and deadzone both very high (migh overflow speedOffset), sensitivity higher than calhigh
+
+
+
+## Github
+* Should figure out how to compile ESP8266 binary, upload it to githubs "releases" section and be able to upload to ESP (probably with esptool.py).
+* Maybe even figure out how to compile source through github actions?
 
 
 
