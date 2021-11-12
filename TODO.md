@@ -17,6 +17,7 @@ Priority sorting guide:
 	* Mention that this is an alternative to downloading the entire repository and that it might be simpler and safer to clone entire repo.
 	* Link to download only bash dir `https://downgit.github.io/#/home?url=https://github.com/FanatiQS/VerbalEyes-Scroll-Controller/tree/master/tools/configure_bash`
 	* Use same downgit system to make link to download only configure_web and put link in its readme.
+
 ### Configure Web
 * Add notes on that it is possible and okay to download source for configure_web and putting it up on your own website for access by your team.
 Can download page by visiting it and downloading it from a web browser.
@@ -32,11 +33,6 @@ Was unable to find a tool like that online, so I created a basic first draft (bu
 * Using values outside range -1 -> 255 will cast it to a char.
 Key and string values should work, but int values will probably not work.
 Mention somewhere that passing values outside the range to `verbaleyes_configure` is undefined behaviour.
-
-
-
-## Configure HTTP POST
-* Sort new data in http_post_configure.md
 
 
 
