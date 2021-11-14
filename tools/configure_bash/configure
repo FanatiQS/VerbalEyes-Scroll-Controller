@@ -1,19 +1,10 @@
 #!/bin/bash
 
-# Escapes the form if
-function on_exit() {
-	printf "\x1b["$genIndex"B"
-}
-
 useForm=0
-hasBuffer=0
 buffer=
 path=
-gotRead=0
+readContinuous=0
 sleepLen="0.1"
-genState=0
-genIndex=14
-genKeys=( "sensitivity" "calhigh" "callow" "deadzone" "speedmax" "speedmin" "projkey" "proj" "path" "port" "host" "ssidkey" "ssid" )
 
 # Parses arguments
 while [[ $# -gt 0 ]]; do
@@ -30,7 +21,7 @@ while [[ $# -gt 0 ]]; do
 			;;
 		# Sets read to continue reading after exiting configuration mode
 		-r|--read)
-			gotRead=1
+			readContinuous=1
 			;;
 		# Prints help/usage message
 		-h|--help)
@@ -54,31 +45,28 @@ while [[ $# -gt 0 ]]; do
 			;;
 		# Uses argument strings as is
 		-e|--eval)
-			hasBuffer=1
 			buffer+="$2\n"
 			shift
 			;;
 		# Gets buffer from argument path
 		-p|--path)
-			hasBuffer=1
 			buffer+="$(cat $2)\n"
 			shift
 			;;
 		# Rejects invalid commands
 		-*)
-			echo "Invalid command" $1
+			echo "Invalid command $1"
 			exit
 			;;
 		# Allows using it in a shebang
 		*)
-			hasBuffer=1
 			buffer+="$(cat $1)\n"
 			;;
 	esac
 	shift
 done
 
-# Tries to automatically find a serial device
+# Tries to automatically find a serial device if not specified
 if [[ -z $path ]]; then
 	if [[ $(uname) == "Darwin" ]]; then
 		path=`ls /dev/cu.usbserial-* 2>/dev/null | head -1`
@@ -92,14 +80,19 @@ if [[ -z $path ]]; then
 fi
 
 # Only reads if no data is defined
-if [[ $useForm -eq 0 && $hasBuffer -eq 0 && $gotRead -eq 1 ]]; then
+if [[ $useForm -eq 0 && -z $buffer && $readContinuous -eq 1 ]]; then
 	cat < $path
 	exit
 fi
 
 # Creates a new configuration if buffer was not defined or form flag was defined
-if [[ $useForm -eq 1 || $hasBuffer -eq 0 ]]; then
+if [[ $useForm -eq 1 || -z $buffer ]]; then
+	genIndex=14
+
 	# Sets a trap to escape the form if aborted
+	function on_exit() {
+		printf "\x1b["$genIndex"B"
+	}
 	trap on_exit EXIT
 
 	# Prints property list
@@ -119,6 +112,9 @@ if [[ $useForm -eq 1 || $hasBuffer -eq 0 ]]; then
 	echo "[ ] Exit"
 	printf "< Navigate [ Up/Down ], Start editing / Stop editing [ Enter ] >"
 	printf "\r\x1b["$genIndex"A["
+
+	# Lists all configuration items in cli order
+	genKeys=( "sensitivity" "calhigh" "callow" "deadzone" "speedmax" "speedmin" "projkey" "proj" "path" "port" "host" "ssidkey" "ssid" )
 
 	# Reads input until exited from interface
 	while read -rsn1 key; do
@@ -184,7 +180,7 @@ buffer+='\n'
 sleep $sleepLen; printf "$buffer" > $path &
 
 # Reads data until configuration mode is exited
-if [[ $gotRead -eq 0 ]]; then
+if [[ $readContinuous -eq 0 ]]; then
 	LC_ALL=C sed -n '/\[/,//{
 		p
 		/Configuration/q
