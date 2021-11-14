@@ -79,7 +79,7 @@ if [[ -z $path ]]; then
 	fi
 fi
 
-# Defaults to form if eval, path, form, shebang or read were defined
+# Defaults to form if eval, path, form, shebang or read were not defined
 if [[ $useForm -eq 0 && -z $buffer && $readContinuous -eq 0 ]]; then
 	useForm=1
 fi
