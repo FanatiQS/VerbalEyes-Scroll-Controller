@@ -89,10 +89,10 @@ if [[ $useForm -eq 1 ]]; then
 	genIndex=14
 
 	# Sets a trap to escape the form if aborted
-	function on_exit() {
+	function escapeFormOnExit() {
 		printf "\x1b["$genIndex"B"
 	}
-	trap on_exit EXIT
+	trap escapeFormOnExit EXIT
 
 	# Prints property list
 	echo "[*] SSID"
