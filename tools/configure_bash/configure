@@ -79,14 +79,13 @@ if [[ -z $path ]]; then
 	fi
 fi
 
-# Only reads if no data is defined
-if [[ $useForm -eq 0 && -z $buffer && $readContinuous -eq 1 ]]; then
-	cat < $path
-	exit
+# Defaults to form if eval, path, form, shebang or read were defined
+if [[ $useForm -eq 0 && -z $buffer && $readContinuous -eq 0 ]]; then
+	useForm=1
 fi
 
 # Creates a new configuration if buffer was not defined or form flag was defined
-if [[ $useForm -eq 1 || -z $buffer ]]; then
+if [[ $useForm -eq 1 ]]; then
 	genIndex=14
 
 	# Sets a trap to escape the form if aborted
@@ -173,19 +172,23 @@ if [[ $useForm -eq 1 || -z $buffer ]]; then
 	fi
 fi
 
-# Ensures buffer will exit configuration mode
-buffer+='\n'
+# Writes data to device if available
+if [[ "$buffer" ]]; then
+	# Ensures buffer will exit configuration mode
+	buffer+='\n'
 
-# Writes buffer to device
-sleep $sleepLen; printf "$buffer" > $path &
+	# Writes buffer to device
+	sleep $sleepLen; printf "$buffer" > $path &
 
-# Reads data until configuration mode is exited
-if [[ $readContinuous -eq 0 ]]; then
-	LC_ALL=C sed -n '/\[/,//{
-		p
-		/Configuration/q
-	}' $path
-# Reads data until exited
-else
-	cat < $path
+	# Reads data until configuration mode is exited
+	if [[ $readContinuous -eq 0 ]]; then
+		LC_ALL=C sed -n '/\[/,//{
+			p
+			/Configuration/q
+		}' $path
+		exit
+	fi
 fi
+
+# Reads data until exited
+cat < $path
