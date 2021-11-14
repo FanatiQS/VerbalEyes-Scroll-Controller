@@ -696,7 +696,7 @@ int8_t verbaleyes_initialize() {
 			}
 
 			// Handles timeout and socket close error if end of headers was not reached
-			if (resIndex != 4) return socketHadNoData();
+			if (resIndex < 4) return socketHadNoData();
 
 			// Requires "Connection" header with "Upgrade" value and "Upgrade" header with "websocket" value
 			if (!resMatchIndexes[0] || !resMatchIndexes[1]) {
