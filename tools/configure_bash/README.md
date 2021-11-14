@@ -5,6 +5,8 @@ Configurations can either be written directly to a scroll controller or to a pre
 
 ## Usage
 The script has these options available.
+All options can be combined.
+Defaults to `--form` if `--read`, `--path` or `--eval` were not used.
 
 ### Read
 Enabled with `-r` or `--read`.
