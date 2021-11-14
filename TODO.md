@@ -17,6 +17,7 @@ Priority sorting guide:
 	* Mention that this is an alternative to downloading the entire repository and that it might be simpler and safer to clone entire repo.
 	* Link to download only bash dir `https://downgit.github.io/#/home?url=https://github.com/FanatiQS/VerbalEyes-Scroll-Controller/tree/master/tools/configure_bash`
 	* Use same downgit system to make link to download only configure_web and put link in its readme.
+	* Using --path option sends configuration twice?
 
 ### Configure Web
 * Add notes on that it is possible and okay to download source for configure_web and putting it up on your own website for access by your team.
@@ -86,8 +87,14 @@ Maybe nodejs script to create adhoc network?
 * Testing that the log function outputs whatever it receives could be done by sending back an http header field that contains all characters and checking that line over serial.
 
 #### Wifi
-* Check that it can connect with max length ssid and passphrase.
-* Make sure it does not connect if last character is off/missing.
+* Check that it can connect with max length ssid and max length passphrase.
+* Make sure it does not connect if last character is incorrect/missing. Might be easier to reset configuration and make sure each step does timeout/fail.
+* There is a npm package called `node-hotspot` that might be useful.
+* Test wifi not available, wifi passphrase incorrect and successful connection.
+
+#### Socket
+* Make sure socket can connect using both dns host and ip.
+* Maybe using node-dns/dns2 for dns resolution?
 
 
 
@@ -95,6 +102,7 @@ Maybe nodejs script to create adhoc network?
 ### Refactor
 * Go through all code and maybe convert 1/0 to true/false.
 * Maybe remove state to jump to in connectionFailToState argument, it could just clear the 4 LSBs to restart that group. Maybe rename to connectionFailed.
+* Currently the authentication parser ignores everything but the "auth", it does not check "id".
 
 ### Debug experience
 * Log the opcode when it is not a websocket text frame that is received during connection establishment.
