@@ -128,7 +128,7 @@ if [[ $useForm -eq 1 ]]; then
 			printf "\x1b[32C: \x1b[K"
 
 			# Adds input to buffer
-			read value
+			read -re value
 			buffer+=${genKeys[$genIndex-2]}=$value'\n'
 
 			# Moves back to selected line
