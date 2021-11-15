@@ -118,28 +118,24 @@ if [[ $useForm -eq 1 ]]; then
 	# Reads input until exited from interface
 	while read -rsn1 key; do
 		# Processes input on non escape character
-		if [[ $key != $'\x1b' ]]; then
+		if [[ $key == '' ]]; then
+			# Breaks on exit selected
 			if [[ $genIndex == 1 ]]; then
 				break
 			fi
 
-			# Moves to the right of the key
+			# Moves to the right of the key and clears old displayed data
 			printf "\x1b[32C: \x1b[K"
-
-			# Prints character if not started with enter key
-			if [[ $key != '' ]]; then
-				printf $key
-			fi
 
 			# Adds input to buffer
 			read value
-			buffer+=${genKeys[$genIndex-2]}=$key$value'\n'
+			buffer+=${genKeys[$genIndex-2]}=$value'\n'
 
 			# Moves back to selected line
 			printf "\x1b[F["
 
 		# Processes escape sequence
-		else
+		elif [[ $key == $'\x1b' ]]; then
 			# Ignores non escape sequence character
 			read -rsn1 key
 			if [[ $key != '[' ]]; then
