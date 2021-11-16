@@ -1,0 +1,7 @@
+{
+	"main": "index.js",
+	"author": "FanatiQS",
+	"dependencies": {
+		"ws": "^8.2.3"
+	}
+}
