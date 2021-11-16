@@ -66,35 +66,34 @@ Could steal a lot from emulator.
 * Needs to test return value and arguments for the API calls.
 
 #### Configuration
-* Testing configuration should be able to be done from another device over serial.
-* It has to be done in 2 parts, writing the data over serial and then reading the data back after a reboot to ensure it is committed correctly.
-* Needs to test that every address can be written to in configuration.
-* Needs to test that configuration is persistent (by rebooting between write test and read test).
-* Needs to test that every address can be read after commit and reboot.
-* Should test that every valid character (not \r\n\b\e\0\v\7f\f)
-* Requires an wifi with customisable ssid and passphrase to make it max length.
-Maybe nodejs script to create adhoc network?
-* The ssid and passphrase have fairly strict requirements what characters are allowed.
-* The host can use an mDNS client on the test server to allow more characters.
-* The path should allow for anything since it is just a TCP buffer but might require special parser on server.
-* The proj and projkey can be anything since it is just a websocket message.
-* Might require reconfiguring some property to be able to test EVERY character possible.
-* Make sure no function other than `verbaleyes_configure` is called when configuration mode is entered.
-* Should build configuration preset in javascript and output to file/device using command line arguments.
 * What happens if configuration gets value other than -1 -> 255?
-
-#### Log
-* Testing that the log function outputs whatever it receives could be done by sending back an http header field that contains all characters and checking that line over serial.
+* Test int configurations is working since we need to know if configurations are written.
+Maybe it can just parse and read the values there from the logs?
 
 #### Wifi
 * Check that it can connect with max length ssid and max length passphrase.
-* Make sure it does not connect if last character is incorrect/missing. Might be easier to reset configuration and make sure each step does timeout/fail.
+* Test that it does not connect if ssid is slightly incorrect.
 * There is a npm package called `node-hotspot` that might be useful.
-* Test wifi not available, wifi passphrase incorrect and successful connection.
+* Test wifi not available and wifi passphrase incorrect.
+* Creating hotspot on macbook was not working for esp8266 to connect to for some reason.
+* Should wifi be optional to test?
 
 #### Socket
-* Make sure socket can connect using both dns host and ip.
+* Make sure socket can connect using both dns hostname and ip.
 * Maybe using node-dns/dns2 for dns resolution?
+* Test socket failing to connect.
+* Should hostname test be optional?
+
+#### Scroll Update
+* Test that scroll updates can be sent after initilization.
+* Test the values of the potentiometer somehow.
+* Test resetoffset.
+Might make this optional.
+
+#### LED indicator
+* Add info when configuration mode is active to ensure that led status works.
+* Force input to complete initilization to check connecting led status.
+* Do not quit after test are complete to test status led for sending data and idle.
 
 
 

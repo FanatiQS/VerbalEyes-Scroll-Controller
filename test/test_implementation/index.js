@@ -416,36 +416,3 @@ process.stdin.once('data', async (data) => {
 		Buffer.from("\n\n")
 	]));
 });
-
-
-
-
-
-
-
-
-/* other tests to include:
-
- * Tests wifi connection failing to connect?
- * Tests socket connection failing to connect?
-
- * Tests that setscroll and resetoffset are not called during initialize
- 	This has been implemented but not tested
-
- * Tests that setscroll can be called after initialize
- * Tests setscroll range? Might not be needed
- * Optional test for resetoffset
-
- * Tests that a client can connect to a server with hostname
- * Create wifi network
-
- * Should hostname test be optional since dns lookup is technically not required?
-
- */
-
- /* test blinky light, would need to be done manually, but the states could exist maybe?
-  *		configuration
-  *		connecting
-  *		sending data
-  *		idle
-  */
