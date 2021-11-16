@@ -76,6 +76,20 @@ let authComplete = false;
 // The read stream connected to the serial device
 let confReadStream = null;
 
+// Callback function to resolve promsis awaiting servers to close
+let closeServersCallback = null;
+
+
+
+// Logs read from serial device and exits
+let logs = '';
+function abort() {
+	logs += confReadStream.read() || '';
+	console.error("Here is the logs that were read from the serial device:");
+	console.error(logs);
+	process.exit();
+}
+
 
 
 // Tests that configuration value is the correct length
@@ -124,16 +138,16 @@ testChars();
 function printConfMismatch(confName, a, b, len) {
 	// Ensures a and b match
 	if (!Buffer.compare(a, b)) {
-		console.log(`Configuration for ${confName} is correct`);
+		console.log(`[√] Configuration for ${confName} is correct`);
 		return;
 	}
 
 	// Prints the characters for debug
-	console.error(`Configuration for ${confName} is incorrect`);
+	console.error(`[x] Configuration for ${confName} is incorrect`);
 	for (let i = 0; i < len; i++) {
-		console.error(`index: ${i}\tconf: ${b[i]}\t data: ${a[i]}`);
+		console.error(`\tindex: ${i}\tconf: ${b[i]}\t data: ${a[i]}`);
 	}
-	process.exit(1);
+	process.exit();
 }
 
 
@@ -156,7 +170,7 @@ const tcpServer = new TcpServer(async function (sock) {
 	sock.on('data', (data) => {
 		// Ensures implementation on device can handle null byte in maksed WebSocket payload
 		if (!gotNullByte && data.slice(0, data.length - 1).includes(0)) {
-			console.log("Can handle null bytes in WebSocket data");
+			console.log("[√] Can handle null bytes in WebSocket data");
 			gotNullByte = true;
 		}
 
@@ -201,6 +215,7 @@ wss.on('connection', (ws) => {
 			// Awaits sending response to ensure no scroll data is transmitted before authenticated
 			await new Promise((resolve) => setTimeout(resolve, 4000));
 			authComplete = true;
+			console.log("[√] Did not get any scroll data before authenticated");
 
 			// Sends authentication response
 			ws.send(`[{"id": !!, "auth": true}]`);//!!
@@ -209,74 +224,29 @@ wss.on('connection', (ws) => {
 		else {
 			// Ensures no scroll data is sent before authentication is completed
 			if (!authComplete) {
-				console.error("Got data before authentication was completed");
-				process.exit();
+				console.error("[x] Got scroll data before authentication was completed");
+				abort();
 			}
 
 			//!! test setspeed can be sent
 
 			// Continues until everything is tested
-			if (gotNullByte) close();
+			if (gotNullByte) closeServersCallback();
 		}
 	});
 
 	// Logs WebSocket close and error events
-	ws.on('close', () => console.log("WebSocket closed"));
-	ws.on('error', (err) => console.error("WebSocket error", err));
+	ws.on('close', () => {
+		if (authComplete && gotNullByte) return;
+		console.log("[x] WebSocket closed");
+	});
+	ws.on('error', (err) => console.error("[x] WebSocket error", err));
 });
 
 
 
 // Creates DNS server
 //!! create dns server code
-
-
-
-// Closes everything and tests logs from serial
-async function close() {
-	// Closes servers and clients
-	tcpServer.close();
-	wss.close();
-	for (const sock of wss.clients) sock.terminate();
-
-	// Makes sure all logs have been transmitted
-	await new Promise((resolve) => setTimeout(resolve, 1000));
-
-	// Gets logs from device
-	const data = confReadStream.read().toString('binary');
-	confReadStream.close();
-
-	// Gets printed chunk of all printable characters from http headers
-	const allChars = data.slice(data.indexOf("---start---") + 11, data.indexOf("---end---")).toString();
-	const buf = [];
-	for (let i = 1; i < 256; i++) buf.push(i);
-	const src = String.fromCharCode(...buf).replace("\n", "\n\t");
-
-	// Ensures that http body containing every byte was printed correctly
-	if (src === allChars) {
-		console.log("All characters were printed correctly");
-	}
-	// Prints error if data did not match
-	else {
-		console.error("Not all characters were printed correctly");
-		console.error(src.length, allChars.length);
-		for (let i = 1; i < 256; i++) {
-			console.error(`index: ${i}\tdata: ${allChars.charCodeAt(i - 1)}\tbuf: ${src.charCodeAt(i - 1)}`);
-		}
-	}
-
-	//!! ignores hostname tests for now
-	return;
-
-	// Tests hostname
-	fs.writeFileSync(serialPath, Buffer.concat([
-		Buffer.from("\nhost="),
-		CONF_VALUE_HOSTNAME,
-		Buffer.from("\nport="),
-		Buffer.from(CONF_VALUE_PORT_A.toString()),
-		Buffer.from("\n\n")
-	]));
-};
 
 
 
@@ -307,28 +277,35 @@ process.stdin.once('data', async (data) => {
 		console.error("Unable to connect to device.");
 		process.exit();
 	});
+	await new Promise((resolve) => confReadStream.once('open', resolve));
 
 	// Ensures no other functions are called during idle configuration
-	confReadStream.read();
-	fs.writeFileSync(serialPath, "---test---");
+	logs += confReadStream.read() || '';
+	fs.writeFileSync(serialPath, "---confTest---");
+	const testConfNoPrintTimeout = setTimeout(() => {
+		console.log("Unable to read back '---confTest---' after writing to device");
+		confReadStream.close();
+		abort();
+	}, 5000);
 	while (1) {
 		const data = await new Promise((resolve) => confReadStream.once('data', resolve));
-		if (data.includes("---test---")) break;
+		logs += data || '';
+		if (logs.includes("---confTest---")) break;
 	}
+	clearTimeout(testConfNoPrintTimeout);
 	console.log("Rotate potentiomer and press reset button while data is gathered from the device...");
 	await new Promise((resolve) => setTimeout(resolve, 6000));
+	if (confReadStream.destroyed) {
+		console.error("Serial device disconnected");
+		abort();
+	}
 	const readData = confReadStream.read();
 	if (readData !== null) {
-		console.error(readData.toString());
-		console.error(readData);
-		console.error("Implementation logged this data when it was expected to be idle");
-		process.exit();
+		logs += readData;
+		console.error("Implementation was expected to only be listening to serial input");
+		abort();
 	}
 	fs.writeFileSync(serialPath, "\n\n");
-
-	// Creates wifi connection
-	//!! console.log("Creates wifi connection");
-	//!! create wifi connection code
 
 	// Writes configuration to device
 	if (!process.argv[3]) { //!! remove this check later and the description at the top for the cli argument
@@ -352,21 +329,31 @@ process.stdin.once('data', async (data) => {
 		]));
 	}
 
+	// Creates wifi connection
+	//!! console.log("Creates wifi connection");
+	//!! create wifi connection code
+
 	// Restarts device
 	console.log("Restart the device by unplugging its power.");
 	confReadStream.resume();
 	await new Promise((resolve) => confReadStream.once('close', resolve));
 	console.log("The device has been disconnected and power can be restored.");
-	let done = false;
-	while (!done) {
+	let deviceReconnected = false;
+	while (!deviceReconnected) {
 		confReadStream = fs.createReadStream(serialPath);
 		await new Promise((resolve) => {
 			confReadStream.once('open', () => {
-				done = true;
+				deviceReconnected = true;
 				resolve();
 			});
 			confReadStream.once('error', (err) => {
-				setTimeout(resolve, 500);
+				if (!deviceReconnected) {
+					setTimeout(resolve, 500);
+				}
+				else {
+					console.error("Serial device connection got an error");
+					abort();
+				}
 			});
 		});
 	}
@@ -374,8 +361,60 @@ process.stdin.once('data', async (data) => {
 
 	// Tests can start
 	console.log("Test started, you might need to adjust the speed to complete all tests");
-	confReadStream.read();
+	logs += confReadStream.read() || '';
 	tcpServer.listen(CONF_VALUE_PORT_A);
+
+	// Awaits servers to close
+	const unableToCompleteTimeout = setTimeout(() => {
+		console.error("Did not complete tests for 20 seconds");
+		abort();
+	}, 20000);
+	await new Promise((resolve) => closeServersCallback = resolve);
+	clearTimeout(unableToCompleteTimeout);
+
+	// Closes servers and clients
+	tcpServer.close();
+	wss.close();
+	for (const sock of wss.clients) sock.terminate();
+
+	// Makes sure all logs have been transmitted
+	await new Promise((resolve) => setTimeout(resolve, 1000));
+
+	// Gets logs from device
+	logs += confReadStream.read().toString('binary') || '';
+	confReadStream.close();
+
+	// Gets printed chunk of all printable characters from http headers
+	const allChars = logs.slice(logs.indexOf("---start---") + 11, logs.indexOf("---end---"));
+	const buf = [];
+	for (let i = 1; i < 256; i++) buf.push(i);
+	const src = String.fromCharCode(...buf).replace("\n", "\n\t");
+
+	// Ensures that http body containing every byte was printed correctly
+	if (src === allChars) {
+		console.log("[√] All characters were printed correctly");
+	}
+	// Prints error if data did not match
+	else {
+		console.error("[x] Not all characters were printed correctly");
+		console.error(src.length, allChars.length);
+		for (let i = 1; i < 256; i++) {
+			console.error(`\tindex: ${i}\tdata: ${allChars.charCodeAt(i - 1)}\tbuf: ${src.charCodeAt(i - 1)}`);
+		}
+		abort();
+	}
+
+	//!! ignores hostname tests for now
+	return;
+
+	// Tests hostname
+	fs.writeFileSync(serialPath, Buffer.concat([
+		Buffer.from("\nhost="),
+		CONF_VALUE_HOSTNAME,
+		Buffer.from("\nport="),
+		Buffer.from(CONF_VALUE_PORT_A.toString()),
+		Buffer.from("\n\n")
+	]));
 });
 
 
