@@ -183,8 +183,7 @@ const tcpServer = new TcpServer(async function (sock) {
 			gotNullByte = true;
 		}
 
-		// Writes WebSocket text data as binary to WebSocket server
-		if (data[0] === 0x81) data[0] = 0x82;
+		// Writes data to WebSocket server
 		redirectSocket.write(data);
 	});
 
@@ -207,9 +206,12 @@ wss.on('connection', (ws) => {
 		Buffer.from("---end---")
 	]));
 
+	// Ignores UTF8 since proj and projkey are not really valid utf8 strings
+	ws._receiver._skipUTF8Validation = true;
+
 	// Handles WebSocket text/binary events
 	ws.on('message', async (data) => {
-		data = data.toString('binary'); // WebSocket text events are converted to binary events to allow for binary stringification
+		data = data.toString('binary');
 
 		// Handles authentication request
 		if (data.includes('"auth": ')) {
