@@ -361,6 +361,7 @@ process.stdin.once('data', async (data) => {
 	//!! create wifi connection code
 
 	// Restarts device
+	console.log("LED status test: Ensure the LED indicates configuration mode is active");
 	console.log("Restart the device by unplugging its power.");
 	confReadStream.resume();
 	await new Promise((resolve) => confReadStream.once('close', resolve));
@@ -387,7 +388,8 @@ process.stdin.once('data', async (data) => {
 	console.log("The device has reconnected.");
 
 	// Tests can start
-	console.log("Test started, you might need to adjust the speed to complete all tests");
+	console.log("LED status test: Ensure the LED indicates the device is connecting to a server");
+	console.log("Test started, adjust the speed on the device to complete all tests");
 	logs += confReadStream.read() || '';
 	tcpServer.listen(CONF_VALUE_PORT_A);
 
@@ -398,6 +400,7 @@ process.stdin.once('data', async (data) => {
 	}, 20000);
 	await new Promise((resolve) => closeServersCallback = resolve);
 	clearTimeout(unableToCompleteTimeout);
+	console.log("[√] Connected to the server");
 
 	// Closes servers and clients
 	tcpServer.close();
