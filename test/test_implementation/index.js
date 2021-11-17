@@ -73,6 +73,15 @@ let gotNullByte = false;
 // Boolean indicating that authentication has completed and that scroll data can now be received
 let authComplete = false;
 
+// Boolean indicating that scroll offset has been received
+let gotScrollOffset = true; //!! disabled by default since button has fallen off on prototype hardware
+
+// Array including all scroll speeds received
+const scrollSpeeds = [];
+let gotScrollSpeed = false;
+
+
+
 // The read stream connected to the serial device
 let confReadStream = null;
 
@@ -228,10 +237,24 @@ wss.on('connection', (ws) => {
 				abort();
 			}
 
-			//!! test setspeed can be sent
+			// Gets JSON from data
+			const json = JSON.parse(data)[0];
+
+			// Ensures scroll speed is sent when potentiometer is turned
+			if (!gotScrollSpeed && json.hasOwnProperty('scrollSpeed')) {
+				scrollSpeeds.push(json.scrollSpeed);
+				console.log(`[√] Got scroll speed updates ${scrollSpeeds.length}/100, value: ${json.scrollSpeed}`);
+				if (scrollSpeeds.length >= 100) gotScrollSpeed = true;
+			}
+
+			// Ensures scroll offset can be updated
+			if (!gotScrollOffset && json.scrollOffset) {
+				gotScrollOffset = true;
+				console.log("[√] Got scroll offset update");
+			}
 
 			// Continues until everything is tested
-			if (gotNullByte) closeServersCallback();
+			if (gotNullByte && gotScrollSpeed && gotScrollOffset) closeServersCallback();
 		}
 	});
 
