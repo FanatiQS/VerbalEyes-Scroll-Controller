@@ -265,7 +265,10 @@ wss.on('connection', (ws) => {
 		if (authComplete && gotNullByte) return;
 		console.log("[x] WebSocket closed");
 	});
-	ws.on('error', (err) => console.error("[x] WebSocket error", err));
+	ws.on('error', (err) => {
+		console.error("WebSocket error", err);
+		abort();
+	});
 });
 
 
