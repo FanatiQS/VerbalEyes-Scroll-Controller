@@ -291,7 +291,6 @@ process.stdin.once('data', async (data) => {
 	// Aborts test
 	if (data.toString() !== "yes\n") {
 		wss.close();
-		confReadStream.close();
 		return;
 	}
 
