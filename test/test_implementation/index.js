@@ -9,7 +9,6 @@ const { WebSocketServer } = require("ws");
 
 /* CLI arguments:
  * 		path to serial port
- * 		if definced will not write configuration (used to not wear out flash memory during development)
  */
 
 
@@ -44,6 +43,7 @@ const CONF_VALUE_PROJKEY = Buffer.concat([
 	]),
 	Buffer.from('"$+?[\\]')
 ]);
+//!! flip a and b since testing 0 is more important than 11 and 13
 const CONF_VALUE_PORT_A = ("\r".charCodeAt(0) << 8 ) | "\n".charCodeAt(0);
 const CONF_VALUE_PORT_B = (0x00 << 8) | 0x7f;
 
@@ -66,37 +66,40 @@ const CONF_LEN_PROJKEY = 32;
 
 
 
+//!!
+if (process.argv.length <= 2) {
+	console.error("add help message!!");
+	return;
+}
+
+// Gets command line arguments
+const serialPath = process.argv[2];
+
+
+
 // Boolean indicating if any WebSocket frame has contained a null byte as a result of its payload being masked.
 // Device should not stop when null byte is reached and that is what is tested.
 let gotNullByte = false;
 
-// Boolean indicating that authentication has completed and that scroll data can now be received
-let authComplete = false;
-
-// Boolean indicating that scroll offset has been received
-let gotScrollOffset = true; //!! disabled by default since button has fallen off on prototype hardware
-
-// Array including all scroll speeds received
-const scrollSpeeds = [];
-let gotScrollSpeed = false;
-
-
-
 // The read stream connected to the serial device
-let confReadStream = null;
+let serialStream = null;
 
-// Callback function to resolve promsis awaiting servers to close
-let closeServersCallback = null;
+// Buffer for serial logs
+let serialLogs = '';
 
-
-
-// Logs read from serial device and exits
-let logs = '';
-function abort() {
-	logs += confReadStream.read() || '';
-	console.error("Here is the logs that were read from the serial device:");
-	console.error(logs);
-	process.exit();
+// Async iterator object for reading from websocket
+const wsAsyncIterator = {
+	ws: null,
+	next: function () {
+		return new Promise((resolve, reject) => {
+			this.ws.once('message', (data) => resolve({ value: data }));
+			this.ws.once('error', reject);
+			this.ws.once('close', () => resolve({ done: true }));
+		});
+	},
+	[Symbol.asyncIterator]: function () {
+		return this;
+	}
 }
 
 
@@ -106,6 +109,46 @@ function testConfLen(name, conf, len) {
 	if (conf.length === len) return;
 	console.error(`Configuration for ${name} was not correct length`, conf.length, len);
 }
+
+// Reads next line from terminal stdin
+function readFromTerminal() {
+	return new Promise((resolve) => {
+		process.stdin.once('data', (data) => {
+			process.stdin.pause();
+			resolve(data.toString());
+		});
+	});
+}
+
+// Sets a timeout that resolves after a set number of milliseconds
+function delay(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Writes data to serial device
+function serialWrite(data) {
+	return fs.promises.writeFile(serialPath, data);
+}
+
+// Prints the characters to debug mismatch
+function printConfMismatch(confName, a, b, len) {
+	// Ensures a and b match
+	if (!Buffer.compare(a, b)) {
+		console.log(`[√] Configuration for ${confName} is correct`);
+		return;
+	}
+
+	// Prints the characters for debug
+	console.error(`[x] Configuration for ${confName} is incorrect`);
+	for (let i = 0; i < len; i++) {
+		console.error(`\tindex: ${i}\tconf: ${b[i]}\t data: ${a[i]}`);
+	}
+	throw null;
+}
+
+
+
+
 
 // Tests what characters are included in the configuration test
 function testChars() {
@@ -139,44 +182,170 @@ function testChars() {
 		last = i;
 	}
 }
-testChars();
 
-
-
-// Prints the characters to debug mismatch
-function printConfMismatch(confName, a, b, len) {
-	// Ensures a and b match
-	if (!Buffer.compare(a, b)) {
-		console.log(`[√] Configuration for ${confName} is correct`);
-		return;
-	}
-
-	// Prints the characters for debug
-	console.error(`[x] Configuration for ${confName} is incorrect`);
-	for (let i = 0; i < len; i++) {
-		console.error(`\tindex: ${i}\tconf: ${b[i]}\t data: ${a[i]}`);
-	}
-	process.exit();
+// Awaits confirmation and aborts it not confirmed to continue
+async function confirmStart() {
+	console.log("This is going to clear all configuration data on the device.");
+	console.log("Do you want to start the test? (yes/no)");
+	const data = await readFromTerminal();
+	if (data !== "yes\n") throw null;
 }
 
+// Connects to the serial device
+function serialConnect() {
+	return new Promise((resolve, reject) => {
+		console.log(`Connecting to device at: ${serialPath}`);
+		serialStream = fs.createReadStream(serialPath);
+		serialStream.once('open', resolve);
+		serialStream.once('error', (err) => {
+			console.error("Unable to connect to device.");
+			reject((err.code === 'ENOENT') ? null : err);
+		});
+	});
+}
 
+// Ensures no other functions are called during idle configuration
+async function testIdleConfiguration() {
+	// Starts configuratio mode and read in response
+	serialLogs += serialStream.read() || '';
+	await serialWrite("---confTest---");
+	await new Promise(async (resolve, reject) => {
+		const timeout = setTimeout(() => {
+			serialStream.close();
+			console.error("Unable to read back '---confTest---' after writing to device");
+			reject();
+		}, 5000);
+		while (1) {
+			serialLogs += await new Promise((resolve) => serialStream.once('data', resolve));
+			if (serialLogs.includes("---confTest---")) {
+				clearTimeout(timeout);
+				resolve();
+			}
+		}
+	});
 
-// Creates TCP server
-const tcpServer = new TcpServer(async function (sock) {
-	const data = await new Promise((resolve) => sock.once('data', resolve));
+	// Ensures nothing was done on device while being idle in configuration mode
+	console.log("Rotate potentiomer and press reset button while data is gathered from the device...");
+	await delay(6000);
+	if (serialStream.destroyed) {
+		console.error("Serial device disconnected");
+		throw null;
+	}
+	const serialData = serialStream.read();
+	if (serialData !== null) {
+		serialLogs += serialData;
+		serialStream.close();
+		console.error("Implementation was expected to only be listening to serial input");
+		throw null;
+	}
+	await serialWrite("\n\n");
+}
 
-	// Ensures path is correct
-	const path = data.slice(PATH_OFFSET, PATH_OFFSET + CONF_LEN_PATH);
+// Writes configuration to device and restarts it
+async function testConfigure() {
+	const addr = await new Promise((r) => dns.lookup(os.hostname(), (e, addr) => r(addr))); //!! might not need to look up addr if setting static ip for custom wifi
+
+	// Writes configuration for test with tcp
+	await serialWrite(Buffer.concat([
+		Buffer.from("host="),
+		Buffer.from(addr),
+		Buffer.from("\nport="),
+		Buffer.from(CONF_VALUE_PORT_A.toString()),
+		Buffer.from("\npath="),
+		CONF_VALUE_PATH,
+		Buffer.from("\nproj="),
+		CONF_VALUE_PROJ,
+		Buffer.from("\nprojkey="),
+		CONF_VALUE_PROJKEY
+	]));
+
+	// Writes configuration for network
+	if (false) {
+		await writeSerial(Buffer.concat([
+			Buffer.from("\nssid="),
+			CONF_VALUE_SSID,
+			Buffer.from("\nssidkey="),
+			CONF_VALUE_SSIDKEY,
+		]));
+	}
+
+	// Exits configuration mode
+	await serialWrite(Buffer.from("\n\n"));
+
+	// Awaits serial stream to close
+	console.log("LED status test: Ensure the LED indicates configuration mode is active");
+	console.log("Restart the device by unplugging its power.");
+	serialStream.resume();
+	await new Promise((resolve) => serialStream.once('close', resolve));
+	console.log("The device has been disconnected and power can be restored.");
+
+	// Awaits serial stream to reconnect
+	let serialConnected = false;
+	while (!serialConnected) {
+		serialConnected = await new Promise((resolve) => {
+			serialStream = fs.createReadStream(serialPath);
+			serialStream.once('open', () => resolve(true));
+			serialStream.once('error', () => setTimeout(resolve, 500, false));
+		});
+	}
+	console.log("The device has reconnected.");
+
+	// Starts testing connection to server
+	console.log("LED status test: Ensure the LED indicates the device is connecting to a server");
+	console.log("Test started, adjust the speed on the device to complete all tests");
+	serialLogs += serialStream.read() || '';
+
+	//!!
+	serialStream.on('error', (err) => {
+		console.error("Serial device connection got an error");
+		printSerialLogBuffer();
+	});
+}
+
+//!! Creates wifi network
+async function setupNetwork() {
+	//!! console.log("Creates wifi connection");
+	//!! create wifi connection code
+}
+
+// Tests socket connection and authentication
+async function testSocket() {
+	// Creates TCP server and gets tcp socket
+	const tcpServer = new TcpServer();
+	tcpServer.listen(CONF_VALUE_PORT_A);
+	const tcpSocket = await new Promise((resolve, reject) => {
+		tcpServer.once('connection', resolve);
+		tcpServer.once('error', reject);
+		tcpServer.once('close', reject);
+	});
+	tcpServer.close();
+
+	// Gets http request from tcp socket
+	const httpReq = await new Promise((resolve, reject) => {
+		tcpSocket.once('data', resolve);
+		tcpSocket.once('error', reject);
+		tcpSocket.once('close', reject);
+	});
+
+	// Ensures path in http request is correct
+	const path = httpReq.slice(PATH_OFFSET, PATH_OFFSET + CONF_LEN_PATH);
 	printConfMismatch("path", path, CONF_VALUE_PATH, CONF_LEN_PATH);
 
-	// Creates socket connection to WebSocket server and sends HTTP data with path replaced
+	// Creates socket connection to WebSocket client and sends HTTP data with path replaced
+	const wss = new WebSocketServer({ port: WS_PORT });
 	const redirectSocket = new TcpClient();
-	await new Promise((resolve) => redirectSocket.connect(WS_PORT, () => resolve()));
-	redirectSocket.write("GET / " + data.toString().slice(PATH_OFFSET + CONF_LEN_PATH));
+	await new Promise((resolve) => redirectSocket.connect(WS_PORT, resolve));
+	redirectSocket.write("GET / " + httpReq.toString().slice(PATH_OFFSET + CONF_LEN_PATH));
+	const ws = await new Promise((resolve) => wss.on('connection', resolve));
+	wsAsyncIterator.ws = ws;
+	wss.close();
 
-	// Redirects data to other socket
-	redirectSocket.on('data', (data) => sock.write(data));
-	sock.on('data', (data) => {
+	// Ignores UTF8 since proj and projkey are not really valid utf8 strings
+	ws._receiver._skipUTF8Validation = true;
+
+	// Redirects data to other socket for tcp socket and ws
+	redirectSocket.on('data', (data) => tcpSocket.write(data));
+	tcpSocket.on('data', (data) => {
 		// Ensures implementation on device can handle null byte in maksed WebSocket payload
 		if (!gotNullByte && data.slice(0, data.length - 1).includes(0)) {
 			console.log("[√] Can handle null bytes in WebSocket data");
@@ -188,15 +357,9 @@ const tcpServer = new TcpServer(async function (sock) {
 	});
 
 	// Binds sockets close events
-	redirectSocket.on('close', () => sock.destroy());
-	sock.on('close', () => redirectSocket.destroy());
-});
+	redirectSocket.on('close', () => tcpSocket.destroy());
+	tcpSocket.on('close', () => redirectSocket.destroy());
 
-
-
-// Creates WebSocket server
-const wss = new WebSocketServer({ port: WS_PORT, clientTracking: true });
-wss.on('connection', (ws) => {
 	// Sends all characters from 1 to 255 to ensure they can be printed correctly on the device
 	const chars = [];
 	for (let i = 1; i < 256; i++) chars.push(i);
@@ -206,11 +369,9 @@ wss.on('connection', (ws) => {
 		Buffer.from("---end---")
 	]));
 
-	// Ignores UTF8 since proj and projkey are not really valid utf8 strings
-	ws._receiver._skipUTF8Validation = true;
-
 	// Handles WebSocket text/binary events
-	ws.on('message', async (data) => {
+	let authComplete = false;
+	for await (let data of wsAsyncIterator) {
 		data = data.toString('binary');
 
 		// Handles authentication request
@@ -230,192 +391,73 @@ wss.on('connection', (ws) => {
 
 			// Sends authentication response
 			ws.send(`[{"id": !!, "auth": true}]`);//!!
+
+			// Completes socket test
+			console.log("[√] Connected to the server");
+			return;
 		}
-		// Handles scroll update
-		else {
-			// Ensures no scroll data is sent before authentication is completed
-			if (!authComplete) {
-				console.error("[x] Got scroll data before authentication was completed");
-				abort();
-			}
-
-			// Gets JSON from data
-			const json = JSON.parse(data)[0];
-
-			// Ensures scroll speed is sent when potentiometer is turned
-			if (!gotScrollSpeed && json.hasOwnProperty('scrollSpeed')) {
-				scrollSpeeds.push(json.scrollSpeed);
-				console.log(`[√] Got scroll speed updates ${scrollSpeeds.length}/100, value: ${json.scrollSpeed}`);
-				if (scrollSpeeds.length >= 100) gotScrollSpeed = true;
-			}
-
-			// Ensures scroll offset can be updated
-			if (!gotScrollOffset && json.scrollOffset) {
-				gotScrollOffset = true;
-				console.log("[√] Got scroll offset update");
-			}
-
-			// Continues until everything is tested
-			if (gotNullByte && gotScrollSpeed && gotScrollOffset) closeServersCallback();
+		// Ensures no scroll data is sent before authentication is completed
+		else if (!authComplete) {
+			console.error("[x] Got scroll data before authentication was completed");
+			throw null;
 		}
-	});
+	}
+	console.error("[x] WebSocket closed");
+	throw null;
+}
 
-	// Logs WebSocket close and error events
-	ws.on('close', () => {
-		if (authComplete && gotNullByte) return;
-		console.log("[x] WebSocket closed");
-	});
-	ws.on('error', (err) => {
-		console.error("WebSocket error", err);
-		abort();
-	});
-});
+//!! Ensures scroll speed can be updated
+function testScrollSpeed() {
+	const scrollSpeeds = [];
+	for await (const data of wsAsyncIterator) {
+		// Gets JSON from data
+		const json = JSON.parse(data.toString('binary'))[0];
 
+		// Ensures scroll speed is sent when potentiometer is turned
+		if (json.hasOwnProperty('scrollSpeed')) {
+			scrollSpeeds.push(json.scrollSpeed);
+			console.log(`[√] Got scroll speed updates ${scrollSpeeds.length}/100, value: ${json.scrollSpeed}`);
+			if (scrollSpeeds.length >= 100) return;
+		}
+	}
+	console.error("[x] WebSocket closed");
+	throw null;
+}
 
+//!! Ensures scroll offset can be updated
+function testScrollOffset() {
+	for await (const data of wsAsyncIterator) {
+		if (json.scrollOffset) {
+			console.log("[√] Got scroll offset update");
+			return;
+		}
+	}
+	console.error("[x] WebSocket closed");
+	throw null;
+}
 
-// Creates DNS server
-//!! create dns server code
-
-
-
-// Gets command line arguments
-const serialPath = process.argv[2];
-const testNetworkAndHostName = false;
-
-
-
-// Start testing
-console.log("This is going to clear all configuration data on the device.");
-console.log("Do you want to start the test? (yes/no)");
-process.stdin.once('data', async (data) => {
-	// Stops listening to stdin
-	process.stdin.pause();
-
-	// Aborts test
-	if (data.toString() !== "yes\n") {
-		wss.close();
+// Closes websocket after ensuring it can handle null byte
+async function closeSocket() {
+	for await (const data of wsAsyncIterator) {
+		if (!gotNullByte) continue;
+		wsAsyncIterator.ws.terminate();
 		return;
 	}
+	console.error("[x] WebSocket closed");
+	throw null;
+}
 
-	// Connects to the serial device
-	console.log(`Connecting to device at: ${serialPath}`);
-	confReadStream = fs.createReadStream(serialPath);
-	confReadStream.once('error', (err) => {
-		console.error("Unable to connect to device.");
-		process.exit();
-	});
-	await new Promise((resolve) => confReadStream.once('open', resolve));
-
-	// Ensures no other functions are called during idle configuration
-	logs += confReadStream.read() || '';
-	fs.writeFileSync(serialPath, "---confTest---");
-	const testConfNoPrintTimeout = setTimeout(() => {
-		console.log("Unable to read back '---confTest---' after writing to device");
-		confReadStream.close();
-		abort();
-	}, 5000);
-	while (1) {
-		const data = await new Promise((resolve) => confReadStream.once('data', resolve));
-		logs += data || '';
-		if (logs.includes("---confTest---")) break;
-	}
-	clearTimeout(testConfNoPrintTimeout);
-	console.log("Rotate potentiomer and press reset button while data is gathered from the device...");
-	await new Promise((resolve) => setTimeout(resolve, 6000));
-	if (confReadStream.destroyed) {
-		console.error("Serial device disconnected");
-		abort();
-	}
-	const readData = confReadStream.read();
-	if (readData !== null) {
-		logs += readData;
-		console.error("Implementation was expected to only be listening to serial input");
-		abort();
-	}
-	fs.writeFileSync(serialPath, "\n\n");
-
-	// Writes configuration to device
-	if (!process.argv[3]) { //!! remove this check later and the description at the top for the cli argument
-		const addr = await new Promise((r) => dns.lookup(os.hostname(), (e, addr) => r(addr))); //!! might not need to look up addr if setting static ip for custom wifi
-		fs.writeFileSync(serialPath, Buffer.concat([
-			//!! Buffer.from("ssid="),
-			//!! CONF_VALUE_SSID,
-			//!! Buffer.from("ssidkey="),
-			//!! CONF_VALUE_SSIDKEY,
-			Buffer.from("\nhost="),
-			Buffer.from(addr),
-			Buffer.from("\nport="),
-			Buffer.from(CONF_VALUE_PORT_A.toString()),
-			Buffer.from("\npath="),
-			CONF_VALUE_PATH,
-			Buffer.from("\nproj="),
-			CONF_VALUE_PROJ,
-			Buffer.from("\nprojkey="),
-			CONF_VALUE_PROJKEY,
-			Buffer.from("\n\n")
-		]));
-	}
-
-	// Creates wifi connection
-	//!! console.log("Creates wifi connection");
-	//!! create wifi connection code
-
-	// Restarts device
-	console.log("LED status test: Ensure the LED indicates configuration mode is active");
-	console.log("Restart the device by unplugging its power.");
-	confReadStream.resume();
-	await new Promise((resolve) => confReadStream.once('close', resolve));
-	console.log("The device has been disconnected and power can be restored.");
-	let deviceReconnected = false;
-	while (!deviceReconnected) {
-		confReadStream = fs.createReadStream(serialPath);
-		await new Promise((resolve) => {
-			confReadStream.once('open', () => {
-				deviceReconnected = true;
-				resolve();
-			});
-			confReadStream.once('error', (err) => {
-				if (!deviceReconnected) {
-					setTimeout(resolve, 500);
-				}
-				else {
-					console.error("Serial device connection got an error");
-					abort();
-				}
-			});
-		});
-	}
-	console.log("The device has reconnected.");
-
-	// Tests can start
-	console.log("LED status test: Ensure the LED indicates the device is connecting to a server");
-	console.log("Test started, adjust the speed on the device to complete all tests");
-	logs += confReadStream.read() || '';
-	tcpServer.listen(CONF_VALUE_PORT_A);
-
-	// Awaits servers to close
-	const unableToCompleteTimeout = setTimeout(() => {
-		console.error("Did not complete tests for 20 seconds");
-		abort();
-	}, 20000);
-	await new Promise((resolve) => closeServersCallback = resolve);
-	clearTimeout(unableToCompleteTimeout);
-	console.log("[√] Connected to the server");
-
-	// Closes servers and clients
-	tcpServer.close();
-	wss.close();
-	for (const sock of wss.clients) sock.terminate();
-
+//!! Tests that all characters can be printed correctly
+async function testLog() {
 	// Makes sure all logs have been transmitted
-	await new Promise((resolve) => setTimeout(resolve, 1000));
+	await delay(1000);
 
 	// Gets logs from device
-	logs += confReadStream.read().toString('binary') || '';
-	confReadStream.close();
+	serialLogs += serialStream.read().toString('binary') || '';
+	serialStream.close();
 
 	// Gets printed chunk of all printable characters from http headers
-	const allChars = logs.slice(logs.indexOf("---start---") + 11, logs.indexOf("---end---"));
+	const allChars = serialLogs.slice(serialLogs.indexOf("---start---") + 11, serialLogs.indexOf("---end---"));
 	const buf = [];
 	for (let i = 1; i < 256; i++) buf.push(i);
 	const src = String.fromCharCode(...buf).replace("\n", "\n\t");
@@ -431,18 +473,89 @@ process.stdin.once('data', async (data) => {
 		for (let i = 1; i < 256; i++) {
 			console.error(`\tindex: ${i}\tdata: ${allChars.charCodeAt(i - 1)}\tbuf: ${src.charCodeAt(i - 1)}`);
 		}
-		abort();
+		throw null;
 	}
 
-	//!! ignores hostname tests for now
-	return;
+	//!! slice out values for ints and matches them
+}
 
-	// Tests hostname
-	fs.writeFileSync(serialPath, Buffer.concat([
+//!!
+async function testHostname() {
+	// Writes hostname configuration to device
+	serialWrite(Buffer.concat([
 		Buffer.from("\nhost="),
 		CONF_VALUE_HOSTNAME,
 		Buffer.from("\nport="),
 		Buffer.from(CONF_VALUE_PORT_A.toString()),
 		Buffer.from("\n\n")
 	]));
+
+	// Creates DNS server
+	//!! create dns server code
+}
+
+
+
+(async (resolve, reject) => {
+	//!! tests configuration data
+	testChars();
+
+	//!! requests confirmation to continue
+	// await confirmStart();
+
+	//!! tests idle configuration mode
+	await serialConnect();
+	// await testIdleConfiguration();
+
+	//!! configures device
+	// await testConfigure();
+
+	//!! sets up test network
+	// await setupNetwork();
+
+	//!! tests host ip, port, path, proj, projkey
+	const unableToCompleteTimeout = setTimeout(() => {
+		console.error("Did not complete tests in 20 seconds");
+		abort();
+	}, 20000);
+	await testSocket();
+	clearTimeout(unableToCompleteTimeout);
+
+	//!! tests scroll data
+	await testScrollSpeed();
+	// await testScrollOffset(); //!! disabled by default since button has fallen off on prototype hardware
+
+	//!! disconnects ws
+	await closeSocket();
+
+	//!! tests logged serial data
+	testLog(); //!! tests http header all chars
+
+	//!! tests more conf data and serial logs
+	//!! maybe move ino testLog?
+	if (cliArgTestConfiguration) {
+		testConfiguration(); //!! tests ints
+	}
+
+	//!! tests hostname
+	// await testHostname(); //!! creates dns server even if network is not custom
+})().catch(async (err) => {
+	// Logs error if not null
+	if (err) console.error(err);
+
+	// Terminates websocket if open
+	if (wsAsyncIterator.ws) wsAsyncIterator.ws.terminate();
+
+	// Adds buffered logs from serial device and closes stream
+	if (serialStream) {
+		await delay(1000);
+		serialLogs += serialStream.read() || '';
+		serialStream.close();
+	}
+
+	// Prints serial logs
+	if (serialLogs) {
+		console.error("Here is the logs that were read from the serial device:");
+		console.error(serialLogs);
+	}
 });
