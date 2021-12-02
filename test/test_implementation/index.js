@@ -511,12 +511,15 @@ async function testHostname() {
 	await testConfigure();
 
 	//!! tests host ip, port, path, proj, projkey
-	const unableToCompleteTimeout = setTimeout(() => {
-		console.error("Did not complete tests in 20 seconds");
-		abort();
-	}, 20000);
-	await testSocket();
-	clearTimeout(unableToCompleteTimeout);
+	await new Promise(async (resolve, reject) => {
+		const unableToCompleteTimeout = setTimeout(() => {
+			console.error("Did not complete tests in 20 seconds");
+			reject();
+		}, 20000);
+		await testSocket();
+		clearTimeout(unableToCompleteTimeout);
+		resolve();
+	});
 
 	//!! tests scroll data
 	await testScrollSpeed();
