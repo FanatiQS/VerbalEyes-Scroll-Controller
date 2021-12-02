@@ -260,14 +260,12 @@ async function testConfigure() {
 	]));
 
 	// Writes configuration for network
-	if (false) {
-		await writeSerial(Buffer.concat([
-			Buffer.from("\nssid="),
-			CONF_VALUE_SSID,
-			Buffer.from("\nssidkey="),
-			CONF_VALUE_SSIDKEY,
-		]));
-	}
+	//!! await writeSerial(Buffer.concat([
+	//!! 	Buffer.from("\nssid="),
+	//!! 	CONF_VALUE_SSID,
+	//!! 	Buffer.from("\nssidkey="),
+	//!! 	CONF_VALUE_SSIDKEY,
+	//!! ]));
 
 	// Exits configuration mode
 	await serialWrite(Buffer.from("\n\n"));
