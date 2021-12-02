@@ -495,7 +495,7 @@ async function testHostname() {
 
 
 
-(async (resolve, reject) => {
+(async () => {
 	//!! tests configuration data
 	testChars();
 
@@ -531,7 +531,7 @@ async function testHostname() {
 	testLog(); //!! tests http header all chars
 
 	//!! tests more conf data and serial logs
-	//!! maybe move ino testLog?
+	//!! maybe move into testLog?
 	if (cliArgTestConfiguration) {
 		testConfiguration(); //!! tests ints
 	}
