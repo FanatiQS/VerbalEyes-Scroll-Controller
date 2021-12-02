@@ -243,7 +243,7 @@ async function testIdleConfiguration() {
 
 // Writes configuration to device and restarts it
 async function testConfigure() {
-	const addr = await new Promise((r) => dns.lookup(os.hostname(), (e, addr) => r(addr))); //!! might not need to look up addr if setting static ip for custom wifi
+	const addr = Object.values(os.networkInterfaces()).flat().find((itf) => itf.family === "IPv4" && !itf.internal).address;
 
 	// Writes configuration for test with tcp
 	await serialWrite(Buffer.concat([
