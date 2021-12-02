@@ -295,10 +295,9 @@ async function testConfigure() {
 	console.log("Test started, adjust the speed on the device to complete all tests");
 	serialLogs += serialStream.read() || '';
 
-	//!!
+	// Prints error for serial stream and continue until rejected
 	serialStream.on('error', (err) => {
 		console.error("Serial device connection got an error");
-		printSerialLogBuffer();
 	});
 }
 
