@@ -506,11 +506,11 @@ async function testHostname() {
 	await serialConnect();
 	// await testIdleConfiguration();
 
-	//!! configures device
-	// await testConfigure();
-
 	//!! sets up test network
 	// await setupNetwork();
+
+	//!! configures device
+	await testConfigure();
 
 	//!! tests host ip, port, path, proj, projkey
 	const unableToCompleteTimeout = setTimeout(() => {
