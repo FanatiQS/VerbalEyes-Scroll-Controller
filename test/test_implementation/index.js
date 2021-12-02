@@ -406,7 +406,7 @@ async function testSocket() {
 }
 
 //!! Ensures scroll speed can be updated
-function testScrollSpeed() {
+async function testScrollSpeed() {
 	const scrollSpeeds = [];
 	for await (const data of wsAsyncIterator) {
 		// Gets JSON from data
@@ -424,7 +424,7 @@ function testScrollSpeed() {
 }
 
 //!! Ensures scroll offset can be updated
-function testScrollOffset() {
+async function testScrollOffset() {
 	for await (const data of wsAsyncIterator) {
 		if (json.scrollOffset) {
 			console.log("[√] Got scroll offset update");
