@@ -57,13 +57,13 @@ static bool showProgressBar() {
 	const time_t current = time(NULL);
 
 	// Handles timeout error
-	if (current > timeout) return 0;
+	if (current > timeout) return false;
 
 	// Prints progress bar every second
-	if (previous == current) return 1;
+	if (previous == current) return true;
 	previous = current;
 	logprintf(".");
-	return 1;
+	return true;
 }
 
 // Resets state back with an error message
@@ -230,7 +230,7 @@ bool verbaleyes_configure(const int16_t c) {
 			// Falls through to default if not true
 			if (!(confFlags & FLAGVALUE)) {
 				// Prevents handling failed matches
-				if (confFlags & FLAGFAILED) return 1;
+				if (confFlags & FLAGFAILED) return true;
 
 				// Finish matching key and reset all items
 				for (int8_t i = 0; i < CONFITEMSLEN; i++) {
@@ -244,7 +244,7 @@ bool verbaleyes_configure(const int16_t c) {
 						logprintf(" ] is now: ");
 					}
 
-					confItems[i].nameMatchFailed = 0;
+					confItems[i].nameMatchFailed = false;
 				}
 
 				// Prevents handling value for keys with no match
@@ -252,12 +252,12 @@ bool verbaleyes_configure(const int16_t c) {
 					if (confIndex == 0) logprintf("\r\n[");
 					logprintf(" ] No matching key");
 					confFlags |= FLAGFAILED | FLAGACTIVE;
-					return 1;
+					return true;
 				}
 
 				// Resets index to be reused for value
 				confIndex = 0;
-				return 1;
+				return true;
 			}
 		}
 		// Updates configurable value
@@ -265,7 +265,7 @@ bool verbaleyes_configure(const int16_t c) {
 			// Validates incomming key against valid configuration keys
 			if (!(confFlags & FLAGVALUE)) {
 				// Key handling has failed and remaining characters should be ignored
-				if (confFlags & FLAGFAILED) return 1;
+				if (confFlags & FLAGFAILED) return true;
 
 				// Special handling for first character in key
 				if (confIndex == 0) {
@@ -275,7 +275,7 @@ bool verbaleyes_configure(const int16_t c) {
 					// Ignores everything until next LF if first char indicates comment
 					if (c == '#') {
 						confFlags |= FLAGFAILED;
-						return 1;
+						return true;
 					}
 
 					// Initializes new configuration update
@@ -289,7 +289,7 @@ bool verbaleyes_configure(const int16_t c) {
 						!confItems[i].nameMatchFailed &&
 						c != confItems[i].name[confIndex]
 					) {
-						confItems[i].nameMatchFailed = 1;
+						confItems[i].nameMatchFailed = true;
 					}
 				}
 			}
@@ -300,7 +300,7 @@ bool verbaleyes_configure(const int16_t c) {
 			// Handles integer input for matched key
 			else if (confItems[confMatchIndex].len <= 0 ) {
 				// Integer value handling has failed and remaining characters should be ignored
-				if (confFlags & FLAGFAILED) return 1;
+				if (confFlags & FLAGFAILED) return true;
 
 				// Only accepts a valid numerical representation
 				if (c < '0' || c > '9') {
@@ -313,14 +313,14 @@ bool verbaleyes_configure(const int16_t c) {
 					) {
 						confFlags |= FLAGSIGNED;
 						logprintf("-");
-						return 1;
+						return true;
 					}
 
 					// Aborts handling input if it contained invalid characters
 					if (confIndex == 0) logprintf("0");
 					logprintf("\r\nInvalid input (%c)", c);
 					confFlags |= FLAGFAILED;
-					return 1;
+					return true;
 				}
 
 				// Handles integer overflow, it can only occur with four or more character
@@ -331,7 +331,7 @@ bool verbaleyes_configure(const int16_t c) {
 							confFlags |= FLAGFAILED;
 							confBuffer = 65535;
 							logprintf("%c\r\nValue was too high and clamped down to maximum value of 65535", c);
-							return 1;
+							return true;
 						}
 					}
 					// Clamps signed integers if it would overflow
@@ -346,7 +346,7 @@ bool verbaleyes_configure(const int16_t c) {
 							logprintf("%c\r\nValue was too high and clamped down to maximum value of 32767", c);
 						}
 
-						return 1;
+						return true;
 					}
 				}
 
@@ -355,33 +355,33 @@ bool verbaleyes_configure(const int16_t c) {
 			}
 			// Displays max value length warning message once
 			else {
-				if (confFlags & FLAGFAILED) return 1;
+				if (confFlags & FLAGFAILED) return true;
 				confFlags |= FLAGFAILED;
 				logprintf("\r\nMaximum input length reached");
-				return 1;
+				return true;
 			}
 
 			// Character was acceptable and continues reading more data
 			confIndex++;
 			logprintf("%c", c);
-			return 1;
+			return true;
 		}
 		// Exits on no data read
 		case '\0':
 		case EOF: {
 			// Exit if configuration is not actively being updated
-			if (confFlags == 0) return 0;
+			if (confFlags == 0) return false;
 
 			// Commits all changed values if commit is required
 			if (confFlags == FLAGCOMMIT) {
 				if (confFlags & FLAGCOMMIT) verbaleyes_conf_commit();
 				logprintf("\r\nConfiguration saved\r\n");
 				confFlags = 0;
-				return 0;
+				return false;
 			}
 
 			// Continues waiting for new data until timeout is reached
-			if (time(NULL) < timeout) return 1;
+			if (time(NULL) < timeout) return true;
 		}
 		// Terminates updating configurable data
 		case 0x1B:
@@ -424,7 +424,7 @@ bool verbaleyes_configure(const int16_t c) {
 				// Handles termination before key was validated
 				else if (confIndex != 0) {
 					for (int8_t i = 0; i < CONFITEMSLEN; i++) {
-						confItems[i].nameMatchFailed = 0;
+						confItems[i].nameMatchFailed = false;
 					}
 					logprintf(" ] Aborted");
 					confIndex = 0;
@@ -437,11 +437,11 @@ bool verbaleyes_configure(const int16_t c) {
 			}
 			// Does not continue processing data
 			else {
-				return 0;
+				return false;
 			}
 
 			// Continues processing more data
-			return 1;
+			return true;
 		}
 		// Ignores these characters
 		case 0x7F:
@@ -479,7 +479,7 @@ int8_t verbaleyes_initialize() {
 		case 0x80:
 		case 0x90: {
 			if (time(NULL) >= timeout) state &= 0x7F;
-			return 1;
+			return true;
 		}
 		// Reconnects to network if connection is lost
 		default: {
@@ -508,7 +508,7 @@ int8_t verbaleyes_initialize() {
 			switch (verbaleyes_network_connected()) {
 				// Shows progress bar until network is connected
 				case 0: {
-					if (showProgressBar()) return 1;
+					if (showProgressBar()) return true;
 				}
 				// Handles timeout error and known fail
 				case -1: {
@@ -551,7 +551,7 @@ int8_t verbaleyes_initialize() {
 			switch (verbaleyes_socket_connected()) {
 				// Shows progress bar until socket is connected
 				case 0: {
-					if (showProgressBar()) return 1;
+					if (showProgressBar()) return true;
 				}
 				// Handles timeout error and know fail
 				case -1: {
@@ -760,7 +760,7 @@ int8_t verbaleyes_initialize() {
 		}
 		// Gets length of WebSocket payload for authentication
 		case 0x18: {
-			while (1) {
+			while (true) {
 				const int16_t c = verbaleyes_socket_read();
 
 				// Handles timeout error
@@ -865,7 +865,7 @@ int8_t verbaleyes_initialize() {
 	}
 
 	// Allows caller function to continue past this function
-	return 0;
+	return false;
 }
 
 // Sends remapped analog speed reading to the server
