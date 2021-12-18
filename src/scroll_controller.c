@@ -91,7 +91,7 @@ static int8_t socketHadNoDataProgressBar() {
 
 
 // Indication that a match has already succeeded
-#define SUCCESSFULMATCH 255
+#define SUCCESSFULMATCH 0xff
 
 // Matches incoming data character by character
 static void matchStr(uint8_t* index, const char c, const char* match) {
@@ -465,7 +465,7 @@ uint16_t jitterSize;
 // Global variable for projID to connect to
 char projID[CONF_LEN_PROJ + 1];
 
-#define RESINDEXFAILED 65535
+#define RESINDEXFAILED 0xffff
 
 // Ensures everything is connected to be able to transmit speed changes to the server
 int8_t verbaleyes_initialize() {
