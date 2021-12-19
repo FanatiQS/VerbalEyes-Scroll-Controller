@@ -195,7 +195,7 @@ This timeout can be configured at compile-time with the C macro `CONFIGTIMEOUT`.
 * If input value is longer than the max length for that key, the configuration system will not add the overflowing data but everything up until max length is reached will be written to persistent storage. This will result in incorrect data in storage if error occurred.
 * Comments are supported if the first character is a `#` sign, everything up to next LF will be ignored.
 * Keys are case sensitive.
-* Configuration system is meant to be used by sending in an entire configuration string at once. Even though it works sending it characters as they are typed, the user experience is sub par with, no indication that a configuration value has been null terminated until the next key starts being processed or configuration mode is exited, and no support for backspace other than aborting and starting over.
+* Configuration system is meant to be used by sending in an entire configuration string at once. Even though it works sending it characters as they are typed, the user experience is sub par with no support for backspace other than aborting and starting over.
 
 ### Configuration item types
 These are the types for configuration items

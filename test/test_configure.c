@@ -25,16 +25,15 @@ bool autoReset = 0;
 
 // Updates configuration until LF
 bool updateConfig(const char* str) {
-	int i = 0;
 	if (strlen(str) == 0) return 0;
-	do {
+	for (int i = 0; str[i] != '\n'; i++) {
 		if (!verbaleyes_configure(str[i])) return 1;
-	} while (str[i++] != '\n');
+	}
 	return 0;
 }
 
 // Starts a new test
-void test_start(const char* title, const char* input, const char* log) {
+void test_start(const char* title, const char* input, const char* log1, const char* log2) {
 	// Prints test start message
 	printf("" COLOR_BLUE "Testing configuring: %s\n" COLOR_NORMAL, title);
 	fflush(stdout);
@@ -49,8 +48,19 @@ void test_start(const char* title, const char* input, const char* log) {
 		numberOfErrors++;
 	}
 
-	// Compares buffered log message to log
-	log_cmp(log);
+	// Ensures buffered log is empty
+	if (strlen(log1) == 0) {
+		log_cmp("");
+		return;
+	}
+
+	// Compares buffered log message to log1
+	log_cmp((autoReset) ? log1 : log1 + 2);
+
+	// Commits input and compares log message to log2
+	log_clear();
+	verbaleyes_configure('\n');
+	log_cmp(log2);
 }
 
 // Tests that conf buffer is clean
@@ -92,11 +102,11 @@ void test_end(int state) {
 
 		// Tests that done message was printed
 		if (state == ENDCOMMIT) {
-			log_cmp("\r\nConfiguration saved\r\n");
+			log_cmp("Configuration saved\r\n");
 		}
 		// Tests that only CRLF was printed
 		else if (state == ENDDONE) {
-			log_cmp("\r\nConfiguration canceled\r\n");
+			log_cmp("Configuration canceled\r\n");
 		}
 		// Tests that no done message was printed
 		else {
@@ -123,117 +133,118 @@ void test_end(int state) {
 // Tests configuration input combinations
 void runTests() {
 	// Tests that a comment will not print or commit conf changes
-	test_start("Comment", "# comment \0\0\0\0= do nothing\n", "");
+	test_start("Comment", "# comment \0\0\0\0= do nothing\n", "", "");
+	verbaleyes_configure('\n');
 	test_conf_empty();
 	test_end(ENDNOTHING);
 
 	// Tests that a valid key updates its value correctly
-	test_start("Key valid", "ssid=123=\0\0\0\0=456\n", "\r\n[ ssid ] is now: 123==456");
+	test_start("Key valid", "ssid=123=\0\0\0\0=456\n", "\r\n[ ssid ] is now: 123==456", "\r\n");
 	test_conf_string(ADDR_SSID, "123==456", 1);
 	test_end(ENDCOMMIT);
 
 	// Tests that an invalid key does not update anything
-	test_start("Key invalid", "ssif=123==456\n", "\r\n[ ssif ] No matching key");
+	test_start("Key invalid", "ssif=123==456\n", "\r\n[ ssif ] No matching key", "\r\n");
 	test_conf_empty();
 	test_end(ENDDONE);
 
 	// Tests that empty key does not update anything
-	test_start("Key empty", "=123==456\n", "\r\n[ ] No matching key");
+	test_start("Key empty", "=123==456\n", "\r\n[ ] No matching key", "\r\n");
 	test_conf_empty();
 	test_end(ENDDONE);
 
 	// Tests that aborting key does not update anything
-	test_start("Key abortion", "ssid\n", "\r\n[ ssid ] Aborted");
+	test_start("Key abortion", "ssid\n", "\r\n[ ssid", " ] Aborted\r\n");
 	test_conf_empty();
 	test_end(ENDDONE);
 
 	// Tests that an empty value is updated correctly
-	test_start("Value string empty", "ssid=\n", "\r\n[ ssid ] is now: ");
+	test_start("Value string empty", "ssid=\n", "\r\n[ ssid ] is now: ", "\r\n");
 	test_conf_string(ADDR_SSID, "", 1);
 	test_end(ENDCOMMIT);
 
 	// Tests that a max length string updates without terminator
-	test_start("Value string max length", "ssid=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n", "\r\n[ ssid ] is now: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+	test_start("Value string max length", "ssid=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n", "\r\n[ ssid ] is now: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "\r\n");
 	test_conf_string(ADDR_SSID, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 0);
 	test_end(ENDCOMMIT);
 
 	// Tests that over max length string only updates up to max length without terminator
-	test_start("Value string too long", "ssid=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbb\n", "\r\n[ ssid ] is now: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\r\nMaximum input length reached");
+	test_start("Value string too long", "ssid=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbb\n", "\r\n[ ssid ] is now: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\r\nMaximum input length reached", "\r\n");
 	test_conf_string(ADDR_SSID, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 0);
 	test_end(ENDCOMMIT);
 
 	// Tests that non-alphanumeric characters for int types aborts
-	test_start("Number with letters", "port=257abc123\n", "\r\n[ port ] is now: 257\r\nInvalid input (a)");
+	test_start("Number with letters", "port=257abc123\n", "\r\n[ port ] is now: 257\r\nInvalid input (a)", "\r\n");
 	test_conf_int(ADDR_PORT, "\x01\x01");
 	test_end(ENDCOMMIT);
 
 	// Tests that non-alphanumeric characters for int types aborts
-	test_start("Number with only letters", "port=abc\n", "\r\n[ port ] is now: 0\r\nInvalid input (a)");
+	test_start("Number with only letters", "port=abc\n", "\r\n[ port ] is now: 0\r\nInvalid input (a)", "\r\n");
 	test_conf_int(ADDR_PORT, "\x00\x00");
 	test_end(ENDCOMMIT);
 
 	// Tests that max unsigned integer updates correctly
-	test_start("Number max uint", "port=65535\n", "\r\n[ port ] is now: 65535");
+	test_start("Number max uint", "port=65535\n", "\r\n[ port ] is now: 65535", "\r\n");
 	test_conf_int(ADDR_PORT, "\xff\xff");
 	test_end(ENDCOMMIT);
 
 	// Tests that small unsigned integer updates correctly
-	test_start("Number small uint", "port=128\n", "\r\n[ port ] is now: 128");
+	test_start("Number small uint", "port=128\n", "\r\n[ port ] is now: 128", "\r\n");
 	test_conf_int(ADDR_PORT, "\x00\x80");
 	test_end(ENDCOMMIT);
 
 	// Tests that above max unsigned integer updates correctly
-	test_start("Number above max uint", "port=65536\n", "\r\n[ port ] is now: 65536\r\nValue was too high and clamped down to maximum value of 65535");
+	test_start("Number above max uint", "port=65536\n", "\r\n[ port ] is now: 65536\r\nValue was too high and clamped down to maximum value of 65535", "\r\n");
 	test_conf_int(ADDR_PORT, "\xff\xff");
 	test_end(ENDCOMMIT);
 
 	// Tests that too many characters for unsigned integer updates correctly
-	test_start("Number max uint too long", "port=1111111111\n", "\r\n[ port ] is now: 111111\r\nValue was too high and clamped down to maximum value of 65535");
+	test_start("Number max uint too long", "port=1111111111\n", "\r\n[ port ] is now: 111111\r\nValue was too high and clamped down to maximum value of 65535", "\r\n");
 	test_conf_int(ADDR_PORT, "\xff\xff");
 	test_end(ENDCOMMIT);
 
 	// Tests that max signed integer updates correctly
-	test_start("Number max int", "speedmin=32767\n", "\r\n[ speedmin ] is now: 32767");
+	test_start("Number max int", "speedmin=32767\n", "\r\n[ speedmin ] is now: 32767", "\r\n");
 	test_conf_int(ADDR_SPEEDMIN, "\x7f\xff");
 	test_end(ENDCOMMIT);
 
 	// Tests that above max signed integer updates correctly
-	test_start("Number above max int", "speedmin=32768\n", "\r\n[ speedmin ] is now: 32768\r\nValue was too high and clamped down to maximum value of 32767");
+	test_start("Number above max int", "speedmin=32768\n", "\r\n[ speedmin ] is now: 32768\r\nValue was too high and clamped down to maximum value of 32767", "\r\n");
 	test_conf_int(ADDR_SPEEDMIN, "\x7f\xff");
 	test_end(ENDCOMMIT);
 
 	// Tests that too many characters for positive signed integer updates correctly
-	test_start("Number max positive int too long", "speedmin=1111111111\n", "\r\n[ speedmin ] is now: 111111\r\nValue was too high and clamped down to maximum value of 32767");
+	test_start("Number max positive int too long", "speedmin=1111111111\n", "\r\n[ speedmin ] is now: 111111\r\nValue was too high and clamped down to maximum value of 32767", "\r\n");
 	test_conf_int(ADDR_SPEEDMIN, "\x7f\xff");
 	test_end(ENDCOMMIT);
 
 	// Tests that min signed integer updates correctly
-	test_start("Number min int", "speedmin=-32767\n", "\r\n[ speedmin ] is now: -32767");
+	test_start("Number min int", "speedmin=-32767\n", "\r\n[ speedmin ] is now: -32767", "\r\n");
 	test_conf_int(ADDR_SPEEDMIN, "\x80\x01");
 	test_end(ENDCOMMIT);
 
 	// Tests that below min signed integer updates correctly
-	test_start("Number below min int", "speedmin=-32768\n", "\r\n[ speedmin ] is now: -32768\r\nValue was too low and clamped up to minimum value of -32767");
+	test_start("Number below min int", "speedmin=-32768\n", "\r\n[ speedmin ] is now: -32768\r\nValue was too low and clamped up to minimum value of -32767", "\r\n");
 	test_conf_int(ADDR_SPEEDMIN, "\x80\x01");
 	test_end(ENDCOMMIT);
 
 	// Tests that too many characters for negative signed integer updates correctly
-	test_start("Number min negative int too long", "speedmin=-1111111111\n", "\r\n[ speedmin ] is now: -111111\r\nValue was too low and clamped up to minimum value of -32767");
+	test_start("Number min negative int too long", "speedmin=-1111111111\n", "\r\n[ speedmin ] is now: -111111\r\nValue was too low and clamped up to minimum value of -32767", "\r\n");
 	test_conf_int(ADDR_SPEEDMIN, "\x80\x01");
 	test_end(ENDCOMMIT);
 
 	// Tests that negative input for unsigned integer updates correctly
-	test_start("Number negative for uint", "port=-32767\n", "\r\n[ port ] is now: 0\r\nInvalid input (-)");
+	test_start("Number negative for uint", "port=-32767\n", "\r\n[ port ] is now: 0\r\nInvalid input (-)", "\r\n");
 	test_conf_int(ADDR_PORT, "\x00\x00");
 	test_end(ENDCOMMIT);
 
 	// Tests that a minus sign in the middle of input updates correctly
-	test_start("Number misplaced minus sign", "speedmin=32-767\n", "\r\n[ speedmin ] is now: 32\r\nInvalid input (-)");
+	test_start("Number misplaced minus sign", "speedmin=32-767\n", "\r\n[ speedmin ] is now: 32\r\nInvalid input (-)", "\r\n");
 	test_conf_int(ADDR_SPEEDMIN, "\x00\x20");
 	test_end(ENDCOMMIT);
 
 	// Tests that ignored characters returns the correct value
-	test_start("Ignored characters", "", "");
+	test_start("Ignored characters", "", "", "");
 	if (verbaleyes_configure('\r') == autoReset) {
 		fprintf(stderr, "" COLOR_RED "Ignored characters did not return false\n" COLOR_NORMAL);
 		numberOfErrors++;
@@ -241,21 +252,21 @@ void runTests() {
 	test_end(ENDNOTHING);
 
 	// Tests if macro CONFIGLEN is correct length
-	test_start("Config Macro", "sensitivity=65535\n", "\r\n[ sensitivity ] is now: 65535");
+	test_start("Config Macro", "sensitivity=65535\n", "\r\n[ sensitivity ] is now: 65535", "\r\n");
 	test_conf_int(ADDR_SENSITIVITY, "\xff\xff");
 	test_end(ENDCOMMIT);
 
 	// Tests that no data for a specified timeout would automatically exit configuration mode
-	test_start("Timeout aborted", "1\n", "\r\n[ 1 ] Aborted");
+	test_start("Timeout aborted", "1\n", "\r\n[ 1", " ] Aborted\r\n");
 	fflush(stdout);
 	time_t t1 = time(NULL);
 	log_clear();
 	while (verbaleyes_configure(0));
 	if (autoReset) {
-		log_cmp("\r\nConfiguration canceled\r\n");
+		log_cmp("Configuration canceled\r\n");
 	}
 	else {
-		log_cmp("\r\nConfiguration saved\r\n");
+		log_cmp("Configuration saved\r\n");
 	}
 	time_t t2 = time(NULL);
 	if (t2 - t1 < 2) {
@@ -318,6 +329,8 @@ int main(void) {
 	//!! could get only errors by closing stdout
 
 	// Run all tests
+	verbaleyes_configure('1');
+	verbaleyes_configure('\n');
 	runTests();
 
 	// Run tests again exiting configuration mode between every tests
@@ -329,7 +342,7 @@ int main(void) {
 	runTests();
 
 	// Tests that EOF, 0 and LF all return false if it is not already processing something else
-	test_start("First character EOF, 0 or LF", "", "");
+	test_start("First character EOF, 0 or LF", "", "", "");
 	int ignoreChars[] = { EOF, 0, '\n' };
 	for (int i = 0; i < sizeof(ignoreChars) / sizeof(ignoreChars[0]); i++) {
 		if (verbaleyes_configure(ignoreChars[i])) {
@@ -408,30 +421,43 @@ int main(void) {
 	printf("" COLOR_BLUE "Testing configuration address: Overwriting shorter\n" COLOR_NORMAL);
 	conf_setflags(0);
 	updateConfig("ssid=abc\n");
+	verbaleyes_configure('\n');
 	conf_cmp(0, "abc", 4);
 	updateConfig("ssidkey=abc\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32, "abc", 4);
 	updateConfig("host=abc\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32 + 63, "abc", 4);
 	updateConfig("port=100\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32 + 63 + 64, "\0d", 2);
 	updateConfig("path=abc\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32 + 63 + 64 + 2, "abc", 4);
 	updateConfig("proj=abc\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32 + 63 + 64 + 2 + 32, "abc", 4);
 	updateConfig("projkey=abc\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32 + 63 + 64 + 2 + 32 + 32, "abc", 4);
 	updateConfig("speedmin=100\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32, "\0d", 2);
 	updateConfig("speedmax=100\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2, "\0d", 2);
 	updateConfig("deadzone=100\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2, "\0d", 2);
 	updateConfig("callow=100\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2, "\0d", 2);
 	updateConfig("calhigh=100\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2 + 2, "\0d", 2);
 	updateConfig("sensitivity=100\n");
+	verbaleyes_configure('\n');
 	conf_cmp(32 + 63 + 64 + 2 + 32 + 32 + 32 + 2 + 2 + 2 + 2 + 2, "\0d", 2);
 
 	// Prints out the number of errors that occured

@@ -251,7 +251,7 @@ bool verbaleyes_configure(const int16_t c) {
 
 				// Prevents handling value for keys with no match
 				if (!(confFlags & FLAGVALUE)) {
-					if (confIndex == 0) logprintf("\r\n[");
+					if (confIndex == 0) logprintf((confFlags & FLAGACTIVE) ? "[" : "\r\n[");
 					logprintf(" ] No matching key");
 					confFlags |= FLAGFAILED | FLAGACTIVE;
 					return true;
@@ -281,8 +281,13 @@ bool verbaleyes_configure(const int16_t c) {
 					}
 
 					// Initializes new configuration update
-					confFlags |= FLAGACTIVE;
-					logprintf("\r\n[ ");
+					if (confFlags & FLAGACTIVE) {
+						logprintf("[ ");
+					}
+					else {
+						logprintf("\r\n[ ");
+						confFlags |= FLAGACTIVE;
+					}
 				}
 
 				// Invalidates keys that does not match incomming string
@@ -377,7 +382,7 @@ bool verbaleyes_configure(const int16_t c) {
 			// Commits all changed values if commit is required
 			if (confFlags == FLAGCOMMIT) {
 				if (confFlags & FLAGCOMMIT) verbaleyes_conf_commit();
-				logprintf("\r\nConfiguration saved\r\n");
+				logprintf("Configuration saved\r\n");
 				confFlags = 0;
 				return false;
 			}
@@ -415,11 +420,13 @@ bool verbaleyes_configure(const int16_t c) {
 				// Resets to handle new keys
 				confFlags = FLAGCOMMIT | FLAGACTIVE;
 				confIndex = 0;
+				logprintf("\r\n");
 			}
 			// Handles termination of key
 			else if (confFlags != 0) {
 				// Handles termination for key without a match
 				if (confFlags & FLAGFAILED) {
+					if (confIndex != 0) logprintf("\r\n");
 					confIndex = 0;
 					confFlags &= ~FLAGFAILED;
 				}
@@ -428,13 +435,13 @@ bool verbaleyes_configure(const int16_t c) {
 					for (int8_t i = 0; i < CONFITEMSLEN; i++) {
 						confItems[i].nameMatchFailed = false;
 					}
-					logprintf(" ] Aborted");
+					logprintf(" ] Aborted\r\n");
 					confIndex = 0;
 				}
 				// Clears active flag after double LF
 				else {
 					confFlags &= ~FLAGACTIVE;
-					if (confFlags == 0) logprintf("\r\nConfiguration canceled\r\n");
+					if (confFlags == 0) logprintf("Configuration canceled\r\n");
 				}
 			}
 			// Does not continue processing data
