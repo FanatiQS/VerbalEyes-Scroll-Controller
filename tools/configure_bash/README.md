@@ -55,6 +55,14 @@ Useful to remove sensitive data like WiFi credentials.
 
 
 
+## Errors
+* Options that are not recognised will throw and error.
+* If the option `--out` is not used, the script tries to automatically detect a serial device to use.
+If unable to, an error will be thrown.
+* A list of errors that can occur on the scroll controller when parsing input can be found [here](../../src/README.md#errors).
+
+
+
 ## Manual configuration
 Configurations can be done manually using the command line without any external tools.
 
@@ -173,9 +181,3 @@ I dunno if its even possible :/
 ```sh
 stty -echo -F `ls /dev/cu.usbserial-* | head -1`
 ```
-
-## Errors
-* Options that are not recognised will throw and error.
-* If the option `--out` is not used, the script tries to automatically detect a serial device to use.
-If unable to, an error will be thrown.
-* A list of errors that can occur on the scroll controller when parsing input can be found [here](../../src/README.md#errors).
