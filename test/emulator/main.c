@@ -43,7 +43,7 @@ int readFromStdIn() {
 
 	// Gets escaped sequence
 	c = getchar();
-	if (c != '[') return EOF;
+	if (c != '[') return 0x1B;
 	c = getchar();
 	switch (c) {
 		// Up
