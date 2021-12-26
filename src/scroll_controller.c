@@ -190,7 +190,7 @@ struct confItem {
 	const int8_t len; // Maxumum length for item
 	const uint16_t addr; // Start address in percistent storage
 	const uint8_t resetState; // State to go back to when item is updated
-	bool nameMatchFailed; // Internally used by configuration parser
+	uint8_t nameMatchFailed; // Internally used by configuration parser
 };
 
 // Array of all configurable properties
@@ -246,12 +246,15 @@ bool verbaleyes_configure(const int16_t c) {
 						logprintf(" ] is now: ");
 					}
 
-					confItems[i].nameMatchFailed = false;
+					confItems[i].nameMatchFailed = 0;
 				}
 
 				// Prevents handling value for keys with no match
 				if (!(confFlags & FLAGVALUE)) {
-					if (confIndex == 0) logprintf((confFlags & FLAGACTIVE) ? "[" : "\r\n[");
+					if (confIndex == 0) {
+						logprintf((confFlags & FLAGACTIVE) ? "[" : "\r\n[");
+						confIndex = 1;
+					}
 					logprintf(" ] No matching key");
 					confFlags |= FLAGFAILED | FLAGACTIVE;
 					return true;
@@ -296,7 +299,7 @@ bool verbaleyes_configure(const int16_t c) {
 						!confItems[i].nameMatchFailed &&
 						c != confItems[i].name[confIndex]
 					) {
-						confItems[i].nameMatchFailed = true;
+						confItems[i].nameMatchFailed = confIndex + 1;
 					}
 				}
 			}
@@ -371,6 +374,18 @@ bool verbaleyes_configure(const int16_t c) {
 			// Character was acceptable and continues reading more data
 			confIndex++;
 			logprintf("%c", c);
+			return true;
+		}
+		// Handles backspace
+		case 0x7F: {
+			if (confIndex == 0) return true;
+			for (int8_t i = 0; i < CONFITEMSLEN; i++) {
+				if (confItems[i].nameMatchFailed == confIndex) {
+					confItems[i].nameMatchFailed = 0;
+				}
+			}
+			confIndex--;
+			logprintf((!(confFlags & FLAGVALUE) && confIndex == 0) ? "\b \b\b\b \b" : "\b \b");
 			return true;
 		}
 		// Exits on no data read
@@ -453,7 +468,6 @@ bool verbaleyes_configure(const int16_t c) {
 			return true;
 		}
 		// Ignores these characters
-		case 0x7F:
 		case '\b':
 		case '\f':
 		case '\v':
