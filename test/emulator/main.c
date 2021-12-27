@@ -130,18 +130,27 @@ bool socketConnectionFailed = 0;
 
 // Connects the socket to the endpoint
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
+	// Closes the socket if this is not the fist time it is called
 	if (sockfd != 0) close(sockfd);
+
+	// Initializes the socket
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("ERROR: Unable to create socket\n");
 		exit(EXIT_FAILURE);
 	}
 
+	// Sets timeout of 1 nanosecond for socket
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 1;
+	setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+
+	// Connects to server using host and port
 	struct sockaddr_in servaddr;
 	bzero(&servaddr, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = inet_addr(host);
 	servaddr.sin_port = htons(port);
-
 	socketConnectionFailed = connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
 }
 
@@ -153,34 +162,10 @@ int8_t verbaleyes_socket_connected() {
 
 // Consumes a single character from the sockets response data buffer
 short verbaleyes_socket_read() {
-	// Creates set for select to use with only the socket connected to the host
-	fd_set set;
-	FD_ZERO(&set);
-	FD_SET(sockfd, &set);
+	unsigned char c = 0;
 
-	// Creates timeout delay of 0 microseconds
-	struct timeval timeout;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
-
-	// Checks if socket has data
-	switch(select(sockfd + 1, &set, NULL, NULL, &timeout)) {
-		// Exits on error
-		case -1: {
-			perror("\nERROR: Select failed\n");
-			exit(EXIT_FAILURE);
-		}
-		// Returns EOF if socket does not have data
-		case 0: {
-			return EOF;
-		}
-		// Reads data and returns it if socket has data
-		default: {
-			unsigned char c = 0;
-			recv(sockfd, &c, 1, 0);
-			return c;
-		}
-	}
+	// Returns char if socket has data or returns EOF if it does not have data
+	return (recv(sockfd, &c, 1, 0) == -1) ? EOF : c;
 }
 
 // Sends a packet to the endpoint the socket is connected to
