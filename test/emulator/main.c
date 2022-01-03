@@ -4,7 +4,7 @@
 #include <string.h> // bzero, strlen
 
 #ifdef _WIN32
-#include <winsock2.h> // timeval, socket, AF_INET, SOCK_STREAM, connect, htons, inet_addr, sockaddr_in, send, recv
+#include <winsock2.h> // timeval, socket, AF_INET, SOCK_STREAM, connect, htons, inet_addr, sockaddr_in, send, recv, INVALID_SOCKET, closesocket
 #include <windows.h>
 #else
 #include <unistd.h> // STDIN_FILENO, close, usleep
@@ -12,6 +12,8 @@
 #include <arpa/inet.h> // htons, inet_addr, sockaddr_in
 #include <sys/time.h> // timeval
 #include <termios.h> // termios, tcgetattr, tcsetattr, TCSAFLUSH, ECHO, ICANON, VMIN, VTIME
+#define INVALID_SOCKET (-1)
+#define closesocket close
 #endif
 
 #include "../../src/scroll_controller.h"
@@ -125,16 +127,16 @@ int8_t verbaleyes_network_connected() {
 
 
 // The tcp socket and its connection status
-int sockfd = 0;
+unsigned int sockfd = INVALID_SOCKET;
 bool socketConnectionFailed = false;
 
 // Connects the socket to the endpoint
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 	// Closes the socket if this is not the fist time it is called
-	if (sockfd != 0) close(sockfd);
+	if (sockfd != INVALID_SOCKET) closesocket(sockfd);
 
 	// Initializes the socket
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
 		perror("ERROR: Unable to create socket\n");
 		exit(EXIT_FAILURE);
 	}
