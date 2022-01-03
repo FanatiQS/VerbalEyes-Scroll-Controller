@@ -177,7 +177,7 @@ function testChars() {
 	for (let i = 0; i <= 256; i++) {
 		const match = chars.includes(i);
 		if (match === lastMatch) continue;
-		console.log(`0x${last.toString(16)} => 0x${(i - 1).toString(16)} was ${(match) ? "not " : ""}included in configurations`);
+		console.log(`0x${last.toString(16)} to 0x${(i - 1).toString(16)} were ${(match) ? "not " : ""}included in configurations`);
 		lastMatch = match;
 		last = i;
 	}
@@ -555,7 +555,7 @@ async function testHostname() {
 
 	// Prints serial logs
 	if (serialLogs) {
-		console.error("Here is the logs that were read from the serial device:");
+		console.error("Here are the logs that were read from the serial device:");
 		console.error(serialLogs);
 	}
 });
