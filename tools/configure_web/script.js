@@ -138,26 +138,26 @@ document.querySelector('#webserial-disconnect').onclick = function () {
 document.querySelector('#config-load').onclick = function () {
 	const loadHandler = document.createElement('input');
 	loadHandler.setAttribute('type', 'file');
+	const reader = new FileReader();
 	loadHandler.onchange = function () {
 		reader.readAsText(this.files[0]);
 	};
-	const reader = new FileReader();
 	reader.onload = function (event) {
-		event.target.result.split('\n').forEach((line) => {
+		for (const line of event.target.result.split('\n')) {
 			const [ key, value ] = line.split('=');
 			if (!key) return;
 			document.querySelector(`input[name=${key}]`).value = value;
-		});
+		}
 	};
 	loadHandler.click();
 };
 
 // Save config to local file
 document.querySelector('#config-save').onclick = function (event) {
+	if (!confirm("Do you want to download your current configuration?")) return;
 	const saveHandler = document.createElement('a');
 	saveHandler.setAttribute('download', 'config.txt');
-	if (!confirm("Do you want to download your current configuration?")) return;
-	saveHandler.setAttribute('href', `data:text/plain,${encodeURIComponent(serializeConfig('\n'))}`);
+	saveHandler.setAttribute('href', `data:text/plain,${encodeURIComponent(serializeConfig())}`);
 	saveHandler.click();
 };
 
