@@ -1,16 +1,16 @@
-#include <stdio.h> // FILE, fseek, SEEK_SET, fputc, fgetc, fclose, EOF, printf, fflush, stdout, perror, size_t, getchar, clearerr
+#include <stdio.h> // FILE, fseek, SEEK_SET, fputc, fgetc, fclose, EOF, printf, fflush, stdout, perror, size_t, getchar, clearerr, fopen, NULL, fprintf
 #include <stdbool.h> // bool
 #include <stdlib.h> // exit, EXIT_FAILURE, atexit, size_t
-#include <string.h> // bzero
+#include <string.h> // bzero, strlen
 
 #ifdef _WIN32
-#include <winsock2.h> // select, fd_set, FD_ZERO, FD_SET, timeval, socket, AF_INET, SOCK_STREAM, connect, htons, inet_addr, sockaddr_in, send, recv
+#include <winsock2.h> // timeval, socket, AF_INET, SOCK_STREAM, connect, htons, inet_addr, sockaddr_in, send, recv
 #include <windows.h>
 #else
 #include <unistd.h> // STDIN_FILENO, close, usleep
-#include <sys/select.h> // select, fd_set, FD_ZERO, FD_SET, timeval
-#include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, connect, send, recv
+#include <sys/socket.h> // socket, AF_INET, SOCK_STREAM, connect, send, recv, setsockopt, SOL_SOCKET, SO_RCVTIMEO, sockaddr
 #include <arpa/inet.h> // htons, inet_addr, sockaddr_in
+#include <sys/time.h> // timeval
 #include <termios.h> // termios, tcgetattr, tcsetattr, TCSAFLUSH, ECHO, ICANON, VMIN, VTIME
 #endif
 
