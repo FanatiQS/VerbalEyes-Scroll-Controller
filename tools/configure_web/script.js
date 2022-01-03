@@ -23,7 +23,7 @@ const serialDevice = new SerialDevice(webserialLog);
 
 // Function to convert form to a configuration string
 function serializeConfig() {
-	const textboxes = document.querySelectorAll(".config-container-open .config-textbox");
+	const textboxes = document.querySelectorAll(".config-textbox");
 	return serialDevice.serialize(textboxes);
 }
 

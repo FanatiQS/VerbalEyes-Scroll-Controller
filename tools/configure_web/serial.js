@@ -104,7 +104,7 @@ SerialDevice.prototype.setReading = function (state) {
  * @TODO is it faster to create an array to join or to just loop over nodes list and create string right away?
  */
 SerialDevice.prototype.serialize = function (nodes) {
-	return Array.from(nodes, (node) => `${node.name}=${node.value}\n`).join('') + '\n';
+	return Array.from(nodes, (node) => (!node.value) ? '' : `${node.name}=${node.value}\n`).join('') + '\n';
 };
 
 /**
