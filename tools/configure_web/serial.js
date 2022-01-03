@@ -101,15 +101,13 @@ SerialDevice.prototype.setReading = function (state) {
  * Serializes an iterable list of HTML nodes
  * @TODO add documentation
  * @TODO should this be a method or a function?
- * @TODO is it faster to create an array to join or to just loop over nodes list and create string right away?
  */
 SerialDevice.prototype.serialize = function (nodes) {
-	return Array.from(nodes, (node) => (!node.value) ? '' : `${node.name}=${node.value}\n`).join('') + '\n';
+	return Array.from(nodes, (node) => (node.value) ? `${node.name}=${node.value}\n` : '').join('') + '\n';
 };
 
 /**
  * @TODO add documentation
- * @TODO maybe create buffer before writing data to ensure no response for the write is trimmed
  */
 SerialDevice.prototype.write = async function (data) {
 	// Creates writer for serial device
