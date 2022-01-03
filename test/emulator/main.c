@@ -139,11 +139,14 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 		exit(EXIT_FAILURE);
 	}
 
-	// Sets timeout of 1 nanosecond for socket
+	// Sets timeout of 1 microsecond for socket
 	struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 1;
-	setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout))) {
+		perror("ERROR: Unable to set timeout for socket\n");
+		exit(EXIT_FAILURE);
+	}
 
 	// Connects to server using host and port
 	struct sockaddr_in servaddr;
