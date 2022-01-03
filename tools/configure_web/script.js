@@ -6,17 +6,6 @@ document.querySelectorAll('.config-container').forEach((node) => {
 	};
 });
 
-// Function to convert form to a configuration string
-function serializeConfig() {
-	const textboxes = document.querySelectorAll(".config-container-open .config-textbox");
-	let output = '';
-	for (const textbox of textboxes) {
-		output += `${textbox.name}=${textbox.value}\n`;
-	}
-	output += '\n';
-	return output;
-}
-
 
 
 // Logs a message to the on-screen TTY
@@ -39,97 +28,56 @@ if (!navigator.serial) {
 	document.querySelector("#webserial-upload").disabled = true;
 }
 
+// Creates serial device
+const serialDevice = new SerialDevice(webserialLog);
+
+// Function to convert form to a configuration string
+function serializeConfig() {
+	const textboxes = document.querySelectorAll(".config-container-open .config-textbox");
+	return serialDevice.serialize(textboxes);
+}
+
 
 
 // Connects to WebSerial device if not connected
-let serialDevice = null;
 async function connectWebSerial() {
-	if (serialDevice) return;
-	serialDevice = await new SerialDevice();
+	if (serialDevice.isOpen()) return;
+	await serialDevice.connect();
 	document.querySelector('#webserial-disconnect').disabled = false;
-	serialDevice.reader.read(); // Flushes read buffer to fix half messages printed
 }
 
-// Starts reading data from serial until the callback is no longer defined
-let serialReadCallback = null;
-async function readSerialWithCallback(callback) {
-	if (serialReadCallback) return;
-	serialReadCallback = callback;
-	for await (const chunk of serialDevice) {
-		if (!serialReadCallback) return;
-		serialReadCallback(chunk);
-	}
-}
-
-// Reads logs from web-serial to console
+// Reads logs from web serial to console
 document.querySelector("#webserial-read").onchange = async function () {
 	// Connects serial device if not connected already
 	await connectWebSerial();
 
-	// Add callback to serial read if checkbox is checked
-	if (this.checked) {
-		readSerialWithCallback((chunk) => {
-			const index = chunk.indexOf('\r\n');
-			if (index === -1) return;
-			webserialLog(chunk.slice(index + 2));
-			serialReadCallback = webserialLog;
-		});
-	}
-	// Removes callback if this one is reading and wants to stop
-	else if (serialReadCallback === webserialLog) {
-		serialReadCallback = null;
-	}
+	// Sets reading state for serial device to state of checkbox
+	serialDevice.setReading(this.checked);
 };
 
-// Uploads configuration over web-serial
+// Uploads configuration over web serial
 document.querySelector('#webserial-upload').onclick = async function () {
 	if (!document.querySelectorAll(".config-container-open").length) {
 		return;
 	}
 
-	// Connects to device and sends serialized data
+	// Gets serialized data
+	const data = serializeConfig();
+
+	// Connects to device if not connected already
 	await connectWebSerial();
-	serialDevice.write(serializeConfig());
 
-	// Do not read if data is not already being read
-	if (document.querySelector("#webserial-read").checked) return;
-
-	// Reads response data up to configuration is done
-	let trimStartDone = false;
-	let buffer = '';
-	readSerialWithCallback((chunk) => {
-		// Buffers incomplete lines until next chunk and creates string without incomplete
-		const splitted = (buffer + chunk).split("\r\n");
-		buffer = splitted.pop();
-		const msg = splitted.join('\r\n');
-
-		// Exits after configuration ends
-		if (msg.indexOf("Configuration saved\r\n") > -1 || msg.indexOf("Configuration canceled\r\n") > -1) {
-			webserialLog(msg.slice(0, msg.indexOf('\n')) + '\n');
-			serialReadCallback = null;
-		}
-		// Trims out everything before configuration starts
-		else if (!trimStartDone) {
-			const index = msg.indexOf('[');
-			if (index >= 0) {
-				webserialLog(msg.slice(index) + '\n');
-				trimStartDone = true;
-			}
-		}
-		// Prints logs
-		else {
-			webserialLog(msg + '\n');
-		}
-	});
+	// Sends serialized data to serial device
+	this.disabled = true;
+	await serialDevice.write(data);
+	this.disabled = false;
 };
 
-// Disconnects curret web-serial device
+// Disconnects serial device
 document.querySelector('#webserial-disconnect').onclick = function () {
 	serialDevice.close();
-	serialDevice = null;
 	this.disabled = true;
 	document.querySelector("#webserial-read").checked = false;
-	serialReadCallback = null;
 };
 
 
