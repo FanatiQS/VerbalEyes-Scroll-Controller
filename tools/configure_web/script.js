@@ -1,13 +1,3 @@
-// Show hides configuration items on click
-document.querySelectorAll('.config-container').forEach((node) => {
-	node.onclick = function (event) {
-		if (event.target === this.lastElementChild) return;
-		this.classList.toggle("config-container-open");
-	};
-});
-
-
-
 // Logs a message to the on-screen TTY
 const tty = document.querySelector('.webserial-console');
 function webserialLog(chunk) {

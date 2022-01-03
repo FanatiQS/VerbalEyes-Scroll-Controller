@@ -30,26 +30,19 @@
 .config-textbox[type=number] {
 	width: calc((32ch - 4ch - 16px - 4px) / 3);
 }
-.config-container-open > .config-textbox {
+.config-textbox:focus, .config-textbox:not(:placeholder-shown) {
 	height: 1.5em;
 	opacity: 1;
 }
 .config-textbox::-webkit-inner-spin-button {
-	opacity: 0;
-	transition: opacity 0.3s ease-in-out;
-}
-.config-container-open > .config-textbox::-webkit-inner-spin-button {
-	opacity: 1;
+	display: none;
 }
 
 /* Removes shifting around the fields and instead keeps them staticly in place */
 @media (prefers-reduced-motion) {
-	.config-container {
-		transition: margin-bottom 0.3s ease-in-out;
-		margin-bottom: 1.5em;
-	}
-	.config-container-open {
-		margin-bottom: 0px;
+	.config-textbox {
+		height: 1.5em;
+		opacity: 1;
 	}
 }
 
