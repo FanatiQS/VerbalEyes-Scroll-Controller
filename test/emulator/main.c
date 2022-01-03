@@ -28,8 +28,8 @@
 
 #define POTMAX 32
 
-bool wifiConnected = 0;
-bool socketConnected = 0;
+bool wifiConnected = false;
+bool socketConnected = false;
 int potSpeed = 0;
 
 // Reads one character from the standard in if it has anything
@@ -126,7 +126,7 @@ int8_t verbaleyes_network_connected() {
 
 // The tcp socket and its connection status
 int sockfd = 0;
-bool socketConnectionFailed = 0;
+bool socketConnectionFailed = false;
 
 // Connects the socket to the endpoint
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
@@ -179,7 +179,7 @@ void verbaleyes_socket_write(const uint8_t* packet, const size_t len) {
 
 
 // Prints the logs to standard out
-bool muteLogs = 0;
+bool muteLogs = false;
 void verbaleyes_log(const char* msg, const size_t len) {
 	if (muteLogs) return;
 	if (strlen(msg) != len) {
@@ -225,14 +225,14 @@ void initConfStorage() {
 	fputc((confFileIndex) & 0xff, file);
 
 	// Configure initial configuration
-	muteLogs = 1;
+	muteLogs = true;
 	char confStr[] = "host=127.0.0.1\nport=8080\npath=/\nproj=myProject\nspeedmin=-10\nspeedmax=10\n\n";
 	for (int i = 0; i < strlen(confStr); i++) {
 		verbaleyes_configure(confStr[i]);
 	}
 	confBuffer[266] = POTMAX;
 	verbaleyes_configure('\0');
-	muteLogs = 0;
+	muteLogs = false;
 
 	// Closes file stream
 	fclose(file);
