@@ -47,12 +47,11 @@ document.querySelector("#webserial-read").onchange = async function () {
 
 // Uploads configuration over web serial
 document.querySelector('#webserial-upload').onclick = async function () {
-	if (!document.querySelectorAll(".config-container-open").length) {
-		return;
-	}
-
 	// Gets serialized data
 	const data = serializeConfig();
+
+	// Aborts if there is no data to be written
+	if (data === "\n") return;
 
 	// Connects to device if not connected already
 	await connectWebSerial();
