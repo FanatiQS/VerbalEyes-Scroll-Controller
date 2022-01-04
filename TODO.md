@@ -16,24 +16,15 @@ Priority sorting guide:
 	* Run configuration script without download with `bash <(curl -s https://raw.githubusercontent.com/FanatiQS/VerbalEyes-Scroll-Controller/master/tools/configure_bash/configure)`
 	* Mention that this is an alternative to downloading the entire repository and that it might be simpler and safer to clone entire repo.
 	* Link to download only bash dir `https://downgit.github.io/#/home?url=https://github.com/FanatiQS/VerbalEyes-Scroll-Controller/tree/master/tools/configure_bash`
-	* Use same downgit system to make link to download only configure_web and put link in its readme.
-	* Using --path option sends configuration twice?
-
-### Configure Web
-* Add notes on that it is possible and okay to download source for configure_web and putting it up on your own website for access by your team.
-Can download page by visiting it and downloading it from a web browser.
-* Maybe add a script that bundles all the files together or maybe there is a page online that does that?
-Was unable to find a tool like that online, so I created a basic first draft (bundler on my github).
 
 
 
 ## Markdown
-* Add dependency section to src/readme.md that mentions the core requires bearssl and that it is already used in ESPs core.
-* Maybe remove documentation about configuring with screen. It is not a good experience and should probably not be used.
-* Update board wiring documentation.
-* Using values outside range -1 -> 255 will cast it to a char.
-Key and string values should work, but int values will probably not work.
-Mention somewhere that passing values outside the range to `verbaleyes_configure` is undefined behaviour.
+* Add info about backspace feature in src/README.md and tools/configure_bash/README.md.
+* Write readme for test/README.md describing how the tests work and what is tested and how to run.
+	* Mention the test/lib dir and that it automatically downloads bearssl and only saves the required files.
+	* Mention emulator in test/readme.md and that it can be used for manual testing.
+* Add links to test/README.md in src/README.md and mention that the library can be tested.
 
 
 
@@ -43,65 +34,51 @@ Mention somewhere that passing values outside the range to `verbaleyes_configure
 
 
 ## Tests
-* Fill out readme with content
-* Write readme for test/readme.md describing how the tests work and what is tested and how to run.
-* Mention the test/lib dir and that it automatically downloads bearssl and only saves the required files.
-* Mention emulator in test/readme.md and that it can be used for manual testing.
-* Add links to test/README.md in or src/readme and mention that the library can be tested.
-* Complete test for verbaleyes_initialize
-* Create tests for verbaleyes_setspeed and verbaleyes_resetoffset
+* Create tests for backspace feature in `verbaleyes_configure`.
+* Complete test for `verbaleyes_initialize`.
+* Create tests for `verbaleyes_setspeed` and `verbaleyes_resetoffset`.
 * Make sure that max length path and host does not exceed the bounds for http request.
+	* Check max http request length is not overflowing.
 * Make sure that whatever the configuration is, the websocket packets does not exceed their bounds.
-* All data written to `writeWebSocketFrame` needs to have a length lower than 125 or length byte will be incorrect.
-* All calls to logprintf needs to be checked that they are within buffer length.
-* Check max http request length is not overflowing.
-* Test all configuration reads at max length
+	* All data written to `writeWebSocketFrame` needs to have a length lower than 125 or length byte will be incorrect. This should be checked in a test helper.
+* All calls to `logprintf` needs to be checked that they are within buffer length.
+	* Could probably add some variable in the tests to save and print the maximum log length.
+	* Detect max number of bytes required for log buffer when all logs are gone through. Maybe split speed settings at end of `verbaleyes_initialize` into multiple log calls to be able to lower buffer length?
+* Test all configuration reads at max length.
+	* This should be done in `verbaleyes_initialize`.
 * Should have a test that connects to a node ws server to test ws protocol is correct.
-Could steal a lot from emulator.
+	* Could steal a lot from emulator.
+	* There is some python websocket testing library available, might be able to use it here.
+	* Should be its own test and not implemented in `verbaleyes_initialize`.
 
 ### Implementation test
-* Implementation test might not be required to be on the device itself to test.
-* Testing should be split up into testing the 4 API functions and their calls to the prototypes.
 * Should not lock down tests so it could only be done over usb serial and things like that if support for http post configuration should be easily tested if added.
 * Needs to test return value and arguments for the API calls.
 
 #### Configuration
-* What happens if configuration gets value other than -1 -> 255?
 * Test int configurations is working since we need to know if configurations are written.
-Maybe it can just parse and read the values there from the logs?
-
-#### Wifi
-* Check that it can connect with max length ssid and max length passphrase.
-* Test that it does not connect if ssid is slightly incorrect.
-* There is a npm package called `node-hotspot` that might be useful.
-* Test wifi not available and wifi passphrase incorrect.
-* Creating hotspot on macbook was not working for esp8266 to connect to for some reason.
-* Should wifi be optional to test?
+	* Maybe it can just parse and read the values from the logs from the last state when all scroll configuration data is printed?
 
 #### Socket
-* Make sure socket can connect using both dns hostname and ip.
-* Maybe using node-dns/dns2 for dns resolution?
 * Test socket failing to connect.
-* Should hostname test be optional?
 
 #### Scroll Update
-* Test that scroll updates can be sent after initilization.
 * Test the values of the potentiometer somehow.
-* Test resetoffset.
-Might make this optional.
+* Test resetoffset. Might make this optional.
 
 #### LED indicator
 * Add info when configuration mode is active to ensure that led status works.
 * Force input to complete initilization to check connecting led status.
-* Do not quit after test are complete to test status led for sending data and idle.
+* Do not quit after tests are complete to test status led for sending data and idle.
 
 
 
 ## Library
 ### Refactor
-* Go through all code and maybe convert 1/0 to true/false.
-* Maybe remove state to jump to in connectionFailToState argument, it could just clear the 4 LSBs to restart that group. Maybe rename to connectionFailed.
+* Maybe remove state to jump to in `connectionFailToState` argument, it could just clear the 4 LSBs to restart that group. Maybe rename to connectionFailed.
 * Currently the authentication parser ignores everything but the "auth", it does not check "id".
+* Replace magic numbers with macros.
+* Maybe add typedef or macro for tristate used for 1, 0, -1.
 
 ### Debug experience
 * Log the opcode when it is not a websocket text frame that is received during connection establishment.
@@ -148,6 +125,16 @@ Might make this optional.
 
 # TODO [medium priority]
 
+## Markdown
+* Add dependency section to src/readme.md that mentions the core requires bearssl and that it is already used in ESPs core.
+* Maybe remove documentation about configuring with screen. It is not a good experience and should probably not be used. These kinds of interactions are currently in an experimental phase and should work a lot better now.
+* Update board wiring documentation.
+* Using values outside range -1 -> 255 as argument for `verbaleyes_configure` will cast it to a char.
+	* Key and string values should work, but int values will probably not work.
+	* Mention somewhere that passing values outside the range to `verbaleyes_configure` is undefined behaviour.
+
+
+
 ## Library
 
 ### Debug experience
@@ -155,14 +142,13 @@ Might make this optional.
 
 ### Performance
 * Maybe do not rerun mapping calculations after reconnecting to the socket? Make some kind of conditional jump to skip the mapping state if not needed.
-* Detect max number of bytes required for log buffer when all logs are gone through. Maybe split speed settings at end of verbaleyes_initialize into multiple log calls to be able to lower buffer length?
 
 ### Features
-* Autentication fail should be able to know if authentication failed or if it is another type of message that was sent before the authentication response. If it is not an auth response, it should go back to state 10 to parse more websocket messages.
+* Autentication fail should be able to know if authentication failed or if it is another type of message that was sent before the authentication response. If it is not an auth response, it should go back to state 18 to parse more websocket messages.
 	* Might need an extra state to check if it is an auth response first and then in the next state check if it got authenticated or not.
 * Handle authentication error
 	* Should the socket be closed and a websocket error code be sent or just a normal close code or nothing?
-* Send websocket close frame for both errors in state 10
+* Send websocket close frame for both errors in state 18
 	* Error code 1002 for a masked frame receive
 	* Error code 1009 for too long frame
 * Handle close and ping frames received from the server after authentication is complete.
@@ -193,19 +179,36 @@ Might make this optional.
 ### Configure Web
 * Use tabs for web-serial/shell-gen/http-post in configure_web?
 * Not able to click on clear tty button in configure_web since scrollbar is in the way.
-* Fix screen shift in configure_web when text fields are expanded? Added for when `reduced motion` is enabled.
-* Check and maybe rework configure_web generate shell cmd. Maybe it could get port once? Should there really be something like this now that configure_bash exists?
+* Fix layout shift in configure_web when text fields are expanded? Added for when `reduced motion` is enabled.
+	* This is currently a feature and the only way to remove that feature is to enable `reduced motion` in the os. Maybe add some enable/disable thingy for the page?
+* Check and maybe rework configure_web generate shell cmd.
+	* Maybe it could get port once?
+	* Should there really be something like this now that configure_bash exists?
+	* The reason for keeping this feature is that configure_bash is not helpful on windows.
+* Maybe add some kind of field for a comment that is added to the top of the preset when saved.
+* Disable save and upload button when no data is available to write?
+	* Maybe disable is not the right thing to do, but something to indicate that the form is empty.
+* Add license notes that it is possible and okay to download source for configure_web and putting it up on your own website for access by your team.
 
 ### Configure Bash
 * Rename configurations in configure_bash to not be just a simple executable?
+	* Configurations might get deprecated altogether?
 * Maybe add right/left arrow key navigation support?
 * Should there be an option to make a script executable like the presets config_calibrate and config_clear instead of always being able to parse anything not starting with a `-` as a path.
+	* configurations might get deprecated altogether?
 * Should there be an option when launched without options to start reading? That would make it possible to read logs without having to use the command line.
 * Replace update button to not look like other fields and do not say "Exit".
 * When replacing data for a field, the new field is just added and the old one is still there.
+	* Rework it to only keep one instance of every field.
 * Trap during reading from device to add extra LF to force line to be clear.
+	* This might not be needed?
 * Remove existing data with backspace.
-* If input for value is started with normal character (not enter), first character can not be removed with backspace.
+	* If input for value is started with normal character (not enter), first character can not be removed with backspace.
+* Using shebang to link to configure script does not work for double clicking files.
+	* Maybe deprecate most of the shortcuts and this configuration feature altogether?
+	* Another alternative is to go all in and add the configuration script globally so wherever the configuration file is located, it can be called through the configure script.
+	* Checkout how Denos install feature works, maybe this can work the same.
+	* If the configure script needs to be located in a specific location or be registered in some kind of registry, maybe include an `install` cli argument or separate file. (pros for cli argument is that it is contained in the same single file and con is that it requires calling it from command line)
 
 ### Calibration tool
 * Add script to automatically calibrate the callow, calhigh and sensitivity.
@@ -232,21 +235,39 @@ It should start in that mode, but can also be achieved with the .pause method. I
 
 
 ## Tests
-* Maybe deprecate test_config_clear since it is not really needed. Maybe replace it with a test that prints entire config buffer instead to be usable in more situations? That kind of test should probably be a tool though and not a test.
-* Make a combined test that runs all tests and makes sure it did not get any errors. Prints a list of all tests and what tests failed.
-* Create a file for testing teleprompter-arduino.ino and other implementations. First verbaleyes_configure should be called and it should require a string to be sent in over serial or whatever is used. That string could contain information like ssid and so on, but can be much stricter than the serial parser in core since the test should require all data be sent at once in a specific order or whatever.
+* Maybe deprecate `test_config_clear` since it is not really needed.
+	* Maybe replace it with a test that prints entire config buffer instead to be usable in more situations? That kind of test should probably be a tool though and not a test.
+* Make a combined test that runs all tests and makes sure it did not get any errors.
+	* Prints a list of all tests and what tests failed.
+
+### Implementation Test
+
+#### Wifi
+* Check that it can connect with max length ssid and max length passphrase.
+* Test that it does not connect if ssid is slightly incorrect.
+* There is a npm package called `node-hotspot` that might be useful.
+* Test wifi not available and wifi passphrase incorrect.
+* Creating hotspot on macbook was not working for esp8266 to connect to for some reason.
+* Should wifi be optional to test?
+
+#### Hostname / DNS
+* Make sure socket can connect using both dns hostname and ip.
+* Maybe using node-dns/dns2 for dns resolution?
+* Should hostname test be optional?
+
 
 
 
 ## Markdown
 * Document undefined behaviour for speed conf items.
-* Mention undefined behaviours for configuration: callow > calhigh, callow and deadzone both very high (migh overflow speedOffset), sensitivity higher than calhigh
+	* Mention undefined behaviours for configuration: callow > calhigh, callow and deadzone both very high (migh overflow speedOffset), sensitivity higher than calhigh
 
 
 
 ## Github
 * Should figure out how to compile ESP8266 binary, upload it to githubs "releases" section and be able to upload to ESP (probably with esptool.py).
 * Maybe even figure out how to compile source through github actions?
+* Clean up branches.
 
 
 
