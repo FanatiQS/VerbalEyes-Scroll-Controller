@@ -72,21 +72,18 @@ document.querySelector('#webserial-disconnect').onclick = function () {
 
 
 // Loads local file to config
-document.querySelector('#config-load').onclick = function () {
+document.querySelector('#config-load').onclick = async function () {
 	const loadHandler = document.createElement('input');
 	loadHandler.setAttribute('type', 'file');
-	const reader = new FileReader();
-	loadHandler.onchange = function () {
-		reader.readAsText(this.files[0]);
-	};
-	reader.onload = function (event) {
-		for (const line of event.target.result.split('\n')) {
-			const [ key, value ] = line.split('=');
-			if (!key) return;
-			document.querySelector(`input[name=${key}]`).value = value;
-		}
-	};
 	loadHandler.click();
+	await new Promise((resolve) => loadHandler.onchange = resolve);
+	const data = await loadHandler.files[0].text();
+	for (const line of data.split('\n')) {
+		const [ key, value ] = line.split('=');
+		if (!key) return;
+		const node = document.querySelector(`input[name=${key}]`);
+		node.value = value;
+	}
 };
 
 // Save config to local file
