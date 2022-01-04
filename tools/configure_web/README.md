@@ -4,7 +4,9 @@ It can both read logs from the device as well as of course write configurations.
 Configurations can either be written directly to a scroll controller or saved as a preset file.
 
 ## Usage
-It is available locally if the repository has been cloned or can be reached online at https://fanatiqs.github.io/VerbalEyes-Scroll-Controller/tools/configure_web/.
+* It is available locally if the repository has been cloned.
+* Can be reached online at https://fanatiqs.github.io/VerbalEyes-Scroll-Controller/tools/configure_web/.
+* Can be downloaded as a single HTML file [here](https://fanatiqs.github.io/Bundler/direct_download.html?https://fanatiqs.github.io/VerbalEyes-Scroll-Controller/tools/configure_web/).
 
 ## WebSerial Support
 To write data to a serial device from a web browser, the WebSerial API is required.
