@@ -143,9 +143,6 @@ Priority sorting guide:
 ### Debug experience
 * Maybe print the version of the library to the log? Implementation could just print it during setup if there is no good way to implement it into the core.
 
-### Performance
-* Maybe do not rerun mapping calculations after reconnecting to the socket? Make some kind of conditional jump to skip the mapping state if not needed.
-
 ### Features
 * Autentication fail should be able to know if authentication failed or if it is another type of message that was sent before the authentication response. If it is not an auth response, it should go back to state 18 to parse more websocket messages.
 	* Might need an extra state to check if it is an auth response first and then in the next state check if it got authenticated or not.
@@ -171,7 +168,6 @@ Priority sorting guide:
 	Trim one or multiple spaces before value
 	Does ssid, ssidkey, host or path even allow for leading or trailing spaces if even spaces at all?
 	An easier way to do it is to trim ALL spaces in key and (all or one) leading spaces for values
-* Maybe make timeout after failed connection use exponential backoff to quickly retry but not bombard the server with retries?
 * Add configuration for static ip, subnet mask and router.
 	* They should be optional to use DHCP.
 
@@ -179,6 +175,54 @@ Priority sorting guide:
 * Make sure no integers overflow since how that is handled by the processor is an undefined behaviour. (all but setspeed and resetoffset are checked)(scrollOffset can overflow)
 
 
+
+## ESP
+* Get HTTPS to work
+	* HTTPS is working, but there is currently no way to distinguish between HTTP and HTTPS hosts. So it can only work with HTTP or HTTPS, not both.
+	* A big issue with HTTPS is fingerprints. They don't lookup Certificate Authority in ESP code. That either has to be figured out or fingerprints have to be ignored.
+	* Maybe have something in the core to switch from http client to https. That would probably require another function. Detect it by connecting with http and if it gets a response code to upgrade or something.
+	* Maybe a simpler way is to have a unique response code from verbaleyes_initialize (like -2) to indicate it failed due to server expecting https. Maybe have unique codes for every type of error.
+	* This feature has been implemented. Can be tested with server at: `verbaleyesscrollcontrollertest2.fanatiqs.repl.co` on port 443.
+
+
+
+## Tests
+* Maybe deprecate `test_config_clear` since it is not really needed.
+	* Maybe replace it with a test that prints entire config buffer instead to be usable in more situations? That kind of test should probably be a tool though and not a test.
+* Make a combined test that runs all tests and makes sure it did not get any errors.
+	* Prints a list of all tests and what tests failed.
+
+### Implementation Test
+
+#### Wifi
+* Check that it can connect with max length ssid and max length passphrase.
+* Test that it does not connect if ssid is slightly incorrect.
+* There is a npm package called `node-hotspot` that might be useful.
+* Test wifi not available and wifi passphrase incorrect.
+* Creating hotspot on macbook was not working for esp8266 to connect to for some reason.
+* Should wifi be optional to test?
+
+#### Hostname / DNS
+* Make sure socket can connect using both dns hostname and ip.
+* Maybe using node-dns/dns2 for dns resolution?
+* Should hostname test be optional?
+
+
+
+## Markdown
+* Document undefined behaviour for speed conf items.
+	* Mention undefined behaviours for configuration: callow > calhigh, callow and deadzone both very high (migh overflow speedOffset), sensitivity higher than calhigh
+
+
+
+## Github
+* Clean up branches.
+
+
+
+
+
+# TODO [low priority]
 
 ## Tools
 ### Configure Web
@@ -230,57 +274,6 @@ It should start in that mode, but can also be achieved with the .pause method. I
 
 
 
-## ESP
-* Get HTTPS to work
-	* HTTPS is working, but there is currently no way to distinguish between HTTP and HTTPS hosts. So it can only work with HTTP or HTTPS, not both.
-	* A big issue with HTTPS is fingerprints. They don't lookup Certificate Authority in ESP code. That either has to be figured out or fingerprints have to be ignored.
-	* Maybe have something in the core to switch from http client to https. That would probably require another function. Detect it by connecting with http and if it gets a response code to upgrade or something.
-	* Maybe a simpler way is to have a unique response code from verbaleyes_initialize (like -2) to indicate it failed due to server expecting https. Maybe have unique codes for every type of error.
-	* This feature has been implemented. Can be tested with server at: `verbaleyesscrollcontrollertest2.fanatiqs.repl.co` on port 443.
-
-
-
-## Tests
-* Maybe deprecate `test_config_clear` since it is not really needed.
-	* Maybe replace it with a test that prints entire config buffer instead to be usable in more situations? That kind of test should probably be a tool though and not a test.
-* Make a combined test that runs all tests and makes sure it did not get any errors.
-	* Prints a list of all tests and what tests failed.
-
-### Implementation Test
-
-#### Wifi
-* Check that it can connect with max length ssid and max length passphrase.
-* Test that it does not connect if ssid is slightly incorrect.
-* There is a npm package called `node-hotspot` that might be useful.
-* Test wifi not available and wifi passphrase incorrect.
-* Creating hotspot on macbook was not working for esp8266 to connect to for some reason.
-* Should wifi be optional to test?
-
-#### Hostname / DNS
-* Make sure socket can connect using both dns hostname and ip.
-* Maybe using node-dns/dns2 for dns resolution?
-* Should hostname test be optional?
-
-
-
-
-## Markdown
-* Document undefined behaviour for speed conf items.
-	* Mention undefined behaviours for configuration: callow > calhigh, callow and deadzone both very high (migh overflow speedOffset), sensitivity higher than calhigh
-
-
-
-## Github
-* Should figure out how to compile ESP8266 binary, upload it to githubs "releases" section and be able to upload to ESP (probably with esptool.py).
-* Maybe even figure out how to compile source through github actions?
-* Clean up branches.
-
-
-
-
-
-# TODO [low priority]
-
 ## Library
 
 ### Usability
@@ -304,10 +297,12 @@ It should start in that mode, but can also be achieved with the .pause method. I
 	* Maybe even make even more generalised so other crypto libraries can be used.
 
 ### Performance
+* Maybe do not rerun mapping calculations after reconnecting to the socket? Make some kind of conditional jump to skip the mapping state if not needed.
 * Use int_fast8_t instead of int8_t to improve performance on systems where bigger integers are faster?
 	* Not until a platform actually has a use for it since esp8266 does not.
 
 ### Maybe Features
+* Maybe make timeout after failed connection use exponential backoff to quickly retry but not bombard the server with retries?
 * Should there be a "polling rate" conf item to configure how often the device can send scroll data?
 * Add battery level support and connection strength support to relay through server to other clients. Battery level might require a board like this one: https://hitechchain.se/arduinokompatibel/utvecklingsbord-integrerat-esp8266-och-18650-batteri. Should this be implemented into the core library or just the implementation? If implemented outside core, a new websocket function has to be used since the one in core is static.
 * Config parser - support escaped characters
@@ -326,3 +321,9 @@ It should start in that mode, but can also be achieved with the .pause method. I
 
 ## ESP
 * Look up if esp8266 could use webusb to support popup?
+
+
+
+## Github
+* Should figure out how to compile ESP8266 binary, upload it to githubs "releases" section and be able to upload to ESP (probably with esptool.py).
+	* Maybe even figure out how to compile source through github actions?
