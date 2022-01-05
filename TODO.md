@@ -236,6 +236,7 @@ It should start in that mode, but can also be achieved with the .pause method. I
 	* A big issue with HTTPS is fingerprints. They don't lookup Certificate Authority in ESP code. That either has to be figured out or fingerprints have to be ignored.
 	* Maybe have something in the core to switch from http client to https. That would probably require another function. Detect it by connecting with http and if it gets a response code to upgrade or something.
 	* Maybe a simpler way is to have a unique response code from verbaleyes_initialize (like -2) to indicate it failed due to server expecting https. Maybe have unique codes for every type of error.
+	* This feature has been implemented. Can be tested with server at: `verbaleyesscrollcontrollertest2.fanatiqs.repl.co` on port 443.
 
 
 
