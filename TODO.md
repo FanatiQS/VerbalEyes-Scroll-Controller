@@ -71,6 +71,9 @@ Priority sorting guide:
 * Force input to complete initilization to check connecting led status.
 * Do not quit after tests are complete to test status led for sending data and idle.
 
+### Emulator
+* Add support for windows.
+
 
 
 ## Library
