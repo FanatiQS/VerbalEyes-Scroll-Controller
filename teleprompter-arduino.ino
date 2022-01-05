@@ -53,7 +53,6 @@ void verbaleyes_conf_commit() {
 
 // Binds the VerbalEyes network and socket calls to the ESP8266 WiFi library
 #include <ESP8266WiFi.h>
-// #include <WiFiClientSecure.h>
 
 // Connects to a WiFi network
 void verbaleyes_network_connect(const char* ssid, const char* key) {
@@ -77,28 +76,44 @@ int8_t verbaleyes_network_connected() {
 }
 
 // Creates a network socket to use for WebSocket communication with the server
-WiFiClient client;
-// WiFiClientSecure client; // Switch to this line when using HTTPS
+#include <WiFiClientSecure.h>
+bool clientUsingSSL;
+WiFiClient clientHTTP;
+WiFiClientSecure clientHTTPS;
 
 // Connects the socket to an endpoint
 void verbaleyes_socket_connect(const char* host, const unsigned short port) {
-	// client.setInsecure();  // Enable this line when using HTTPS
-	client.connect(host, port);
+	if (clientHTTPS.connect(host, port)) {
+		clientUsingSSL = true;
+	}
+	else if (clientHTTP.connect(host, port)) {
+		clientUsingSSL = false;
+	}
 }
 
 // Gets the connection status of the socket connection
 int8_t verbaleyes_socket_connected() {
-	return (client.connected()) ? 1 : -1;
+	if (clientUsingSSL) {
+		return (clientHTTPS.connected()) ? 1 : -1;
+	}
+	else {
+		return (clientHTTP.connected()) ? 1 : -1;
+	}
 }
 
 // Consumes a single character from the sockets response data buffer
 short verbaleyes_socket_read() {
-	return client.read();
+	return (clientUsingSSL) ? clientHTTPS.read() : clientHTTP.read();
 }
 
 // Sends a string to the endpoint the socket is connected to
-void verbaleyes_socket_write(const uint8_t* str, const size_t len) {
-	client.write(str, len);
+void verbaleyes_socket_write(const uint8_t* data, const size_t len) {
+	if (clientUsingSSL) {
+		clientHTTPS.write(data, len);
+	}
+	else {
+		clientHTTP.write(data, len);
+	}
 }
 
 
@@ -121,6 +136,7 @@ void setup() {
 	EEPROM.begin(VERBALEYES_CONFIGLEN);
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(D3, INPUT_PULLUP);
+	clientHTTPS.setInsecure();
 }
 
 void loop() {
