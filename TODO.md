@@ -169,6 +169,8 @@ Priority sorting guide:
 	Does ssid, ssidkey, host or path even allow for leading or trailing spaces if even spaces at all?
 	An easier way to do it is to trim ALL spaces in key and (all or one) leading spaces for values
 * Maybe make timeout after failed connection use exponential backoff to quickly retry but not bombard the server with retries?
+* Add configuration for static ip, subnet mask and router.
+	* They should be optional to use DHCP.
 
 ### Test
 * Make sure no integers overflow since how that is handled by the processor is an undefined behaviour. (all but setspeed and resetoffset are checked)(scrollOffset can overflow)
@@ -295,6 +297,7 @@ It should start in that mode, but can also be achieved with the .pause method. I
 
 ### Refactor
 * Maybe extract sha1 into its own file.
+	* Maybe even make even more generalised so other crypto libraries can be used.
 
 ### Performance
 * Use int_fast8_t instead of int8_t to improve performance on systems where bigger integers are faster?
@@ -313,6 +316,7 @@ It should start in that mode, but can also be achieved with the .pause method. I
 		* \\ to add in slash (important if implemented since slash is escape character)
 		* \↵ to escape next newline (not really important unless wanting to comment out multiple lines, might not even work in comments anyway)
 	Since tabs already have an alternative character in '=', it is really only the LF that needs a way to be written in echo without -e. This would probably be easiest to instead split up in multiple writes since echo puts a LF at the end anyway.
+* Add support for ethernet.
 
 
 
