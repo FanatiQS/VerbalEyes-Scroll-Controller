@@ -212,6 +212,7 @@ static struct confItem confItems[] = {
 
 #define CONFITEMSLEN (sizeof confItems / sizeof confItems[0])
 
+#define FLAGNONE 0
 #define FLAGACTIVE 1
 #define FLAGCOMMIT 2
 #define FLAGFAILED 4
@@ -392,13 +393,13 @@ bool verbaleyes_configure(const int16_t c) {
 		case '\0':
 		case EOF: {
 			// Exit if configuration is not actively being updated
-			if (confFlags == 0) return false;
+			if (confFlags == FLAGNONE) return false;
 
 			// Commits all changed values if commit is required
 			if (confFlags == FLAGCOMMIT) {
 				if (confFlags & FLAGCOMMIT) verbaleyes_conf_commit();
 				logprintf("Configuration saved\r\n");
-				confFlags = 0;
+				confFlags = FLAGNONE;
 				return false;
 			}
 
@@ -438,7 +439,7 @@ bool verbaleyes_configure(const int16_t c) {
 				logprintf("\r\n");
 			}
 			// Handles termination of key
-			else if (confFlags != 0) {
+			else if (confFlags != FLAGNONE) {
 				// Handles termination for key without a match
 				if (confFlags & FLAGFAILED) {
 					if (confIndex != 0) logprintf("\r\n");
@@ -456,7 +457,7 @@ bool verbaleyes_configure(const int16_t c) {
 				// Clears active flag after double LF
 				else {
 					confFlags &= ~FLAGACTIVE;
-					if (confFlags == 0) logprintf("Configuration canceled\r\n");
+					if (confFlags == FLAGNONE) logprintf("Configuration canceled\r\n");
 				}
 			}
 			// Does not continue processing data
@@ -472,7 +473,7 @@ bool verbaleyes_configure(const int16_t c) {
 		case '\f':
 		case '\v':
 		case '\r': {
-			return confFlags != 0;
+			return confFlags != FLAGNONE;
 		}
 	}
 }
