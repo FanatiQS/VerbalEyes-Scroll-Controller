@@ -102,8 +102,10 @@ SerialDevice.prototype.setReading = function (state) {
  * @TODO add documentation
  * @TODO should this be a method or a function?
  */
-SerialDevice.prototype.serialize = function (nodes) {
-	return Array.from(nodes, (node) => (node.value) ? `${node.name}=${node.value}\n` : '').join('') + '\n';
+SerialDevice.prototype.serialize = function (iterable, keyName = "key", valueName = "value") {
+	return Array.from(iterable, (elem) => {
+		if (elem[valueName]) return `${elem[keyName]}=${elem[valueName]}\n`;
+	}).join('') + '\n';
 };
 
 /**
