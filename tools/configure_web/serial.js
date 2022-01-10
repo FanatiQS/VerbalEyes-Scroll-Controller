@@ -46,7 +46,7 @@ SerialDevice.prototype[Symbol.asyncIterator] = function () {
  */
 SerialDevice.prototype.next = function () {
 	return new Promise((resolve) => {
-		this.printCallback = (value, done) => resolve({ value, done });
+		this.printCallback = (value) => resolve({ value, done: false });
 	});
 };
 
@@ -120,9 +120,8 @@ SerialDevice.prototype.write = async function (data) {
 	}
 	// Creates reader and writes data if no reader is available
 	else {
-		// Creates reader and flushes first read
+		// Creates reader
 		this.reader = this.port.readable.getReader();
-		await this.reader.read();
 
 		// Writes data
 		const writeProgress = writer.write(new TextEncoder().encode(data));
