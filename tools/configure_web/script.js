@@ -42,7 +42,9 @@ document.querySelector("#webserial-read").onchange = async function () {
 	await connectWebSerial();
 
 	// Sets reading state for serial device to state of checkbox
-	serialDevice.setReading(this.checked);
+	serialDevice.setReading(this.checked).catch((err) => {
+		console.error(err);
+	});
 };
 
 // Uploads configuration over web serial
