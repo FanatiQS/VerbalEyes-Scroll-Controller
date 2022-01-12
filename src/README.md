@@ -29,13 +29,15 @@ This time can be customised by defining the macro `CONFIGTIMEOUT` for the file `
 int8_t verbaleyes_initialize()
 ```
 This function is used to connect to a VerbalEyes server and some other configuration setup.
-* The return value is one of three states:
-	* 0: Everything is connected and working.
-	* 1: It is not connected but is working on it.
-	* -1: Connecting has failed somehow.
-* The return values -1 and 1 does not need to be handled separately and is only available to detect when a fail has occurred. This way, they can both be treated as a truthy values.
-* If it does not return 0 (false), the functions `verbaleyes_setspeed` and `verbaleyes_resetoffset` are not allowed to be called. The function `verbaleyes_configure` is however allowed to be called.
+* The return value is an int8_t with one of three states:
+	* VERBALEYES_INIT_DONE / false / 0: Everything is connected and working.
+	* VERBALEYES_INIT_WORKING / true / 1: It is not connected but is working on it.
+	* VERBALEYES_INIT_ERROR / -1: Connecting has failed somehow.
+* The return value can be processed as a boolean if there is no need for errors handling as errors will automatically result in a retry.
+* If it does not return `VERBALEYES_INIT_DONE / false / 0`, the functions `verbaleyes_setspeed` and `verbaleyes_resetoffset` are not allowed to be called. The function `verbaleyes_configure` is however allowed to be called.
 * This function is only allowed to be called if `verbaleyes_configure` returned false.
+* Type `int8_t` is the same as `signed char` on most systems.
+
 
 #### verbaleyes_setspeed
 ```c
@@ -112,12 +114,13 @@ void verbaleyes_network_connect(const char* ssid, const char* ssidkey)
 int8_t verbaleyes_network_connected()
 ```
 * This function returns the state of the network connection.
-* It basically returns a boolean with an extra state for fail.
+* It basically returns a boolean with an extra state for if the state has not settled yet.
 * Possible return values:
-	* 1: Connected. The network is connected.
-	* 0: Connecting. The network has not connected or failed yet.
-	* -1: Error. The network failed to connect.
-* If the network is in a `connecting` state for too long (10 seconds), it automatically rejects the network connection and retries. This time can be customised by defining the macro `CONNECTINGTIMEOUT` for the file `./src/scroll_controller.c`.
+	* VERBALEYES_CONNECT_SUCCESS / true / 1: The network is connected.
+	* VERBALEYES_CONNECT_FAIL / false / 0: The network failed to connect.
+	* VERBALEYES_CONNECT_WORKING / -1: The network has not connected or failed yet.
+* If the network is in a connecting state with the return value being `VERBALEYES_CONNECT_WORKING` for too long (10 seconds), it automatically rejects the network connection and retries. This time can be customised by defining the macro `CONNECTINGTIMEOUT` for the file `./src/scroll_controller.c`.
+* Returning any value other than the 3 states defined has undefined behaviour.
 * Type `int8_t` is the same as `signed char` on most systems.
 
 #### Socket
@@ -144,10 +147,11 @@ int8_t verbaleyes_socket_connected()
 * This function returns the state of the socket connection.
 * It basically returns a boolean with an extra state for fail.
 * Possible return values:
-	* 1: Connected. The socket is connected.
-	* 0: Connecting. The socket has not connected or failed yet.
-	* -1: Error. The socket failed to connect.
-* If the socket is in a `connecting` state for too long (10 seconds), it automatically rejects the socket connection and retries. This time can be customised by defining the macro `CONNECTINGTIMEOUT` for the file `./src/scroll_controller.c`.
+	* VERBALEYES_CONNECT_SUCCESS / true / 1: The socket is connected.
+	* VERBALEYES_CONNECT_FAIL / false / 0: The socket failed to connect.
+	* VERBALEYES_CONNECT_WORKING / -1: The socket has not connected or failed yet.
+* If the socket is in a connecting state with the return value being `VERBALEYES_CONNECT_WORKING` for too long (10 seconds), it automatically rejects the socket connection and retries. This time can be customised by defining the macro `CONNECTINGTIMEOUT` for the file `./src/scroll_controller.c`.
+* Returning any value other than the 3 states defined has undefined behaviour.
 * Type `int8_t` is the same as `signed char` on most systems.
 
 ###### Read
