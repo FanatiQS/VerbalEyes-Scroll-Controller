@@ -121,7 +121,7 @@ void verbaleyes_network_connect(const char* ssid, const char* key) {}
 
 // Gets the fake connection status of the WiFi connection
 int8_t verbaleyes_network_connected() {
-	return wifiConnected;
+	return (wifiConnected) ? VERBALEYES_CONNECT_SUCCESS : VERBALEYES_CONNECT_WORKING;
 }
 
 
@@ -161,8 +161,8 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 
 // Gets the fake and real connection status of the socket connection
 int8_t verbaleyes_socket_connected() {
-	if (socketConnectionFailed) return -1;
-	return socketConnected;
+	if (socketConnectionFailed) return VERBALEYES_CONNECT_FAIL;
+	return (socketConnected) ? VERBALEYES_CONNECT_SUCCESS : VERBALEYES_CONNECT_WORKING;
 }
 
 // Consumes a single character from the sockets response data buffer

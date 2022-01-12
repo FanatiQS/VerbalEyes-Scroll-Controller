@@ -76,14 +76,18 @@ static int8_t connectionFailToState(const char* msg, const uint8_t backToState) 
 
 // Reconnects to socket if unable to get data before timeout
 static int8_t socketHadNoData() {
-	if (verbaleyes_socket_connected() != 1) return connectionFailToState("\r\nConnection to host closed", 0x90);
+	if (verbaleyes_socket_connected() != VERBALEYES_CONNECT_SUCCESS) {
+		return connectionFailToState("\r\nConnection to host closed", 0x90);
+	}
 	if (time(NULL) < timeout) return VERBALEYES_INIT_WORKING;
 	return connectionFailToState("\r\nResponse from server ended prematurely", 0x90);
 }
 
 // Prints progress bar until timeing out if unable to get data
 static int8_t socketHadNoDataProgressBar() {
-	if (verbaleyes_socket_connected() != 1) return connectionFailToState("\r\nConnection to host closed", 0x90);
+	if (verbaleyes_socket_connected() != VERBALEYES_CONNECT_SUCCESS) {
+		return connectionFailToState("\r\nConnection to host closed", 0x90);
+	}
 	if (showProgressBar()) return VERBALEYES_INIT_WORKING;
 	return connectionFailToState("\r\nDid not get a response from the server", 0x90);
 }
@@ -507,7 +511,7 @@ int8_t verbaleyes_initialize() {
 		}
 		// Reconnects to network if connection is lost
 		default: {
-			if (verbaleyes_network_connected() == 1) break;
+			if (verbaleyes_network_connected() == VERBALEYES_CONNECT_SUCCESS) break;
 			logprintf("\r\nLost connection to network");
 		}
 		// Initialize network connection
@@ -531,11 +535,11 @@ int8_t verbaleyes_initialize() {
 			// Awaits network connection established
 			switch (verbaleyes_network_connected()) {
 				// Shows progress bar until network is connected
-				case 0: {
+				case VERBALEYES_CONNECT_WORKING: {
 					if (showProgressBar()) return VERBALEYES_INIT_WORKING;
 				}
 				// Handles timeout error and known fail
-				case -1: {
+				case VERBALEYES_CONNECT_FAIL: {
 					return connectionFailToState("\r\nFailed to connect to network", 0x80);
 				}
 			}
@@ -550,7 +554,7 @@ int8_t verbaleyes_initialize() {
 	switch (state) {
 		// Reconnects to socket if connection is lost
 		default: {
-			if (verbaleyes_socket_connected() == 1) break;
+			if (verbaleyes_socket_connected() == VERBALEYES_CONNECT_SUCCESS) break;
 			logprintf("\r\nLost connection to host");
 		}
 		// Initialize socket connection
@@ -574,11 +578,11 @@ int8_t verbaleyes_initialize() {
 			// Awaits socket connectin established
 			switch (verbaleyes_socket_connected()) {
 				// Shows progress bar until socket is connected
-				case 0: {
+				case VERBALEYES_CONNECT_WORKING: {
 					if (showProgressBar()) return VERBALEYES_INIT_WORKING;
 				}
 				// Handles timeout error and know fail
-				case -1: {
+				case VERBALEYES_CONNECT_FAIL: {
 					return connectionFailToState("\r\nFailed to connect to host", 0x90);
 				}
 			}

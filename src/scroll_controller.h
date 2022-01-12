@@ -12,7 +12,12 @@
 // Number of characters required for configuration
 #define VERBALEYES_CONFIGLEN 269
 
-//!!
+// Status values to return from verbaleyes_network_connected and verbaleyes_socket_connected
+#define VERBALEYES_CONNECT_SUCCESS (true)
+#define VERBALEYES_CONNECT_FAIL (false)
+#define VERBALEYES_CONNECT_WORKING (-1)
+
+// Status return values for verbaleyes_initialize
 #define VERBALEYES_INIT_DONE (false)
 #define VERBALEYES_INIT_WORKING (true)
 #define VERBALEYES_INIT_ERROR (-1)

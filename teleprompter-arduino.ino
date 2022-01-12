@@ -62,18 +62,20 @@ void verbaleyes_network_connect(const char* ssid, const char* key) {
 // Gets the connection status of the WiFi connection
 int8_t verbaleyes_network_connected() {
 	switch (WiFi.status()) {
-		default: return 0;
-		case WL_CONNECTED: return 1;
+		default: return VERBALEYES_CONNECT_WORKING;
+		case WL_CONNECTED: return VERBALEYES_CONNECT_SUCCESS;
 		case WL_NO_SSID_AVAIL: {
 			Serial.print("\r\nNo network found with that name");
-			return -1;
+			return VERBALEYES_CONNECT_FAIL;
 		}
 		case WL_CONNECT_FAILED: {
 			Serial.print("\r\nThe password was incorrect");
-			return -1;
+			return VERBALEYES_CONNECT_FAIL;
 		}
 	}
 }
+
+
 
 // Creates a network socket to use for WebSocket communication with the server
 #include <WiFiClientSecure.h>
@@ -93,12 +95,7 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 
 // Gets the connection status of the socket connection
 int8_t verbaleyes_socket_connected() {
-	if (clientUsingSSL) {
-		return (clientHTTPS.connected()) ? 1 : -1;
-	}
-	else {
-		return (clientHTTP.connected()) ? 1 : -1;
-	}
+	return (clientUsingSSL) ? clientHTTPS.connected() : clientHTTP.connected();
 }
 
 // Consumes a single character from the sockets response data buffer
