@@ -71,20 +71,20 @@ static int8_t connectionFailToState(const char* msg, const uint8_t backToState) 
 	logprintf(msg);
 	timeout = time(NULL) + CONNECTIONFAILEDDELAY;
 	state = backToState;
-	return -1;
+	return VERBALEYES_INIT_ERROR;
 }
 
 // Reconnects to socket if unable to get data before timeout
 static int8_t socketHadNoData() {
 	if (verbaleyes_socket_connected() != 1) return connectionFailToState("\r\nConnection to host closed", 0x90);
-	if (time(NULL) < timeout) return 1;
+	if (time(NULL) < timeout) return VERBALEYES_INIT_WORKING;
 	return connectionFailToState("\r\nResponse from server ended prematurely", 0x90);
 }
 
 // Prints progress bar until timeing out if unable to get data
 static int8_t socketHadNoDataProgressBar() {
 	if (verbaleyes_socket_connected() != 1) return connectionFailToState("\r\nConnection to host closed", 0x90);
-	if (showProgressBar()) return 1;
+	if (showProgressBar()) return VERBALEYES_INIT_WORKING;
 	return connectionFailToState("\r\nDid not get a response from the server", 0x90);
 }
 
@@ -503,7 +503,7 @@ int8_t verbaleyes_initialize() {
 		case 0x80:
 		case 0x90: {
 			if (time(NULL) >= timeout) state &= 0x7F;
-			return true;
+			return VERBALEYES_INIT_WORKING;
 		}
 		// Reconnects to network if connection is lost
 		default: {
@@ -532,7 +532,7 @@ int8_t verbaleyes_initialize() {
 			switch (verbaleyes_network_connected()) {
 				// Shows progress bar until network is connected
 				case 0: {
-					if (showProgressBar()) return true;
+					if (showProgressBar()) return VERBALEYES_INIT_WORKING;
 				}
 				// Handles timeout error and known fail
 				case -1: {
@@ -575,7 +575,7 @@ int8_t verbaleyes_initialize() {
 			switch (verbaleyes_socket_connected()) {
 				// Shows progress bar until socket is connected
 				case 0: {
-					if (showProgressBar()) return true;
+					if (showProgressBar()) return VERBALEYES_INIT_WORKING;
 				}
 				// Handles timeout error and know fail
 				case -1: {
@@ -889,7 +889,7 @@ int8_t verbaleyes_initialize() {
 	}
 
 	// Allows caller function to continue past this function
-	return false;
+	return VERBALEYES_INIT_DONE;
 }
 
 // Sends remapped analog speed reading to the server

@@ -12,6 +12,11 @@
 // Number of characters required for configuration
 #define VERBALEYES_CONFIGLEN 269
 
+//!!
+#define VERBALEYES_INIT_DONE (false)
+#define VERBALEYES_INIT_WORKING (true)
+#define VERBALEYES_INIT_ERROR (-1)
+
 // Makes functions work in C++
 #ifdef __cplusplus
 extern "C" {
