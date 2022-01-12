@@ -83,16 +83,16 @@ void verbaleyes_network_connect(const char* ssid, const char* key) {
 int8_t verbaleyes_network_connected() {
 	switch (testState) {
 		// Tests rejected network
-		case 0: return -1;
+		case 0: return VERBALEYES_CONNECT_FAIL;
 
 		// Tests established network connection
-		case 1: return 1;
+		case 1: return VERBALEYES_CONNECT_SUCCESS;
 
 		// Tests connection lost and awaiting network connection
-		case 2: return 0;
+		case 2: return VERBALEYES_CONNECT_WORKING;
 
 		// Connection should be established for other tests to work
-		default: return 1;
+		default: return VERBALEYES_CONNECT_SUCCESS;
 	}
 }
 
@@ -125,38 +125,38 @@ void verbaleyes_socket_connect(const char* host, const unsigned short port) {
 int8_t verbaleyes_socket_connected() {
 	switch (testState) {
 		// Tests rejected socket connection
-		case 1: return -1;
+		case 1: return VERBALEYES_CONNECT_FAIL;
 
 		// Tests awaiting socket connection
-		case 3: return 0;
+		case 3: return VERBALEYES_CONNECT_WORKING;
 
 		// Tests established socket connection
-		case 4: return 1;
+		case 4: return VERBALEYES_CONNECT_SUCCESS;
 
 		// Tests socket disconnect
 		case 5: {
-			if (testDroppedConnection) return 0;
+			if (testDroppedConnection) return VERBALEYES_CONNECT_WORKING;
 			testDroppedConnection = true;
-			return 1;
+			return VERBALEYES_CONNECT_SUCCESS;
 		}
 
 		// Tests socket dropped during processing HTTP status line
 		case 9: {
-			if (testReadIndex > 0) return 0;
-			return 1;
+			if (testReadIndex > 0) return VERBALEYES_CONNECT_WORKING;
+			return VERBALEYES_CONNECT_SUCCESS;
 		}
 
 		// Tests socket dropped during processing HTTP headers
 		case 12: {
-			if (testReadIndex > 0) return 0;
-			return 1;
+			if (testReadIndex > 0) return VERBALEYES_CONNECT_WORKING;
+			return VERBALEYES_CONNECT_SUCCESS;
 		}
 
 		// Tests connection lost
-		case -1: return 0; //!! requires entire socket connection to be established first
+		case -1: return VERBALEYES_CONNECT_WORKING; //!! requires entire socket connection to be established first
 
 		// Connection should be established for other tests
-		default: return 1;
+		default: return VERBALEYES_CONNECT_SUCCESS;
 	}
 }
 
@@ -354,13 +354,13 @@ void testInit() {
 
 	// Run initialize function until error or success
 	int8_t state;
-	while ((state = verbaleyes_initialize()) == 1);
+	while ((state = verbaleyes_initialize()) == VERBALEYES_INIT_WORKING);
 
 	// Ensures that it delays before continuing after fail
 	if (state == -1) {
 		time_t start = time(NULL);
 		while (start == time(NULL)) {
-			if (verbaleyes_initialize() == 1) continue;
+			if (verbaleyes_initialize() == VERBALEYES_INIT_WORKING) continue;
 			fprintf(stderr, "" COLOR_RED "Continued processing when it should not have\n" COLOR_NORMAL);
 			numberOfErrors++;
 		}
