@@ -4,13 +4,13 @@ LIBBEARSSL = $(LIB)/bearssl
 SRC = ../src/scroll_controller.c
 A = gcc $(SRC) $(LIBBEARSSL)/*.c -I$(LIB) -o $(EXE) ./helpers/*.c
 
-all: test_c test_c++ test_configure test_init
+all: test_c test_c++ test test_init
 
 $(LIBBEARSSL):
 	cd $(LIB) && make
 
-test_configure: $(LIBBEARSSL)
-	$(A) test_configure.c -DCONFIGTIMEOUT=2
+test: $(LIBBEARSSL)
+	$(A) test.c -DCONFIGTIMEOUT=2
 	$(EXE)
 	rm $(EXE)
 
