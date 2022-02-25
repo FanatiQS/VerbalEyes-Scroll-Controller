@@ -41,6 +41,9 @@ void verbaleyes_socket_write(const uint8_t* str, const size_t len) {}
 // Counter for the number of errors that occurs
 int numberOfErrors = 0;
 
+// Indicates if certain verbaleyes functions are allowed to be called or not
+bool allowCallToConfigRead;
+bool allowCallToConfigWrite;
 
 
 
@@ -238,6 +241,13 @@ void testEnd() {
 
 // VerbalEyes function to write data to conf buffer
 void verbaleyes_conf_write(const unsigned short addr, const char c) {
+	// Disallow calling this function
+	if (!allowCallToConfigWrite) {
+		fprintf(stderr, "" COLOR_RED "Function verbaleyes_conf_write was called without being allowed to\n" COLOR_NORMAL);
+		numberOfErrors++;
+		return;
+	}
+
 	// Ensures address is not outside max config length
 	if (addr >= VERBALEYES_CONFIGLEN) {
 		fprintf(stderr, "" COLOR_RED "Configuration tried to write outide address range: %d\n" COLOR_NORMAL, addr);
@@ -254,12 +264,27 @@ void verbaleyes_conf_write(const unsigned short addr, const char c) {
 
 // VerbalEyes function to commit data to conf buffer
 void verbaleyes_conf_commit() {
+	// Disallow calling this function
+	if (!allowCallToConfigWrite) {
+		fprintf(stderr, "" COLOR_RED "Function verbaleyes_conf_commit was called without being allowed to\n" COLOR_NORMAL);
+		numberOfErrors++;
+		return;
+	}
+
+	// Sets commit state to having commited the data
 	configCommit = true;
 }
 
 // VerbalEyes function to read data from conf buffer
 char verbaleyes_conf_read(const unsigned short addr) {
+	// Disallow calling this function
+	if (!allowCallToConfigRead) {
+		fprintf(stderr, "" COLOR_RED "Function verbaleyes_conf_read was called without being allowed to\n" COLOR_NORMAL);
+		numberOfErrors++;
+		return 0;
+	}
 
+	// Ensures address is not outside range
 	if (addr >= VERBALEYES_CONFIGLEN) {
 		fprintf(stderr, "" COLOR_RED "Configuration tried to read outside address range: %d\n" COLOR_NORMAL, addr);
 		exit(EXIT_FAILURE);
@@ -723,6 +748,10 @@ void ensureShortConfigInteger(const char* key, const int offset) {
 void testConfiguration() {
 	// Enables log buffering
 	disableLogBuffering = false;
+
+	// Allows writing to config as that is what is tested, but reading should not occur
+	allowCallToConfigRead = false;
+	allowCallToConfigWrite = true;
 
 	// Clears config buffer before tests
 	clearConfigBuffer();
