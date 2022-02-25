@@ -1,14 +1,10 @@
 #include <stdio.h> // printf, fprintf, fflush, stdout, EOF, stderr
-#include <string.h> // strlen
+#include <string.h> // strlen, memset, memcmp, strcmp
 #include <time.h> // time_t, time, NULL
-#include <stdbool.h> // bool
+#include <stdbool.h> // bool, true, false
 
 #include "../src/scroll_controller.h"
-
 #include "./helpers/print_colors.h"
-#include "./helpers/conf.h"
-#include "./helpers/log.h"
-#include "./helpers/debug.h"
 
 // Only defined to not throw compilation errors
 void verbaleyes_network_connect(const char* ssid, const char* key) {}
@@ -19,53 +15,181 @@ short verbaleyes_socket_read() { return 1; }
 void verbaleyes_socket_write(const uint8_t* str, const size_t len) {}
 
 
+// All configurable strings lengths (copy from scroll_controller.c)
+#define CONF_LEN_SSID           32
+#define CONF_LEN_SSIDKEY        63
+#define CONF_LEN_HOST           64
+#define CONF_LEN_PATH           32
+#define CONF_LEN_PROJ           32
+#define CONF_LEN_PROJKEY        32
 
-// Automatically exits configuration mode after test
-bool autoReset = 0;
+// All configurable items addesses (copy from scroll_controller.c)
+#define CONF_ADDR_SSID          0
+#define CONF_ADDR_SSIDKEY       (CONF_ADDR_SSID + CONF_LEN_SSID)
+#define CONF_ADDR_HOST          (CONF_ADDR_SSIDKEY + CONF_LEN_SSIDKEY)
+#define CONF_ADDR_PORT          (CONF_ADDR_HOST + CONF_LEN_HOST)
+#define CONF_ADDR_PATH          (CONF_ADDR_PORT + 2)
+#define CONF_ADDR_PROJ          (CONF_ADDR_PATH + CONF_LEN_PATH)
+#define CONF_ADDR_PROJKEY       (CONF_ADDR_PROJ + CONF_LEN_PROJ)
+#define CONF_ADDR_SPEEDMIN      (CONF_ADDR_PROJKEY + CONF_LEN_PROJKEY)
+#define CONF_ADDR_SPEEDMAX      (CONF_ADDR_SPEEDMIN + 2)
+#define CONF_ADDR_DEADZONE      (CONF_ADDR_SPEEDMAX + 2)
+#define CONF_ADDR_CALLOW        (CONF_ADDR_DEADZONE + 2)
+#define CONF_ADDR_CALHIGH       (CONF_ADDR_CALLOW + 2)
+#define CONF_ADDR_SENS          (CONF_ADDR_CALHIGH + 2)
+
+// Counter for the number of errors that occurs
+int numberOfErrors = 0;
 
 
 
-// Turns buffering of log messages on or off
-void bufferLogs(const bool buffering) {
-	log_setflags((buffering) ? LOGFLAGBUFFER : 0);
-}
 
+// Log buffer and index
+size_t logBufferIndex = 0;
+char logBuffer[1024];
 
-
-// Prints test header
-void testStart(const char* category, const char* title) {
-	printf("" COLOR_BLUE "Testing %s: %s\n" COLOR_NORMAL, category, title);
-	fflush(stdout);
-}
-
-// Prints test end message
-void testEnd() {
-	printf("" COLOR_GREEN "Test complete\n\n" COLOR_NORMAL);
-}
-
-
+// Indicates if logs should be buffered and/or printed
+bool disableLogBuffering = false;
+bool disableLogPrinting = true;
 
 // Clears log buffer
-// @todo inline log_clear
 void clearLogBuffer() {
-	log_clear();
+	memset(logBuffer, 0, sizeof(logBuffer));
+	logBufferIndex = 0;
 }
 
-// Clears config buffer
-// @todo inline conf_clear
-void clearConfigBuffer() {
-	conf_clear();
-}
-
-
-
-// Updates configuration with string but terminates string at LF instead of null byte
-bool configureLine(const char* str) {
-	if (strlen(str) == 0) return false;
-	for (int i = 0; str[i] != '\n'; i++) {
-		if (!verbaleyes_configure(str[i])) return true;
+// Compares log buffer to string
+// @todo make logging index and data of config look better
+void compareLogToString(const char* str) {
+	// Prints success
+	if (!strcmp(logBuffer, str)) {
+		printf("" COLOR_GREEN "Logs matched\n" COLOR_NORMAL);
+		return;
 	}
-	return false;
+
+	// Prints failure
+	int len = (strlen(str) < strlen(logBuffer)) ? strlen(str) : strlen(logBuffer);
+	fprintf(stderr, "" COLOR_RED "Logs did not match:\n|>%s<|\n|>%s<|\n" COLOR_NORMAL, logBuffer, str);
+	fprintf(stderr, "" COLOR_RED "Lengths: %lu %lu\n" COLOR_NORMAL, strlen(str), strlen(logBuffer));
+	for (int i = 0; i < len; i++) {
+		fprintf(stderr, "index: %d  %d  %d\n", i, logBuffer[i], str[i]);
+	}
+	fprintf(stderr, "\n");
+	numberOfErrors++;
+}
+
+// Logs VerbalEyes data to console and/or buffer
+void verbaleyes_log(const char* msg, const size_t len) {
+	// Ensures that log message is the expected length
+	if (strlen(msg) != len) {
+		fprintf(stderr, "" COLOR_RED "\nMessage to be logged was not the same length as its len argument\n\tstrlen(msg): %zu\n\tlen: %zu\n\tmessage: %s\n" COLOR_NORMAL, strlen(msg), len, msg);
+		numberOfErrors++;
+		exit(EXIT_FAILURE);
+	}
+
+	// Prints log to stdout
+	if (!disableLogPrinting) {
+		printf("%s", msg);
+		fflush(stdout);
+	}
+
+	// Copies log message to log buffer
+	if (!disableLogBuffering) {
+		if (logBufferIndex + strlen(msg) > sizeof(logBuffer)) {
+			perror("" COLOR_RED "Too much data logged without clearing\n" COLOR_NORMAL);
+			exit(EXIT_FAILURE);
+		}
+		memcpy(logBuffer + logBufferIndex, msg, len);
+		logBufferIndex += len;
+	}
+}
+
+
+
+
+
+// Automatically exits configuration mode after test
+bool allowOverwritingConfigData = true;
+
+// Byte indicating empty data, not using null byte to separate from null terminated string
+#define CLEARBYTE (3)
+
+// Buffer for configuration
+char configBuffer[VERBALEYES_CONFIGLEN];
+
+// Commit state for configuration
+bool configCommit = false;
+
+// Fills config buffer with CLEARBYTEs to separate from nullbytes written
+void clearConfigBuffer() {
+	memset(configBuffer, CLEARBYTE, VERBALEYES_CONFIGLEN);
+	configCommit = false;
+}
+
+// Checks if config buffer is empty or has data
+// @todo make logging index and data of config look a little better
+bool configIsEmpty(int index, const int len) {
+	bool gotError = false;
+	while (index < len) {
+		if (configBuffer[index] != CLEARBYTE) {
+			if (!gotError) {
+				fprintf(stderr, "" COLOR_RED "Configuration was updated at an address where it should not have been:\n" COLOR_NORMAL);
+				numberOfErrors++;
+			}
+			fprintf(stderr, "index: %d \tcode: %d \tchar: %c \n", index, configBuffer[index], configBuffer[index]);
+			gotError = true;
+		}
+		index++;
+	}
+	return !gotError;
+}
+
+// Compares config to another buffer
+// @todo make dumping entire config look a little better
+void compareConfigToBuffer(const int offset, const char* buffer, const int len) {
+	// Prints errors if config and buffer is not equal
+	if (memcmp(configBuffer + offset, buffer, len)) {
+		fprintf(stderr, "" COLOR_RED "Configuration did not match buffer:\n" COLOR_NORMAL);
+		numberOfErrors++;
+		for (int i = 0; i < len; i++) {
+			fprintf(stderr,
+				"index: %d  %u  %u\n",
+				i + offset,
+				(unsigned char)configBuffer[i + offset],
+				(unsigned char)buffer[i]
+			);
+		}
+	}
+	// Prints message if config and buffer is equal
+	else {
+		printf("" COLOR_GREEN "Configuration buffer matched\n" COLOR_NORMAL);
+	}
+
+	// Ensures no data was written to addresses outside range of last write
+	if (
+		!allowOverwritingConfigData &&
+		configIsEmpty(0, offset) &&
+		configIsEmpty(offset + len, VERBALEYES_CONFIGLEN)
+	) {
+		printf("" COLOR_GREEN "Configuration buffer was only updated within its range\n" COLOR_NORMAL);
+	}
+}
+
+// Compares config buffer to int
+// @todo rework this function to instead actually work on uint16
+void compareConfigToInteger(const int offset, const char* conf) {
+	compareConfigToBuffer(offset, conf, 2);
+}
+
+// Compares config commit states
+void compareConfigCommitState(const bool commitState) {
+	if (configCommit != commitState) {
+		fprintf(stderr, "" COLOR_RED "Commit state did not match %d %d\n" COLOR_NORMAL, configCommit, commitState);
+		numberOfErrors++;
+	}
+	else {
+		printf("" COLOR_GREEN "Commit state was %d\n" COLOR_NORMAL, configCommit);
+	}
 }
 
 // Updates configuration with string
@@ -89,52 +213,60 @@ void configureExit() {
 
 
 
-// Compares log buffer to string
-// @todo inline log_cmp
-void compareLogToString(const char* str) {
-	log_cmp(str);
+
+
+// Prints test header
+void testStart(const char* category, const char* title) {
+	printf("" COLOR_BLUE "Testing %s: %s\n" COLOR_NORMAL, category, title);
+	fflush(stdout);
+}
+
+// Prints test end message
+void testEnd() {
+	printf("" COLOR_GREEN "Test complete\n\n" COLOR_NORMAL);
+	fflush(stdout);
 }
 
 
 
-// Compares config buffer to another buffer
-// @todo inline conf_cmp
-void compareConfigToBuffer(const int offset, const char* conf, const int len) {
-	conf_cmp(offset, conf, len);
-}
-
-// Compares config buffer to string
-void compareConfigToString(const int offset, const char* conf, const bool incTerm) {
-	compareConfigToBuffer(offset, conf, strlen(conf) + incTerm);
-}
-
-// Compares config buffer to int
-// @todo rework this function to instead actually work on uint16
-void compareConfigToInteger(const int offset, const char* conf) {
-	compareConfigToBuffer(offset, conf, 2);
-}
-
-// Compares config commit states
-void compareConfigCommitState(const bool commitState) {
-	conf_matchcommit(commitState);
-}
 
 
+// Check states for conf and log
+#define ENDNOTHING 0
+#define ENDDONE 1
+#define ENDCOMMIT 2
 
-// Checks if config buffer is empty or has data
-// @todo inline ensureEmpty
-bool configIsEmpty(const int index, const int len) {
-	return ensureEmpty(index, len);
-}
-
-// Tests that conf buffer is clean
-void ensureConfigIsEmpty() {
-	if (autoReset && configIsEmpty(0, VERBALEYES_CONFIGLEN)) {
-		printf("" COLOR_GREEN "Config was empty\n" COLOR_NORMAL);
+// VerbalEyes function to write data to conf buffer
+void verbaleyes_conf_write(const unsigned short addr, const char c) {
+	// Ensures address is not outside max config length
+	if (addr >= VERBALEYES_CONFIGLEN) {
+		fprintf(stderr, "" COLOR_RED "Configuration tried to write outide address range: %d\n" COLOR_NORMAL, addr);
+		exit(EXIT_FAILURE);
 	}
+
+	// Disallows overwriting data in config
+	if (!allowOverwritingConfigData && configBuffer[addr] != CLEARBYTE) {
+		fprintf(stderr, "" COLOR_RED "Attempt to overwrite conf addr that has already been written to: %d\n" COLOR_NORMAL, addr);
+		numberOfErrors++;
+	}
+	configBuffer[addr] = c;
 }
 
+// VerbalEyes function to commit data to conf buffer
+void verbaleyes_conf_commit() {
+	configCommit = true;
+}
 
+// VerbalEyes function to read data from conf buffer
+char verbaleyes_conf_read(const unsigned short addr) {
+
+	if (addr >= VERBALEYES_CONFIGLEN) {
+		fprintf(stderr, "" COLOR_RED "Configuration tried to read outside address range: %d\n" COLOR_NORMAL, addr);
+		exit(EXIT_FAILURE);
+	}
+
+	return configBuffer[addr];
+}
 
 // Starts a new config test
 void configTestStart(const char* title, const char* input, const char* log1, const char* log2) {
@@ -143,7 +275,7 @@ void configTestStart(const char* title, const char* input, const char* log1, con
 
 	// Clears buffers before running test
 	clearLogBuffer();
-	if (autoReset) clearConfigBuffer();
+	if (!allowOverwritingConfigData) clearConfigBuffer();
 
 	// Processes input data
 	for (int i = 0; input[i] != '\n'; i++) {
@@ -153,7 +285,7 @@ void configTestStart(const char* title, const char* input, const char* log1, con
 	}
 
 	// Skips CRLF at start of log for comparison when auto resetting between tests
-	if (!autoReset && strlen(log1) != 0) log1 += 2;
+	if (allowOverwritingConfigData && strlen(log1) != 0) log1 += 2;
 
 	// Compares log buffer to comparison string
 	compareLogToString(log1);
@@ -164,18 +296,13 @@ void configTestStart(const char* title, const char* input, const char* log1, con
 	compareLogToString(log2);
 }
 
-// Check states for conf and log
-#define ENDNOTHING 0
-#define ENDDONE 1
-#define ENDCOMMIT 2
-
 // Ends running config test
 void configTestEnd(const int state) {
 	// Ensures that config did not commit its data yet
 	compareConfigCommitState(false);
 
 	// Only exits configuration mode during second pass
-	if (!autoReset) {
+	if (allowOverwritingConfigData) {
 		printf("" COLOR_GREEN "Not exiting config mode\n" COLOR_NORMAL);
 		testEnd();
 		return;
@@ -208,6 +335,7 @@ void configTestEnd(const int state) {
 	compareConfigCommitState(state == ENDCOMMIT);
 
 	// Prints end of test message
+	printf("" COLOR_GREEN "Exiting config mode\n" COLOR_NORMAL);
 	testEnd();
 }
 
@@ -220,7 +348,9 @@ void configTestEmpty(
 	const int endState
 ) {
 	configTestStart(title, input, log1, log2);
-	ensureConfigIsEmpty();
+	if (!allowOverwritingConfigData && configIsEmpty(0, VERBALEYES_CONFIGLEN)) {
+		printf("" COLOR_GREEN "Config was empty\n" COLOR_NORMAL);
+	}
 	configTestEnd(endState);
 }
 
@@ -235,7 +365,7 @@ void configTestString(
 	const bool incTerm
 ) {
 	configTestStart(title, input, log1, log2);
-	compareConfigToString(offset, value, incTerm);
+	compareConfigToBuffer(offset, value, strlen(value) + incTerm);
 	configTestEnd(ENDCOMMIT);
 }
 
@@ -252,31 +382,6 @@ void configTestInteger(
 	compareConfigToInteger(offset, value);
 	configTestEnd(ENDCOMMIT);
 }
-
-
-
-// All configurable strings lengths (copy from scroll_controller.c)
-#define CONF_LEN_SSID           32
-#define CONF_LEN_SSIDKEY        63
-#define CONF_LEN_HOST           64
-#define CONF_LEN_PATH           32
-#define CONF_LEN_PROJ           32
-#define CONF_LEN_PROJKEY        32
-
-// All configurable items addesses (copy from scroll_controller.c)
-#define CONF_ADDR_SSID          0
-#define CONF_ADDR_SSIDKEY       (CONF_ADDR_SSID + CONF_LEN_SSID)
-#define CONF_ADDR_HOST          (CONF_ADDR_SSIDKEY + CONF_LEN_SSIDKEY)
-#define CONF_ADDR_PORT          (CONF_ADDR_HOST + CONF_LEN_HOST)
-#define CONF_ADDR_PATH          (CONF_ADDR_PORT + 2)
-#define CONF_ADDR_PROJ          (CONF_ADDR_PATH + CONF_LEN_PATH)
-#define CONF_ADDR_PROJKEY       (CONF_ADDR_PROJ + CONF_LEN_PROJ)
-#define CONF_ADDR_SPEEDMIN      (CONF_ADDR_PROJKEY + CONF_LEN_PROJKEY)
-#define CONF_ADDR_SPEEDMAX      (CONF_ADDR_SPEEDMIN + 2)
-#define CONF_ADDR_DEADZONE      (CONF_ADDR_SPEEDMAX + 2)
-#define CONF_ADDR_CALLOW        (CONF_ADDR_DEADZONE + 2)
-#define CONF_ADDR_CALHIGH       (CONF_ADDR_CALLOW + 2)
-#define CONF_ADDR_SENS          (CONF_ADDR_CALHIGH + 2)
 
 // Tests configuration input combinations
 void configTestInputs() {
@@ -502,7 +607,7 @@ void configTestInputs() {
 
 	// Tests that ignored characters returns the correct value
 	testStart("configuration", "Ignored characters");
-	if (verbaleyes_configure('\r') == autoReset) {
+	if (verbaleyes_configure('\r') != allowOverwritingConfigData) {
 		fprintf(stderr, "" COLOR_RED "Ignored characters did not return the expected value\n" COLOR_NORMAL);
 		numberOfErrors++;
 	}
@@ -523,7 +628,7 @@ void configTestInputs() {
 	time_t t1 = time(NULL);
 	clearLogBuffer();
 	while (verbaleyes_configure(0));
-	if (autoReset) {
+	if (!allowOverwritingConfigData) {
 		compareLogToString("Configuration canceled\r\n");
 	}
 	else {
@@ -539,8 +644,6 @@ void configTestInputs() {
 	}
 }
 
-
-
 // Fills string configuration with 0 characters
 void fillConfigString(const char* key) {
 	configureString(key);
@@ -553,28 +656,6 @@ void fillConfigString(const char* key) {
 void fillConfigInteger(const char* key) {
 	configureString(key);
 	configureString("=12336\n");
-}
-
-
-
-// Ensures that integer configurations only writes data where it should
-void configAddrRangeInteger(const char* key, const int offset) {
-	// Prints test start message
-	testStart("address mapping", key);
-
-	// Clears config buffer before running test
-	clearConfigBuffer();
-
-	// Fills config for the key to its limit
-	fillConfigInteger(key);
-
-	// Compares config buffer to expected buffer
-	char buf[2];
-	memset(buf, '0', 2);
-	compareConfigToBuffer(offset, buf, 2);
-
-	// Ends test
-	testEnd();
 }
 
 // Ensures that string configurations only writes data where it should
@@ -597,7 +678,25 @@ void configAddrRangeString(const char* key, const int offset, const int len) {
 	testEnd();
 }
 
+// Ensures that integer configurations only writes data where it should
+void configAddrRangeInteger(const char* key, const int offset) {
+	// Prints test start message
+	testStart("address mapping", key);
 
+	// Clears config buffer before running test
+	clearConfigBuffer();
+
+	// Fills config for the key to its limit
+	fillConfigInteger(key);
+
+	// Compares config buffer to expected buffer
+	char buf[2];
+	memset(buf, '0', 2);
+	compareConfigToBuffer(offset, buf, 2);
+
+	// Ends test
+	testEnd();
+}
 
 // Writes short string to ensure old data is not corrupting
 void ensureShortConfigString(const char* key, const int offset) {
@@ -620,25 +719,26 @@ void ensureShortConfigInteger(const char* key, const int offset) {
 	testEnd();
 }
 
-
-
 // All tests related to configuration
 void testConfiguration() {
-	// Tests configuration
-	printf("\n\n");
-	bufferLogs(true);
+	// Enables log buffering
+	disableLogBuffering = false;
+
+	// Clears config buffer before tests
 	clearConfigBuffer();
 
 	// Runs all tests not exiting configuration mode between every test
+	printf("\n\n");
+	configureExit();
 	configureString("1\n");
 	configTestInputs();
 
 	// Runs all tests again exiting configuration mode between every test
 	printf("\n\n");
-	autoReset = true;
-	conf_setflags(CONFFLAGCOMMITED | CONFFLAGOUTSIDESTR);
+	allowOverwritingConfigData = false;
 	configureExit();
 	configTestInputs();
+	allowOverwritingConfigData = true;
 
 	// Tests that EOF, 0 and LF all return false if it is not already processing something else
 	testStart("configuration", "First character EOF, 0 or LF");
@@ -658,8 +758,7 @@ void testConfiguration() {
 
 	// Tests address mapping
 	printf("\n\n");
-	bufferLogs(false);
-	conf_setflags(CONFFLAGOUTSIDESTR); // @todo what is this?
+	disableLogBuffering = true;
 
 	// Ensures configuration does not write outside its designated address range
 	configAddrRangeString("ssid", CONF_ADDR_SSID, CONF_LEN_SSID);
@@ -696,7 +795,7 @@ void testConfiguration() {
 	fillConfigInteger("sensitivity");
 	int foundGaps = 0;
 	for (int i = 0; i < VERBALEYES_CONFIGLEN; i++) {
-		if (confBuffer[i] != '0') {
+		if (configBuffer[i] != '0') {
 			fprintf(stderr, "" COLOR_RED "Gap was left at address: %d\n" COLOR_NORMAL, i);
 			foundGaps++;
 		}
@@ -735,5 +834,9 @@ int main(void) {
 	testConfiguration();
 
 	// Prints the number of errors that occured
-	return debug_printerrors();
+	printf("\n\n" COLOR_BLUE "RESULT:\n" COLOR_NORMAL);
+	printf((numberOfErrors) ? COLOR_RED : COLOR_GREEN);
+	printf("Number of errors: %d\n", numberOfErrors);
+	printf("" COLOR_NORMAL);
+	return (numberOfErrors) ? EXIT_FAILURE : EXIT_SUCCESS;
 }
